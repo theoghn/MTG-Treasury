@@ -5,6 +5,7 @@ import java.time.format.TextStyle
 import java.util.Locale
 
 data class MtgCard(
+    val id: String,
     val name: String,
     val prices: CardPrices,
     val releaseDate: String,
@@ -18,8 +19,9 @@ data class MtgCard(
     val foil: Boolean,
     val edhRank: Int,
     val legalities: CardLegalities,
-    val setName :String,
-    val setAbbreviation : String
+    val setName: String,
+    val setAbbreviation: String,
+    val artist: String
 )
 
 fun String.formatReleaseDate(): String {

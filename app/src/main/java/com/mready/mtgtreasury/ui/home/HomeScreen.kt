@@ -2,6 +2,7 @@ package com.mready.mtgtreasury.ui.home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -38,7 +39,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -58,7 +58,8 @@ import com.mready.mtgtreasury.ui.theme.BoxColor
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    viewModel: HomeScreenViewModel = hiltViewModel()
+    viewModel: HomeScreenViewModel = hiltViewModel(),
+    onCardClick: (String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val scrollState = rememberScrollState()
@@ -205,10 +206,10 @@ fun HomeScreen(
                         PrimaryButton(
                             modifier = Modifier
                                 .padding(12.dp)
-                                .size(40.dp)
+                                .size(36.dp)
                                 .clip(CircleShape)
                                 .align(Alignment.BottomEnd),
-                            onClick = { },
+                            onClick = { card?.id?.let { onCardClick (it) } },
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,
@@ -239,6 +240,7 @@ fun HomeScreen(
                     mostValuableCards.forEachIndexed { index, mtgCard ->
                         Row(
                             modifier = Modifier
+                                .clickable { onCardClick(mtgCard.id) }
                                 .fillMaxWidth()
                                 .padding(horizontal = 20.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically
@@ -379,13 +381,14 @@ fun DescriptionField(
     modifier: Modifier = Modifier,
     key: String,
     value: String,
+    keyColor: Color = Color.LightGray,
     fontSize: TextUnit = 12.sp
 ) {
     Text(
         modifier = modifier,
         text =
         buildAnnotatedString {
-            withStyle(style = SpanStyle(color = Color.LightGray)) {
+            withStyle(style = SpanStyle(color = keyColor)) {
                 append("$key ")
             }
             withStyle(
@@ -431,8 +434,10 @@ fun SetName(
     )
 }
 
-@Preview
-@Composable
-private fun HomeScreenPreview() {
-    HomeScreen()
-}
+
+
+//@Preview
+//@Composable
+//private fun HomeScreenPreview() {
+//    HomeScreen(onCardClick = { navController.navigate(CardScreenDestination)})
+//}

@@ -1,6 +1,7 @@
 package com.mready.mtgtreasury.ui
 
 import android.os.Bundle
+import android.provider.DocumentsContract.Root
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -17,7 +18,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge(navigationBarStyle = SystemBarStyle.light(Color.Transparent.toArgb(), Color.Transparent.toArgb()))
         setContent {
             MTGTreasuryTheme {
-                NavigationScreen()
+                RootScreen()
             }
         }
     }

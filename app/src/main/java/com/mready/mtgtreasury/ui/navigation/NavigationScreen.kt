@@ -1,4 +1,4 @@
-package com.mready.mtgtreasury.ui
+package com.mready.mtgtreasury.ui.navigation
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -15,7 +15,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -26,15 +25,16 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.mready.mtgtreasury.R
-import com.mready.mtgtreasury.ui.card.CardScreen
 import com.mready.mtgtreasury.ui.card.CardScreenDestination
 import com.mready.mtgtreasury.ui.components.HexagonBox
 import com.mready.mtgtreasury.ui.decks.DecksScreen
 import com.mready.mtgtreasury.ui.decks.DecksScreenDestination
 import com.mready.mtgtreasury.ui.home.HomeScreen
 import com.mready.mtgtreasury.ui.home.HomeScreenDestination
+import com.mready.mtgtreasury.ui.profile.ProfileScreen
 import com.mready.mtgtreasury.ui.profile.ProfileScreenDestination
 import com.mready.mtgtreasury.ui.search.SearchScreen
 import com.mready.mtgtreasury.ui.search.SearchScreenDestination
@@ -42,7 +42,10 @@ import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
 import com.mready.mtgtreasury.ui.theme.BottomBarColor
 
 @Composable
-fun NavigationScreen(modifier: Modifier = Modifier) {
+fun NavigationScreen(
+    modifier: Modifier = Modifier,
+    navigateToCard: (String) -> Unit,
+) {
     val navigationSections = listOf(
         HomeScreenDestination,
         SearchScreenDestination,
@@ -55,16 +58,28 @@ fun NavigationScreen(modifier: Modifier = Modifier) {
         Pair(R.drawable.ic_bnav_deck, R.drawable.ic_bnav_deck_selected),
         Pair(R.drawable.ic_bnav_profile, R.drawable.ic_bnav_profile_selected)
     )
-    var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
+    val destinationWithoutNavbar = listOf<String?>(
+        CardScreenDestination::class.java.name,
+    )
     val navController = rememberNavController()
-    var isNavBarVisible by rememberSaveable { mutableStateOf(true) }
+    var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+//    val isNavBarVisible by remember {
+//        derivedStateOf {
+//            currentBackStackEntry?.destination?.route.toString() !in destinationWithoutNavbar
+//        }
+//    }
+//    LaunchedEffect(key1 =  currentBackStackEntry) {
+//        Log.d("destination", currentBackStackEntry?.destination?.route.toString())
+//    }
+
 
     Scaffold(
         modifier = modifier
             .fillMaxSize(),
         containerColor = MainBackgroundColor,
         bottomBar = {
-            if (isNavBarVisible) {
+            if (true) {
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
@@ -117,15 +132,41 @@ fun NavigationScreen(modifier: Modifier = Modifier) {
                 )
                 .fillMaxSize(),
             navController = navController,
-            startDestination = HomeScreenDestination
+            startDestination = HomeScreenDestination,
+//            enterTransition = {
+//                slideIntoContainer(
+//                    AnimatedContentTransitionScope.SlideDirection.Start,
+//                    tween(700)
+//                )
+//            },
+//            exitTransition = {
+//                slideOutOfContainer(
+//                    AnimatedContentTransitionScope.SlideDirection.Start,
+//                    tween(700)
+//                )
+//            },
+//            popEnterTransition = {
+//                slideIntoContainer(
+//                    AnimatedContentTransitionScope.SlideDirection.End,
+//                    tween(700)
+//                )
+//            },
+//            popExitTransition = {
+//                slideOutOfContainer(
+//                    AnimatedContentTransitionScope.SlideDirection.End,
+//                    tween(700)
+//                )
+//            }
+
         ) {
             composable<HomeScreenDestination> {
-                isNavBarVisible = true
-                HomeScreen()
+                HomeScreen(
+                    onCardClick = { id -> navigateToCard(id) }
+                )
             }
 
             composable<SearchScreenDestination> {
-                SearchScreen()
+                SearchScreen(onCardClick = { id -> navigateToCard(id) })
             }
 
             composable<DecksScreenDestination> {
@@ -134,12 +175,7 @@ fun NavigationScreen(modifier: Modifier = Modifier) {
             }
 
             composable<ProfileScreenDestination> {
-                CardScreen()
-                isNavBarVisible = false
-            }
-
-            composable<CardScreenDestination> {
-                CardScreen()
+                ProfileScreen()
             }
         }
     }

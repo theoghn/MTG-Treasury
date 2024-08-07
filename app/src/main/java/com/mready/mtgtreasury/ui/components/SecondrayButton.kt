@@ -20,8 +20,6 @@ fun SecondaryButton(
     onClick: () -> Unit = { },
     content: @Composable BoxScope.() -> Unit
 ) {
-
-
     Button(
         modifier = modifier,
         colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
@@ -30,8 +28,6 @@ fun SecondaryButton(
         onClick = { onClick() },
     ) {
         Box(
-            modifier = Modifier
-                .then(modifier),
             contentAlignment = Alignment.Center,
         ) {
             content()

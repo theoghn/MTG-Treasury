@@ -15,9 +15,17 @@ import javax.inject.Singleton
 class ScryfallApi @Inject constructor(
     private val apiClient: ScryfallApiClient
 ) {
-    suspend fun getCard(): MtgCard {
+    suspend fun getRandomCard(): MtgCard {
         return apiClient.get(
             endpoint = "cards/random"
+        ) { json ->
+            json.toCard()
+        }
+    }
+
+    suspend fun getCard(id: String): MtgCard {
+        return apiClient.get(
+            endpoint = "cards/$id"
         ) { json ->
             json.toCard()
         }
@@ -46,11 +54,12 @@ class ScryfallApi @Inject constructor(
 }
 
 private fun Json.toCard() = MtgCard(
+    id = this["id"].string,
     name = this["name"].string,
     releaseDate = this["released_at"].string,
     manaCost = this["mana_cost"].stringOrNull ?: "",
     type = this["type_line"].string,
-    oracleText = this["oracle_text"].stringOrNull ?: "",
+    oracleText = this["oracle_text"].stringOrNull ?: "This is a simple card",
     power = this["power"].stringOrNull,
     colors = this["colors"].arrayOrNull?.map { it.string } ?: emptyList(),
     imageUris = this["image_uris"].toCardUris(),
@@ -58,12 +67,13 @@ private fun Json.toCard() = MtgCard(
     edhRank = this["edhrec_rank"].intOrNull ?: 0,
     setAbbreviation = this["set"].string,
     setName = this["set_name"].string,
+    artist = this["artist"].stringOrNull ?: "unknown",
     prices = this["prices"].toCardPrices(),
     legalities = this["legalities"].toCardLegalities()
 )
 
 private fun Json.toCardUris() = CardImageUris(
-    borderCrop = this["border_crop"].string,
+    borderCrop = this["border_crop"].stringOrNull ?: "",
     artCrop = this["art_crop"].string,
     normalSize = this["normal"].string,
     largeSize = this["large"].string,
