@@ -2,8 +2,6 @@ package com.mready.mtgtreasury.ui.components
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import coil.compose.AsyncImage
 import coil.decode.SvgDecoder
