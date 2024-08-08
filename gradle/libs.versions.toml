@@ -1,7 +1,6 @@
 [versions]
 agp = "8.5.1"
 apiclient = "1.0.0-rc05"
-coilSvgVersion = "2.2.2"
 kotlin = "2.0.0"
 coreKtx = "1.13.1"
 junit = "4.13.2"

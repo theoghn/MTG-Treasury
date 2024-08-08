@@ -58,12 +58,12 @@ fun NavigationScreen(
         Pair(R.drawable.ic_bnav_deck, R.drawable.ic_bnav_deck_selected),
         Pair(R.drawable.ic_bnav_profile, R.drawable.ic_bnav_profile_selected)
     )
-    val destinationWithoutNavbar = listOf<String?>(
-        CardScreenDestination::class.java.name,
-    )
     val navController = rememberNavController()
     var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
-    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+//    val destinationWithoutNavbar = listOf<String?>(
+//        CardScreenDestination::class.java.name,
+//    )
+//    val currentBackStackEntry by navController.currentBackStackEntryAsState()
 //    val isNavBarVisible by remember {
 //        derivedStateOf {
 //            currentBackStackEntry?.destination?.route.toString() !in destinationWithoutNavbar

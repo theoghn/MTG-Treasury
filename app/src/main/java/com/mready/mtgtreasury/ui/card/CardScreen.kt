@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,7 +24,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.BottomSheetScaffold
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -54,13 +52,11 @@ import com.mready.mtgtreasury.models.card.MtgCard
 import com.mready.mtgtreasury.models.card.formatReleaseDate
 import com.mready.mtgtreasury.ui.components.AsyncSvg
 import com.mready.mtgtreasury.ui.components.PrimaryButton
-import com.mready.mtgtreasury.ui.components.ShimmerBox
 import com.mready.mtgtreasury.ui.home.DescriptionField
 import com.mready.mtgtreasury.ui.theme.BottomBarColor
 import com.mready.mtgtreasury.ui.theme.BoxColor
 import com.mready.mtgtreasury.ui.theme.LegalChipColor
 import com.mready.mtgtreasury.ui.theme.NotLegalChipColor
-import com.mready.mtgtreasury.ui.theme.interFamily
 import kotlin.reflect.full.memberProperties
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -382,26 +378,5 @@ fun LegalModeItem(
                 fontWeight = FontWeight.SemiBold
             )
         }
-    }
-}
-
-@Composable
-fun LegalChip(
-    modifier: Modifier = Modifier,
-    legal: String
-) {
-    Box(
-        modifier = modifier
-            .width(100.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .background(if (legal == "legal") LegalChipColor else NotLegalChipColor)
-            .padding(vertical = 4.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = legal.split("_").joinToString(" ").uppercase(),
-            fontSize = 12.sp,
-            color = Color.White
-        )
     }
 }
