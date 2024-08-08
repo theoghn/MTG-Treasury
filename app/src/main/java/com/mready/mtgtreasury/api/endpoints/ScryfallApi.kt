@@ -23,11 +23,13 @@ class ScryfallApi @Inject constructor(
         }
     }
 
+
     suspend fun getMostValuableCards(): List<MtgCard> {
         return apiClient.get(
             endpoint = "cards/search",
             query = mapOf("q" to "eur>2000", "order" to "eur")
         ) { json ->
+            //TODO Ideal daca iti permite apiul sa incarci doar cate ai nevoie din start
             json["data"].array.map { it.toCard() }.take(3)
         }
     }
