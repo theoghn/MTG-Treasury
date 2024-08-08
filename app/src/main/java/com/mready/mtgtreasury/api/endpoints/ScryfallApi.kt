@@ -6,6 +6,8 @@ import com.mready.mtgtreasury.models.card.MtgCard
 import com.mready.mtgtreasury.models.card.CardImageUris
 import com.mready.mtgtreasury.models.card.CardLegalities
 import com.mready.mtgtreasury.models.card.CardPrices
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import net.mready.apiclient.get
 import net.mready.json.Json
 import javax.inject.Inject
@@ -15,10 +17,13 @@ import javax.inject.Singleton
 class ScryfallApi @Inject constructor(
     private val apiClient: ScryfallApiClient
 ) {
+    val card = MutableStateFlow<MtgCard?>(null)
+
     suspend fun getRandomCard(): MtgCard {
         return apiClient.get(
             endpoint = "cards/random"
         ) { json ->
+            card.update { json.toCard() }
             json.toCard()
         }
     }
@@ -27,6 +32,7 @@ class ScryfallApi @Inject constructor(
         return apiClient.get(
             endpoint = "cards/$id"
         ) { json ->
+            card.update { json.toCard() }
             json.toCard()
         }
     }

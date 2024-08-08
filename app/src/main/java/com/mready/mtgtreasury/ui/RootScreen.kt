@@ -28,7 +28,7 @@ fun RootScreen(modifier: Modifier = Modifier) {
             enterTransition = {
                 slideIntoContainer(
                     AnimatedContentTransitionScope.SlideDirection.Start,
-                    tween(500)
+                    tween(700)
                 )
             },
             exitTransition = {

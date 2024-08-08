@@ -16,6 +16,9 @@ import javax.inject.Inject
 class CardViewModel @Inject constructor(private val api: ScryfallApi) : ViewModel() {
     val uiState = MutableStateFlow<CardScreenUiState>(CardScreenUiState.Loading)
 
+//    init {
+//        getCard("1")
+//    }
 
     fun getCard(id: String) {
         if (uiState.value == CardScreenUiState.Loading) {

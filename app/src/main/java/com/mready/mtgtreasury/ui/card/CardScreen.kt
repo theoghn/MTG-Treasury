@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -57,6 +58,8 @@ import com.mready.mtgtreasury.ui.components.ShimmerBox
 import com.mready.mtgtreasury.ui.home.DescriptionField
 import com.mready.mtgtreasury.ui.theme.BottomBarColor
 import com.mready.mtgtreasury.ui.theme.BoxColor
+import com.mready.mtgtreasury.ui.theme.LegalChipColor
+import com.mready.mtgtreasury.ui.theme.NotLegalChipColor
 import com.mready.mtgtreasury.ui.theme.interFamily
 import kotlin.reflect.full.memberProperties
 
@@ -73,11 +76,10 @@ fun CardScreen(
 
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
-    val screenWidth = configuration.screenWidthDp.dp
 
     LaunchedEffect(key1 = id) {
-        viewModel.getCard("4ec318c6-b718-436f-b9e8-e0c6154e5010")
-//        viewModel.getCard(id)
+//        viewModel.getCard("4ec318c6-b718-436f-b9e8-e0c6154e5010")
+        viewModel.getCard(id)
     }
     Box(modifier = modifier.fillMaxSize()) {
         when (val currentState = uiState) {
@@ -172,10 +174,11 @@ fun SheetContent(
     screenHeight: Dp
 ) {
     val scrollState = rememberScrollState()
-
+//    72 dp for the top bar + buttons
     Column(
         modifier = modifier
-            .heightIn(max = screenHeight - 72.dp)
+            .padding(bottom = 30.dp)
+            .heightIn(max = screenHeight - 72.dp - 30.dp)
             .verticalScroll(state = scrollState)
     ) {
         Row(
@@ -218,18 +221,17 @@ fun SheetContent(
 
         OracleText(
             modifier = Modifier
-                .padding(horizontal = 20.dp)
-                .padding(bottom = 8.dp),
+                .padding(horizontal = 20.dp),
             oracleText = card.oracleText
         )
 
         Text(
             modifier = Modifier
-                .padding(bottom = 8.dp, start = 20.dp)
+                .padding(bottom = 8.dp, start = 20.dp, top = 24.dp)
                 .align(Alignment.Start),
             text = "Additional Info",
             fontSize = 14.sp,
-            color = Color.Gray,
+            color = Color.LightGray,
             fontWeight = FontWeight.SemiBold,
         )
 
@@ -237,39 +239,60 @@ fun SheetContent(
             modifier = Modifier.padding(start = 20.dp),
             key = "Artist",
             value = card.artist,
-            keyColor = Color.Gray
+            keyColor = Color.LightGray
         )
 
         DescriptionField(
             modifier = Modifier.padding(start = 20.dp),
             key = "Rank",
             value = card.edhRank.toString(),
-            keyColor = Color.Gray
+            keyColor = Color.LightGray
         )
 
         DescriptionField(
             modifier = Modifier.padding(start = 20.dp),
             key = "Release",
             value = card.releaseDate.formatReleaseDate(),
-            keyColor = Color.Gray
+            keyColor = Color.LightGray
         )
 
-        Column {
-            CardLegalities::class.memberProperties.forEach { property ->
-                val value = property.get(card.legalities) as? String ?: "N/A"
-                Row {
-                    Text(
-                        modifier = Modifier
-                            .padding(bottom = 8.dp, start = 20.dp),
-                        text = property.name.uppercase(),
-                        fontSize = 12.sp,
-                        color = Color.Gray,
-                        fontWeight = FontWeight.SemiBold,
-                    )
+        Text(
+            modifier = Modifier
+                .padding(bottom = 8.dp,top = 24.dp, start = 20.dp)
+                .align(Alignment.Start),
+            text = "Legalities",
+            fontSize = 14.sp,
+            color = Color.LightGray,
+            fontWeight = FontWeight.SemiBold,
+        )
 
-                    LegalChip(legal = value)
+        Column(Modifier.fillMaxWidth()) {
+            CardLegalities::class.memberProperties.reversed().chunked(2).forEach { pair ->
+                Row(
+                    modifier = Modifier
+                        .padding(bottom = 8.dp, start = 20.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    pair.getOrNull(0)?.let { property ->
+                        val value = property.get(card.legalities) as? String ?: "N/A"
+                        LegalModeItem(
+                            modifier = Modifier.weight(1f).padding(end = 20.dp),
+                            propertyName = property.name,
+                            legal = value
+                        )
+                    }
+
+                    // Display the second property in the pair (if it exists)
+                    pair.getOrNull(1)?.let { property ->
+                        val value = property.get(card.legalities) as? String ?: "N/A"
+                        LegalModeItem(
+                            modifier = Modifier.weight(1f),
+                            propertyName = property.name,
+                            legal = value
+                        )
+                    }
                 }
-
             }
         }
     }
@@ -326,15 +349,59 @@ fun OracleText(
 }
 
 @Composable
+fun LegalModeItem(
+    modifier: Modifier = Modifier,
+    propertyName: String,
+    legal: String
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            modifier = Modifier
+                .padding(bottom = 8.dp, end = 8.dp),
+            text = propertyName.uppercase(),
+            fontSize = 10.sp,
+            color = Color.LightGray,
+            fontWeight = FontWeight.SemiBold,
+        )
+
+        Box(
+            modifier = Modifier
+                .width(80.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(if (legal == "legal") LegalChipColor else NotLegalChipColor),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = legal.split("_").joinToString(" ").uppercase(),
+                fontSize = 8.sp,
+                color = Color.White,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+    }
+}
+
+@Composable
 fun LegalChip(
     modifier: Modifier = Modifier,
     legal: String
 ) {
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(if (legal == "legal") Color.Green else Color.LightGray)
+            .width(100.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(if (legal == "legal") LegalChipColor else NotLegalChipColor)
+            .padding(vertical = 4.dp),
+        contentAlignment = Alignment.Center
     ) {
-        Text(text = legal.split("_").joinToString(" ").uppercase())
+        Text(
+            text = legal.split("_").joinToString(" ").uppercase(),
+            fontSize = 12.sp,
+            color = Color.White
+        )
     }
 }

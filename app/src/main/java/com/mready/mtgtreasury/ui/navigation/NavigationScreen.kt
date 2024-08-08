@@ -79,46 +79,45 @@ fun NavigationScreen(
             .fillMaxSize(),
         containerColor = MainBackgroundColor,
         bottomBar = {
-            if (true) {
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
-                        .background(BottomBarColor)
-                        .padding(horizontal = 4.dp)
-                        .padding(top = 12.dp)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .navigationBarsPadding()
-                            .padding(bottom = 10.dp)
-                            .padding(horizontal = 32.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        navigationSections.forEachIndexed { index, section ->
-                            NavBarItem(
-                                modifier = Modifier
-                                    .padding(bottom = if (index == 0 || index == 3) 0.dp else 0.dp),
-                                isSelected = selectedIndex == index,
-                                iconId = if (selectedIndex == index) {
-                                    navIcons[index].second
-                                } else {
-                                    navIcons[index].first
-                                },
-                                onClick = {
-                                    selectedIndex = index
-                                    navController.navigate(section) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                }
-                            )
 
-                        }
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
+                    .background(BottomBarColor)
+                    .padding(horizontal = 4.dp)
+                    .padding(top = 12.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .navigationBarsPadding()
+                        .padding(bottom = 10.dp)
+                        .padding(horizontal = 32.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    navigationSections.forEachIndexed { index, section ->
+                        NavBarItem(
+                            modifier = Modifier
+                                .padding(bottom = if (index == 0 || index == 3) 0.dp else 0.dp),
+                            isSelected = selectedIndex == index,
+                            iconId = if (selectedIndex == index) {
+                                navIcons[index].second
+                            } else {
+                                navIcons[index].first
+                            },
+                            onClick = {
+                                selectedIndex = index
+                                navController.navigate(section) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            }
+                        )
+
                     }
                 }
             }
@@ -128,7 +127,7 @@ fun NavigationScreen(
             modifier = Modifier
                 .padding(
                     top = pad.calculateTopPadding(),
-                    bottom = pad.calculateBottomPadding() - 12.dp
+                    bottom = pad.calculateBottomPadding() - 28.dp
                 )
                 .fillMaxSize(),
             navController = navController,

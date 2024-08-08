@@ -37,3 +37,7 @@ val MainBackgroundColor  = Color(0xFF090809)
 val BoxColor = Color(0xFF2A2A2A)
 //val BoxColor = Color(0xFF161616)
 val BottomBarColor = Color(0xFF181719)
+
+// general app
+val LegalChipColor = Color(0xFF6E9D3E)
+val NotLegalChipColor = Color(0xFFB0BEC5)
