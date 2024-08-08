@@ -4,15 +4,8 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -21,7 +14,6 @@ import com.mready.mtgtreasury.ui.card.CardScreen
 import com.mready.mtgtreasury.ui.card.CardScreenDestination
 import com.mready.mtgtreasury.ui.navigation.NavigationScreen
 import com.mready.mtgtreasury.ui.navigation.NavigationScreenDestination
-import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
 
 @Composable
 fun RootScreen(modifier: Modifier = Modifier) {
@@ -36,7 +28,7 @@ fun RootScreen(modifier: Modifier = Modifier) {
             enterTransition = {
                 slideIntoContainer(
                     AnimatedContentTransitionScope.SlideDirection.Start,
-                    tween(700)
+                    tween(500)
                 )
             },
             exitTransition = {
@@ -60,7 +52,7 @@ fun RootScreen(modifier: Modifier = Modifier) {
 
         ) {
             composable<NavigationScreenDestination> {
-                NavigationScreen(navigateToCard = { id ->
+                NavigationScreen(navigateToCard = { id->
                     navController.navigate(
                         CardScreenDestination(id)
                     )

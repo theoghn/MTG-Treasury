@@ -161,16 +161,23 @@ fun NavigationScreen(
         ) {
             composable<HomeScreenDestination> {
                 HomeScreen(
-                    onCardClick = { id -> navigateToCard(id) }
+                    onCardClick = { id ->
+                        navigateToCard(
+                            id
+                        )
+                    }
                 )
             }
 
             composable<SearchScreenDestination> {
-                SearchScreen(onCardClick = { id -> navigateToCard(id) })
+                SearchScreen(onCardClick = { id ->
+                    navigateToCard(
+                        id
+                    )
+                })
             }
 
             composable<DecksScreenDestination> {
-
                 DecksScreen()
             }
 

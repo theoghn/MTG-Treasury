@@ -1,9 +1,9 @@
 package com.mready.mtgtreasury.models.card
 
+import kotlinx.serialization.Serializable
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
-
 data class MtgCard(
     val id: String,
     val name: String,

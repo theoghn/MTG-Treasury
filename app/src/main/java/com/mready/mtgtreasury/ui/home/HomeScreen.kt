@@ -87,8 +87,16 @@ fun HomeScreen(
                     modifier = Modifier.padding(top = 12.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(text = "Current collection value", fontSize = 20.sp, color = Color.White)
-                    Text(text = "$38.46", fontSize = 40.sp, color = Color.White)
+                    Text(
+                        text = "Current collection value",
+                        fontSize = 20.sp,
+                        color = Color.White,
+                    )
+                    Text(
+                        text = "$38.46",
+                        fontSize = 40.sp,
+                        color = Color.White,
+                    )
                 }
 
 
@@ -99,7 +107,7 @@ fun HomeScreen(
                     text = "Card of the Day",
                     fontSize = 20.sp,
                     color = Color.White,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
 
                 Row(
@@ -137,7 +145,7 @@ fun HomeScreen(
                                 overflow = TextOverflow.Ellipsis,
                                 fontWeight = FontWeight.SemiBold,
                                 color = AccentColor,
-                                textAlign = TextAlign.Center
+                                textAlign = TextAlign.Center,
                             )
 
                             Row(
@@ -158,7 +166,7 @@ fun HomeScreen(
                                 text = "${card?.prices?.eur ?: "0.0"} €",
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color.White
+                                color = Color.White,
                             )
 
                             DescriptionField(
@@ -175,7 +183,7 @@ fun HomeScreen(
                                     text = "Foil ",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Normal,
-                                    color = Color.LightGray
+                                    color = Color.LightGray,
                                 )
                                 Image(
                                     modifier = Modifier.size(18.dp),
@@ -209,7 +217,7 @@ fun HomeScreen(
                                 .size(36.dp)
                                 .clip(CircleShape)
                                 .align(Alignment.BottomEnd),
-                            onClick = { card?.id?.let { onCardClick (it) } },
+                            onClick = { card?.id?.let { onCardClick(it) } },
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,
@@ -227,7 +235,7 @@ fun HomeScreen(
                     text = "Most Valuable Cards",
                     fontSize = 20.sp,
                     color = Color.White,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
 
                 Column(
@@ -257,7 +265,7 @@ fun HomeScreen(
                                     fontSize = 12.sp,
                                     color = Color.White,
                                     textAlign = TextAlign.Center,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Bold,
                                 )
                             }
 
@@ -304,7 +312,7 @@ fun HomeScreen(
                                     text = "${mtgCard.prices.eur} €",
                                     fontSize = 24.sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = AccentColor
+                                    color = AccentColor,
                                 )
 
                             }
@@ -322,7 +330,7 @@ fun HomeScreen(
                         text = "Newest Sets",
                         fontSize = 20.sp,
                         color = Color.White,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
                     )
                 }
 
@@ -353,7 +361,7 @@ fun HomeScreen(
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = Color.White,
+                                    color = Color.White
                                 )
 
                                 DescriptionField(
@@ -433,7 +441,6 @@ fun SetName(
         color = Color.LightGray
     )
 }
-
 
 
 //@Preview

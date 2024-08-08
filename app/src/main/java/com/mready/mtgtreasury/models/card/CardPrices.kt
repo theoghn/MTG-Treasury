@@ -1,6 +1,6 @@
 package com.mready.mtgtreasury.models.card
 
-data class CardPrices (
+data class CardPrices(
     val usd: String,
     val usdFoil: String,
     val usdEtched: String,
