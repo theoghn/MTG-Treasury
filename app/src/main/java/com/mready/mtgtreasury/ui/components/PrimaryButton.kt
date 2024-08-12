@@ -33,7 +33,7 @@ fun PrimaryButton(
         onClick = { onClick() },
     ) {
         Box(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier,
             contentAlignment = Alignment.Center,
         ) {
             content()

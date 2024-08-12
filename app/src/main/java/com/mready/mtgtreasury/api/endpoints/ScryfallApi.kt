@@ -57,6 +57,14 @@ class ScryfallApi @Inject constructor(
         }
     }
 
+//    suspend fun getSymbols(): List<String> {
+//        return apiClient.get(
+//            endpoint = "symbology"
+//        ) { json ->
+//            json["data"].array.map { it["symbol"].string.split("{","}")[1] }
+//        }
+//    }
+
 }
 
 private fun Json.toCard() = MtgCard(
