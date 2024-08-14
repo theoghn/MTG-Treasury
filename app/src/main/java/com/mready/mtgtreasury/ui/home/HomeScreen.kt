@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -88,7 +89,7 @@ fun HomeScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Current collection value",
+                        text = stringResource(id = R.string.home_collection_value),
                         fontSize = 20.sp,
                         color = Color.White,
                     )
@@ -104,7 +105,7 @@ fun HomeScreen(
                     modifier = Modifier
                         .padding(bottom = 8.dp, top = 20.dp, start = 32.dp)
                         .align(Alignment.Start),
-                    text = "Card of the Day",
+                    text = stringResource(id = R.string.home_card_of_the_day),
                     fontSize = 20.sp,
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
@@ -139,7 +140,7 @@ fun HomeScreen(
                             Text(
                                 modifier = Modifier
                                     .fillMaxWidth(),
-                                text = card?.name ?: "Mysterious Card",
+                                text = card?.name ?: stringResource(R.string.home_mysterious_card),
                                 fontSize = 18.sp,
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis,
@@ -154,7 +155,7 @@ fun HomeScreen(
                                     .padding(horizontal = 4.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                SetName(
+                                CardSetName(
                                     setName = card?.setName ?: "",
                                     setAbbreviation = card?.setAbbreviation ?: "",
                                     fontSize = 10,
@@ -163,7 +164,7 @@ fun HomeScreen(
 
                             Text(
                                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp),
-                                text = "${card?.prices?.eur ?: "0.0"} €",
+                                text = stringResource(R.string.euro, card?.prices?.eur ?: "0.0"),
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color.White,
@@ -171,8 +172,8 @@ fun HomeScreen(
 
                             DescriptionField(
                                 modifier = Modifier.padding(horizontal = 4.dp),
-                                key = "Rank",
-                                value = "${card?.edhRank ?: 0}"
+                                firstPart = stringResource(R.string.text_rank),
+                                secondPart = "${card?.edhRank ?: 0}"
                             )
 
                             Row(
@@ -180,7 +181,7 @@ fun HomeScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "Foil ",
+                                    text = stringResource(R.string.text_foil),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Normal,
                                     color = Color.LightGray,
@@ -200,14 +201,14 @@ fun HomeScreen(
 
                             DescriptionField(
                                 modifier = Modifier.padding(horizontal = 4.dp),
-                                key = "Legal",
-                                value = "${card?.getNumberOfLegalFormats() ?: 99} / 14"
+                                firstPart = stringResource(R.string.text_legal),
+                                secondPart = "${card?.getNumberOfLegalFormats() ?: 99} / 14"
                             )
 
                             DescriptionField(
                                 modifier = Modifier.padding(horizontal = 4.dp),
-                                key = "Release",
-                                value = card?.releaseDate?.formatReleaseDate() ?: "unknown"
+                                firstPart = stringResource(R.string.text_release),
+                                secondPart = card?.releaseDate?.formatReleaseDate() ?: stringResource(R.string.text_unknown)
                             )
                         }
 
@@ -232,7 +233,7 @@ fun HomeScreen(
                     modifier = Modifier
                         .padding(bottom = 8.dp, top = 20.dp, start = 32.dp)
                         .align(Alignment.Start),
-                    text = "Most Valuable Cards",
+                    text = stringResource(R.string.home_most_valuable_cards),
                     fontSize = 20.sp,
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
@@ -300,7 +301,7 @@ fun HomeScreen(
                                         .padding(horizontal = 4.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    SetName(
+                                    CardSetName(
                                         setName = mtgCard.setName,
                                         setAbbreviation = mtgCard.setAbbreviation,
                                         fontSize = 10,
@@ -309,7 +310,7 @@ fun HomeScreen(
 
                                 Text(
                                     modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp),
-                                    text = "${mtgCard.prices.eur} €",
+                                    text = stringResource(id = R.string.euro, mtgCard.prices.eur),
                                     fontSize = 24.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = AccentColor,
@@ -327,7 +328,7 @@ fun HomeScreen(
                 ) {
                     Text(
                         modifier = Modifier.padding(top = 16.dp, bottom = 8.dp, start = 32.dp),
-                        text = "Newest Sets",
+                        text = stringResource(R.string.home_newest_sets),
                         fontSize = 20.sp,
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
@@ -366,14 +367,14 @@ fun HomeScreen(
 
                                 DescriptionField(
                                     modifier = Modifier.padding(horizontal = 8.dp),
-                                    key = "Cards",
-                                    value = "${set.cardCount}"
+                                    firstPart = stringResource(R.string.text_cards),
+                                    secondPart = "${set.cardCount}"
                                 )
 
                                 DescriptionField(
                                     modifier = Modifier.padding(horizontal = 8.dp),
-                                    key = "Release",
-                                    value = set.releaseDate.formatReleaseDate()
+                                    firstPart = stringResource(R.string.text_release),
+                                    secondPart = set.releaseDate.formatReleaseDate()
                                 )
                             }
                         }
@@ -387,17 +388,17 @@ fun HomeScreen(
 @Composable
 fun DescriptionField(
     modifier: Modifier = Modifier,
-    key: String,
-    value: String,
-    keyColor: Color = Color.LightGray,
+    firstPart: String,
+    secondPart: String,
+    secondPartColor: Color = Color.LightGray,
     fontSize: TextUnit = 12.sp
 ) {
     Text(
         modifier = modifier,
         text =
         buildAnnotatedString {
-            withStyle(style = SpanStyle(color = keyColor)) {
-                append("$key ")
+            withStyle(style = SpanStyle(color = secondPartColor)) {
+                append("$firstPart ")
             }
             withStyle(
                 style = SpanStyle(
@@ -405,7 +406,7 @@ fun DescriptionField(
                     color = Color.White
                 )
             ) {
-                append(value)
+                append(secondPart)
             }
         },
         fontSize = fontSize,
@@ -415,7 +416,7 @@ fun DescriptionField(
 }
 
 @Composable
-fun SetName(
+fun CardSetName(
     setName: String,
     setAbbreviation: String,
     iconSize: Int = 16,

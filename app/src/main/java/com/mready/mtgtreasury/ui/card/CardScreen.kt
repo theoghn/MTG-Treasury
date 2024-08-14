@@ -38,6 +38,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.buildAnnotatedString
@@ -47,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.mready.mtgtreasury.R
 import com.mready.mtgtreasury.models.card.CardLegalities
 import com.mready.mtgtreasury.models.card.MtgCard
 import com.mready.mtgtreasury.models.card.formatReleaseDate
@@ -225,7 +227,7 @@ fun SheetContent(
             modifier = Modifier
                 .padding(bottom = 8.dp, start = 20.dp, top = 24.dp)
                 .align(Alignment.Start),
-            text = "Additional Info",
+            text = stringResource(R.string.text_additional_info),
             fontSize = 14.sp,
             color = Color.LightGray,
             fontWeight = FontWeight.SemiBold,
@@ -233,30 +235,30 @@ fun SheetContent(
 
         DescriptionField(
             modifier = Modifier.padding(start = 20.dp),
-            key = "Artist",
-            value = card.artist,
-            keyColor = Color.LightGray
+            firstPart = stringResource(R.string.text_artist),
+            secondPart = card.artist,
+            secondPartColor = Color.LightGray
         )
 
         DescriptionField(
             modifier = Modifier.padding(start = 20.dp),
-            key = "Rank",
-            value = card.edhRank.toString(),
-            keyColor = Color.LightGray
+            firstPart = stringResource(R.string.text_rank),
+            secondPart = card.edhRank.toString(),
+            secondPartColor = Color.LightGray
         )
 
         DescriptionField(
             modifier = Modifier.padding(start = 20.dp),
-            key = "Release",
-            value = card.releaseDate.formatReleaseDate(),
-            keyColor = Color.LightGray
+            firstPart = stringResource(R.string.text_release),
+            secondPart = card.releaseDate.formatReleaseDate(),
+            secondPartColor = Color.LightGray
         )
 
         Text(
             modifier = Modifier
-                .padding(bottom = 8.dp,top = 24.dp, start = 20.dp)
+                .padding(bottom = 8.dp, top = 24.dp, start = 20.dp)
                 .align(Alignment.Start),
-            text = "Legalities",
+            text = stringResource(R.string.text_legalities),
             fontSize = 14.sp,
             color = Color.LightGray,
             fontWeight = FontWeight.SemiBold,
@@ -273,7 +275,9 @@ fun SheetContent(
                     pair.getOrNull(0)?.let { property ->
                         val value = property.get(card.legalities) as? String ?: "N/A"
                         LegalModeItem(
-                            modifier = Modifier.weight(1f).padding(end = 20.dp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(end = 20.dp),
                             propertyName = property.name,
                             legal = value
                         )
