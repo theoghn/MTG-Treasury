@@ -25,16 +25,22 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.AbsoluteCutCornerShape
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.ModalBottomSheet
@@ -42,6 +48,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,16 +61,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.mready.mtgtreasury.R
 import com.mready.mtgtreasury.ui.components.AsyncSvg
 import com.mready.mtgtreasury.ui.components.PrimaryButton
 import com.mready.mtgtreasury.ui.theme.AccentColor
+import com.mready.mtgtreasury.ui.theme.BottomBarColor
 import com.mready.mtgtreasury.ui.theme.BoxColor
+import com.mready.mtgtreasury.ui.theme.LegalChipColor
 import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
 
 enum class SheetFilters {
@@ -175,34 +185,48 @@ object SearchFilterValues {
 
 }
 
+data class FilterProperties(
+    val selectedCardColors: List<String>
+)
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
     modifier: Modifier = Modifier,
+    viewModel: SearchScreenViewModel = hiltViewModel(),
     onCardClick: (String) -> Unit
 ) {
     var nameSearchField by rememberSaveable {
         mutableStateOf("")
     }
-    var descriptionSearchField by rememberSaveable {
-        mutableStateOf("")
-    }
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    var isBottomSheetVisible by rememberSaveable {
-        mutableStateOf(false)
-    }
-    var isFilterBottomSheetVisible by rememberSaveable {
-        mutableStateOf(false)
-    }
-    var selectedFilter by rememberSaveable {
-        mutableStateOf(SheetFilters.TYPE)
-    }
+    val filterBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
+    var isBottomSheetVisible by rememberSaveable { mutableStateOf(false) }
+    var isFilterBottomSheetVisible by rememberSaveable { mutableStateOf(false) }
+
+    var selectedFilter by rememberSaveable { mutableStateOf(SheetFilters.TYPE) }
+
+    var selectedCardColors by rememberSaveable { mutableStateOf(listOf<String>()) }
+    var selectedCardManaCosts by rememberSaveable { mutableStateOf(listOf<String>()) }
+    var selectedCardRarities by rememberSaveable { mutableStateOf(listOf<String>()) }
+    var selectedCardTypes by rememberSaveable { mutableStateOf(listOf<String>()) }
+    var selectedCardSuperTypes by rememberSaveable { mutableStateOf(listOf<String>()) }
+
+    val manaCosts by viewModel.manaCosts.collectAsState()
+
+//    var filterProperties by rememberSaveable { mutableStateOf(FilterProperties(selectedCardColors = emptyList())) }
     val scope = rememberCoroutineScope()
 
-    val configuration = LocalConfiguration.current
-    val screenHeight = configuration.screenHeightDp.dp
+//    val configuration = LocalConfiguration.current
+//    val screenHeight = configuration.screenHeightDp.dp
+
+    LaunchedEffect(selectedFilter) {
+        if (selectedFilter == SheetFilters.MANA) {
+            viewModel.getCosts()
+        }
+    }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -293,46 +317,6 @@ fun SearchScreen(
 
                 Text(
                     modifier = Modifier.padding(vertical = 16.dp),
-                    text = "Card Text & Name",
-                    fontSize = 16.sp,
-                    color = Color.White,
-                    fontWeight = FontWeight.SemiBold,
-                )
-
-                Text(
-                    text = "Name",
-                    fontSize = 14.sp,
-                    color = Color.LightGray,
-                )
-
-                BaseTextField(
-                    modifier = Modifier
-                        .padding(bottom = 8.dp)
-                        .height(44.dp),
-                    searchField = nameSearchField,
-                    placeholder = "Text in the Name",
-                    updateField = { nameSearchField = it },
-                    resetField = { nameSearchField = "" }
-                )
-
-                Text(
-                    text = "Description",
-                    fontSize = 14.sp,
-                    color = Color.LightGray,
-                )
-
-                BaseTextField(
-                    modifier = Modifier
-                        .padding(bottom = 8.dp)
-                        .height(44.dp),
-                    searchField = descriptionSearchField,
-                    placeholder = "Text in the description",
-                    updateField = { descriptionSearchField = it },
-                    resetField = { descriptionSearchField = "" }
-                )
-
-                Text(
-                    modifier = Modifier.padding(vertical = 16.dp),
                     text = "Type & Rarity",
                     fontSize = 16.sp,
                     color = Color.White,
@@ -380,7 +364,6 @@ fun SearchScreen(
         }
     }
 
-    val filterBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     if (isFilterBottomSheetVisible) {
         ModalBottomSheet(
@@ -395,103 +378,50 @@ fun SearchScreen(
         ) {
             when (selectedFilter) {
                 SheetFilters.TYPE -> {
-                    FilterBottomSheet(
+                    TypeBottomSheet(
                         title = "Type",
-                        hideFilter = {
-                            isFilterBottomSheetVisible = false
-                        }
-                    ) {
-                        Box(modifier = Modifier.height(400.dp))
-                        {
-                            Text(text = "x")
-                        }
-                    }
+                        listValues = SearchFilterValues.TYPE,
+                        selectedCardTypes = selectedCardTypes,
+                        hideFilter = { isFilterBottomSheetVisible = false },
+                        saveChanges = { selectedCardTypes = it }
+                    )
                 }
 
                 SheetFilters.SUPERTYPE -> {
-                    FilterBottomSheet(
+                    TypeBottomSheet(
                         title = "Super Type",
-                        hideFilter = { isFilterBottomSheetVisible = false }
-                    ) {
-                        Box(modifier = Modifier.height(400.dp))
-                        {
-                            Text(text = "x")
-                        }
-                    }
+                        listValues = SearchFilterValues.SUPERTYPE,
+                        selectedCardTypes = selectedCardSuperTypes,
+                        hideFilter = { isFilterBottomSheetVisible = false },
+                        saveChanges = { selectedCardSuperTypes = it }
+                    )
                 }
 
                 SheetFilters.RARITY -> {
-                    FilterBottomSheet(
+                    TypeBottomSheet(
                         title = "Rarity",
-                        hideFilter = { isFilterBottomSheetVisible = false }
-                    ) {
-                        Box(modifier = Modifier.height(400.dp))
-                        {
-                            Text(text = "RARITY")
-                        }
-                    }
+                        listValues = SearchFilterValues.RARITY,
+                        selectedCardTypes = selectedCardRarities,
+                        hideFilter = { isFilterBottomSheetVisible = false },
+                        saveChanges = { selectedCardRarities = it }
+                    )
                 }
 
                 SheetFilters.COLOR -> {
-                    FilterBottomSheet(
-                        title = "Color",
-                        hideFilter = { isFilterBottomSheetVisible = false }
-                    ) {
-                        Column(modifier = Modifier.fillMaxWidth())
-                        {
-                            Text(
-                                modifier = Modifier
-                                    .padding(16.dp)
-                                    .weight(1f, false),
-                                text = "Select Mana Cost",
-                                fontSize = 16.sp,
-                                color = Color.White,
-                                fontWeight = FontWeight.SemiBold,
-                            )
-                            LazyVerticalGrid(columns = GridCells.Fixed(5)) {
-                                items(SearchFilterValues.COLOR) { color ->
-                                    AsyncSvg(
-                                        modifier = Modifier
-                                            .padding(vertical = 8.dp)
-                                            .size(30.dp),
-                                        uri = "https://svgs.scryfall.io/card-symbols/${color}.svg"
-                                    )
-                                }
-                            }
-                        }
-                    }
+                    ColorBottomSheet(
+                        selectedCardColors = selectedCardColors,
+                        hideFilter = { isFilterBottomSheetVisible = false },
+                        saveChanges = { selectedCardColors = it }
+                    )
                 }
 
                 SheetFilters.MANA -> {
-                    FilterBottomSheet(
-                        title = "Mana Cost",
-                        hideFilter = { isFilterBottomSheetVisible = false }
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(weight = 1f, fill = false)
-                        )
-                        {
-                            Text(
-                                modifier = Modifier.padding(16.dp),
-                                text = "Select Mana Cost",
-                                fontSize = 16.sp,
-                                color = Color.White,
-                                fontWeight = FontWeight.SemiBold,
-                            )
-                            LazyVerticalGrid(columns = GridCells.Fixed(5)) {
-                                items(SearchFilterValues.MANA_COST.keys.toList()) { manaCost ->
-                                    AsyncSvg(
-                                        modifier = Modifier
-                                            .padding(vertical = 8.dp)
-                                            .size(30.dp),
-                                        uri = "https://svgs.scryfall.io/card-symbols/${SearchFilterValues.MANA_COST[manaCost]}.svg"
-                                    )
-                                }
-                            }
-                        }
-                    }
+                    ManaBottomSheet(
+                        hideFilter = { isFilterBottomSheetVisible = false },
+                        saveChanges = { selectedCardManaCosts = it },
+                        manaCosts = manaCosts,
+                        selectedCardManaCosts = selectedCardManaCosts,
+                    )
                 }
             }
         }
@@ -560,6 +490,7 @@ fun FilterBottomSheet(
     modifier: Modifier = Modifier,
     title: String,
     hideFilter: () -> Unit,
+    saveChanges: () -> Unit,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Box(
@@ -618,7 +549,7 @@ fun FilterBottomSheet(
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                 border = BorderStroke(1.dp, AccentColor.copy(alpha = 0.5f)),
                 contentPadding = PaddingValues(),
-                onClick = { },
+                onClick = { hideFilter() },
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
@@ -638,7 +569,11 @@ fun FilterBottomSheet(
                 modifier = Modifier
                     .weight(1f)
                     .height(50.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(12.dp)),
+                onClick = {
+                    saveChanges()
+                    hideFilter()
+                }
             ) {
                 Text(
                     text = "Apply Filters",
@@ -686,5 +621,218 @@ fun FilterItem(
             contentDescription = null,
             tint = AccentColor
         )
+    }
+}
+
+
+@Composable
+fun ManaBottomSheet(
+    hideFilter: () -> Unit,
+    selectedCardManaCosts: List<String>,
+    manaCosts: Map<String, String>,
+    saveChanges: (List<String>) -> Unit,
+) {
+    var temporaryCardManaCosts by rememberSaveable { mutableStateOf(selectedCardManaCosts) }
+
+    FilterBottomSheet(
+        modifier = Modifier.fillMaxHeight(0.7f),
+        title = "Mana Cost",
+        hideFilter = { hideFilter() },
+        saveChanges = { saveChanges(temporaryCardManaCosts) }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(weight = 1f, fill = false)
+        )
+        {
+            Text(
+                modifier = Modifier.padding(16.dp),
+                text = "Select Mana Cost",
+                fontSize = 16.sp,
+                color = Color.White,
+                fontWeight = FontWeight.SemiBold,
+            )
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(5),
+            ) {
+                items(manaCosts.keys.toList()) { manaCost ->
+                    Box(
+                        modifier = Modifier
+                            .padding(vertical = 8.dp)
+                            .size(30.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        BadgedBox(
+                            modifier = Modifier
+                                .size(30.dp),
+                            badge = {
+                                if (manaCost in temporaryCardManaCosts) {
+                                    Badge(
+                                        modifier = Modifier.size(16.dp),
+                                        containerColor = LegalChipColor
+                                    )
+                                    {
+                                        Icon(
+                                            imageVector = Icons.Default.Done,
+                                            contentDescription = null
+                                        )
+                                    }
+                                }
+                            }
+                        ) {
+                            AsyncSvg(
+                                modifier = Modifier
+                                    .clickable {
+                                        if (manaCost in temporaryCardManaCosts) {
+                                            temporaryCardManaCosts =
+                                                temporaryCardManaCosts - manaCost
+                                        } else {
+                                            temporaryCardManaCosts =
+                                                temporaryCardManaCosts + manaCost
+                                        }
+
+                                    },
+                                uri = "https://svgs.scryfall.io/card-symbols/${SearchFilterValues.MANA_COST[manaCost]}.svg"
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ColorBottomSheet(
+    selectedCardColors: List<String>,
+    hideFilter: () -> Unit,
+    saveChanges: (List<String>) -> Unit
+) {
+    var temporaryCardColors by rememberSaveable { mutableStateOf(selectedCardColors) }
+
+    FilterBottomSheet(
+        title = "Color",
+        hideFilter = { hideFilter() },
+        saveChanges = { saveChanges(temporaryCardColors) }
+    ) {
+        Column(modifier = Modifier.fillMaxWidth())
+        {
+            Text(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .weight(1f, false),
+                text = "Select Mana Cost",
+                fontSize = 16.sp,
+                color = Color.White,
+                fontWeight = FontWeight.SemiBold,
+            )
+            LazyVerticalGrid(columns = GridCells.Fixed(5)) {
+                items(SearchFilterValues.COLOR) { color ->
+                    Box(
+                        modifier = Modifier
+                            .padding(vertical = 8.dp)
+                            .size(30.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        BadgedBox(
+                            modifier = Modifier
+                                .size(30.dp),
+                            badge = {
+                                if (color in temporaryCardColors) {
+                                    Badge(
+                                        modifier = Modifier.size(16.dp),
+                                        containerColor = LegalChipColor
+                                    )
+                                    {
+                                        Icon(
+                                            imageVector = Icons.Default.Done,
+                                            contentDescription = null
+                                        )
+                                    }
+                                }
+                            }
+                        ) {
+                            AsyncSvg(
+                                modifier = Modifier
+                                    .clickable {
+                                        temporaryCardColors = if (color in temporaryCardColors) {
+                                            temporaryCardColors - color
+                                        } else {
+                                            temporaryCardColors + color
+                                        }
+                                    },
+                                uri = "https://svgs.scryfall.io/card-symbols/${color}.svg"
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun TypeBottomSheet(
+    listValues : List<String>,
+    selectedCardTypes: List<String>,
+    title: String,
+    hideFilter: () -> Unit,
+    saveChanges: (List<String>) -> Unit
+) {
+    var temporaryCardTypes by rememberSaveable { mutableStateOf(selectedCardTypes) }
+
+    FilterBottomSheet(
+        modifier = Modifier.fillMaxHeight(0.7f),
+        title = title,
+        hideFilter = { hideFilter() },
+        saveChanges = { saveChanges(temporaryCardTypes) }
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color(0xFF474554))
+                .verticalScroll(rememberScrollState())
+                .weight(weight = 1f, fill = false)
+        ) {
+            listValues.forEach { type ->
+                Column {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                            .clickable {
+                                temporaryCardTypes = if (type in temporaryCardTypes) {
+                                    temporaryCardTypes - type
+                                } else {
+                                    temporaryCardTypes + type
+                                }
+                                println(temporaryCardTypes)
+                            }
+                            .padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = type,
+                            fontSize = 16.sp,
+                            color = Color.White,
+                        )
+                        if(type in temporaryCardTypes) {
+                            Icon(
+                                imageVector = Icons.Default.Done,
+                                contentDescription = null,
+                                tint = AccentColor
+                            )
+                        }
+                    }
+
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 8.dp), thickness = 1.dp, color = Color.Gray)
+                }
+
+            }
+        }
     }
 }

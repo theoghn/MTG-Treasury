@@ -79,7 +79,6 @@ fun NavigationScreen(
             .fillMaxSize(),
         containerColor = MainBackgroundColor,
         bottomBar = {
-
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
@@ -98,8 +97,6 @@ fun NavigationScreen(
                 ) {
                     navigationSections.forEachIndexed { index, section ->
                         NavBarItem(
-                            modifier = Modifier
-                                .padding(bottom = if (index == 0 || index == 3) 0.dp else 0.dp),
                             isSelected = selectedIndex == index,
                             iconId = if (selectedIndex == index) {
                                 navIcons[index].second
@@ -117,7 +114,6 @@ fun NavigationScreen(
                                 }
                             }
                         )
-
                     }
                 }
             }
@@ -206,9 +202,3 @@ fun NavBarItem(
         )
     }
 }
-
-//@Preview()
-//@Composable
-//private fun NavBarItemPreview() {
-//    RootScreen()
-//}
