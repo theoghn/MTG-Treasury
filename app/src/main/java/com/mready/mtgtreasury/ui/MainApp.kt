@@ -16,7 +16,7 @@ import com.mready.mtgtreasury.ui.navigation.NavigationScreen
 import com.mready.mtgtreasury.ui.navigation.NavigationScreenDestination
 
 @Composable
-fun RootScreen(modifier: Modifier = Modifier) {
+fun MainApp(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
 
     Box(modifier = modifier.fillMaxSize()) {

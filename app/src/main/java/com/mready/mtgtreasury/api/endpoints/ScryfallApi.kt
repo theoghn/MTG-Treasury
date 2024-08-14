@@ -17,13 +17,10 @@ import javax.inject.Singleton
 class ScryfallApi @Inject constructor(
     private val apiClient: ScryfallApiClient
 ) {
-    val card = MutableStateFlow<MtgCard?>(null)
-
     suspend fun getRandomCard(): MtgCard {
         return apiClient.get(
             endpoint = "cards/random"
         ) { json ->
-            card.update { json.toCard() }
             json.toCard()
         }
     }
@@ -32,7 +29,6 @@ class ScryfallApi @Inject constructor(
         return apiClient.get(
             endpoint = "cards/$id"
         ) { json ->
-            card.update { json.toCard() }
             json.toCard()
         }
     }
