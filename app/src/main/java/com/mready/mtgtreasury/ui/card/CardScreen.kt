@@ -176,21 +176,21 @@ fun SheetContent(
     Column(
         modifier = modifier
             .padding(bottom = 30.dp)
+            .padding(horizontal = 20.dp)
             .heightIn(max = screenHeight - 72.dp - 30.dp)
             .verticalScroll(state = scrollState)
     ) {
-        Row(
-            modifier = Modifier
-                .padding(start = 20.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = card.name,
-                fontSize = 20.sp,
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-            )
+        Text(
+            text = card.name,
+            fontSize = 20.sp,
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+        )
 
+        Row(
+            modifier = Modifier.padding(vertical = 8.dp),
+            horizontalArrangement = Arrangement.Start
+        ) {
             card.manaCost.split("{", "}").forEach { color ->
                 println(color)
                 AsyncSvg(
@@ -202,7 +202,7 @@ fun SheetContent(
 
         Text(
             modifier = Modifier
-                .padding(bottom = 8.dp, start = 20.dp)
+                .padding(bottom = 8.dp)
                 .align(Alignment.Start),
             text = card.type,
             fontSize = 12.sp,
@@ -212,20 +212,17 @@ fun SheetContent(
 
         OracleText(
             modifier = Modifier
-                .padding(horizontal = 20.dp)
                 .padding(bottom = 8.dp),
             oracleText = card.oracleText
         )
 
         OracleText(
-            modifier = Modifier
-                .padding(horizontal = 20.dp),
             oracleText = card.oracleText
         )
 
         Text(
             modifier = Modifier
-                .padding(bottom = 8.dp, start = 20.dp, top = 24.dp)
+                .padding(bottom = 8.dp, top = 24.dp)
                 .align(Alignment.Start),
             text = stringResource(R.string.text_additional_info),
             fontSize = 14.sp,
@@ -234,21 +231,18 @@ fun SheetContent(
         )
 
         DescriptionField(
-            modifier = Modifier.padding(start = 20.dp),
             firstPart = stringResource(R.string.text_artist),
             secondPart = card.artist,
             secondPartColor = Color.LightGray
         )
 
         DescriptionField(
-            modifier = Modifier.padding(start = 20.dp),
             firstPart = stringResource(R.string.text_rank),
             secondPart = card.edhRank.toString(),
             secondPartColor = Color.LightGray
         )
 
         DescriptionField(
-            modifier = Modifier.padding(start = 20.dp),
             firstPart = stringResource(R.string.text_release),
             secondPart = card.releaseDate.formatReleaseDate(),
             secondPartColor = Color.LightGray
@@ -256,7 +250,7 @@ fun SheetContent(
 
         Text(
             modifier = Modifier
-                .padding(bottom = 8.dp, top = 24.dp, start = 20.dp)
+                .padding(bottom = 8.dp, top = 24.dp)
                 .align(Alignment.Start),
             text = stringResource(R.string.text_legalities),
             fontSize = 14.sp,
@@ -268,7 +262,7 @@ fun SheetContent(
             CardLegalities::class.memberProperties.reversed().chunked(2).forEach { pair ->
                 Row(
                     modifier = Modifier
-                        .padding(bottom = 8.dp, start = 20.dp),
+                        .padding(bottom = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {

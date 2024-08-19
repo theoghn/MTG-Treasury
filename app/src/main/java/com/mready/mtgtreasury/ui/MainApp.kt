@@ -52,11 +52,13 @@ fun MainApp(modifier: Modifier = Modifier) {
 
         ) {
             composable<NavigationScreenDestination> {
-                NavigationScreen(navigateToCard = { id->
-                    navController.navigate(
-                        CardScreenDestination(id)
-                    )
-                })
+                NavigationScreen(
+                    navigateToCard = { id ->
+                        navController.navigate(
+                            CardScreenDestination(id)
+                        )
+                    }
+                )
             }
 
             composable<CardScreenDestination> { backStackEntry ->

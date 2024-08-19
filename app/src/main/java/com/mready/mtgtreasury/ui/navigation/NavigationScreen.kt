@@ -1,5 +1,6 @@
 package com.mready.mtgtreasury.ui.navigation
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -25,10 +26,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.mready.mtgtreasury.R
-import com.mready.mtgtreasury.ui.card.CardScreenDestination
 import com.mready.mtgtreasury.ui.components.HexagonBox
 import com.mready.mtgtreasury.ui.decks.DecksScreen
 import com.mready.mtgtreasury.ui.decks.DecksScreenDestination
@@ -38,6 +38,8 @@ import com.mready.mtgtreasury.ui.profile.ProfileScreen
 import com.mready.mtgtreasury.ui.profile.ProfileScreenDestination
 import com.mready.mtgtreasury.ui.search.SearchScreen
 import com.mready.mtgtreasury.ui.search.SearchScreenDestination
+import com.mready.mtgtreasury.ui.search.filter.FilterSearchScreen
+import com.mready.mtgtreasury.ui.search.filter.FilterSearchScreenDestination
 import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
 import com.mready.mtgtreasury.ui.theme.BottomBarColor
 
@@ -48,7 +50,7 @@ fun NavigationScreen(
 ) {
     val navigationSections = listOf(
         HomeScreenDestination,
-        SearchScreenDestination,
+        FilterSearchScreenDestination(""),
         DecksScreenDestination,
         ProfileScreenDestination
     )
@@ -131,28 +133,27 @@ fun NavigationScreen(
 //            enterTransition = {
 //                slideIntoContainer(
 //                    AnimatedContentTransitionScope.SlideDirection.Start,
-//                    tween(700)
+//                    tween(500)
 //                )
 //            },
 //            exitTransition = {
 //                slideOutOfContainer(
 //                    AnimatedContentTransitionScope.SlideDirection.Start,
-//                    tween(700)
+//                    tween(500)
 //                )
 //            },
 //            popEnterTransition = {
 //                slideIntoContainer(
 //                    AnimatedContentTransitionScope.SlideDirection.End,
-//                    tween(700)
+//                    tween(500)
 //                )
 //            },
 //            popExitTransition = {
 //                slideOutOfContainer(
 //                    AnimatedContentTransitionScope.SlideDirection.End,
-//                    tween(700)
+//                    tween(500)
 //                )
 //            }
-
         ) {
             composable<HomeScreenDestination> {
                 HomeScreen(
@@ -165,11 +166,36 @@ fun NavigationScreen(
             }
 
             composable<SearchScreenDestination> {
-                SearchScreen(onCardClick = { id ->
-                    navigateToCard(
-                        id
-                    )
-                })
+                SearchScreen(
+                    onCardClick = { id ->
+                        navigateToCard(
+                            id
+                        )
+                    },
+                    onNavigateToFilterSearch = { searchName ->
+                        navController.navigate(FilterSearchScreenDestination(searchName)){
+                            restoreState = true
+                        }
+                    }
+                )
+            }
+
+            composable<FilterSearchScreenDestination> { navBackStackEntry ->
+                val destination: FilterSearchScreenDestination = navBackStackEntry.toRoute()
+                FilterSearchScreen(
+                    searchName = destination.searchName,
+                    onNavigateToSearch = {
+                        val x = navController.popBackStack(route = SearchScreenDestination, inclusive = false)
+                        if(!x){
+                            navController.navigate(SearchScreenDestination)
+                        }
+                    },
+                    onNavigateToCard = { id ->
+                        navigateToCard(
+                            id
+                        )
+                    }
+                )
             }
 
             composable<DecksScreenDestination> {
