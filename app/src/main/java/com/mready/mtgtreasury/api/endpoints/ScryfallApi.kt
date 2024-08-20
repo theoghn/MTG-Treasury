@@ -149,10 +149,8 @@ private fun Json.toCardUris() = CardImageUris(
 
 private fun Json.toCardLegalities() = CardLegalities(
     standard = this["standard"].string,
-//    future = this["future"].string,
     historic = this["historic"].string,
     timeless = this["timeless"].string,
-//    gladiator = this["gladiator"].string,
     pioneer = this["pioneer"].string,
     explorer = this["explorer"].string,
     modern = this["modern"].string,
@@ -162,14 +160,8 @@ private fun Json.toCardLegalities() = CardLegalities(
     penny = this["penny"].string,
     commander = this["commander"].string,
     oathBreaker = this["oathbreaker"].string,
-//    standardBrawl = this["standardbrawl"].string,
     brawl = this["brawl"].string,
     alchemy = this["alchemy"].string,
-//    pauperCommander = this["paupercommander"].string,
-//    duel = this["duel"].string,
-//    oldSchool = this["oldschool"].string,
-//    preModern = this["premodern"].string,
-//    predh = this["predh"].string
 )
 
 private fun Json.toCardPrices() = CardPrices(

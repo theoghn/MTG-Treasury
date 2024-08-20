@@ -101,6 +101,7 @@ fun HomeScreen(
                 }
 
 
+                //TODO Sa extracti string-urile hardocadate
                 Text(
                     modifier = Modifier
                         .padding(bottom = 8.dp, top = 20.dp, start = 32.dp)
@@ -131,6 +132,8 @@ fun HomeScreen(
                     )
 
                     Box(modifier = Modifier.fillMaxSize()) {
+                        //TODO Extrage orice content de sine statator care ar putea exista independent de ecran intr-un composable separat
+                        //TODO Codul sa fie mai readable si mai usor de parcurs
                         Column(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -186,6 +189,7 @@ fun HomeScreen(
                                     fontWeight = FontWeight.Normal,
                                     color = Color.LightGray,
                                 )
+
                                 Image(
                                     modifier = Modifier.size(18.dp),
                                     painter = painterResource(
@@ -247,6 +251,7 @@ fun HomeScreen(
                         .background(BoxColor)
                 ) {
                     mostValuableCards.forEachIndexed { index, mtgCard ->
+                        //TODO Extrage conteuntul ce tine de acest card intr-un composable separat(ex ValuableCardItem)
                         Row(
                             modifier = Modifier
                                 .clickable { onCardClick(mtgCard.id) }
@@ -275,7 +280,6 @@ fun HomeScreen(
                                 modifier = Modifier
                                     .padding(start = 12.dp)
                                     .width(80.dp)
-//                                    .clip(RoundedCornerShape(4.dp))
                                     .background(Color.Transparent),
                                 contentScale = ContentScale.FillWidth,
                                 contentDescription = null
@@ -385,6 +389,8 @@ fun HomeScreen(
     }
 }
 
+
+//TODO parametrii mai sugestivi , acel key nu imi spune nimic
 @Composable
 fun DescriptionField(
     modifier: Modifier = Modifier,
@@ -415,6 +421,8 @@ fun DescriptionField(
     )
 }
 
+//TODO Ai nevoie de un nume mai sugestiv la composable si la parametrii
+// uitandu-ma la definirea functiei habar n-am ce face acest composable
 @Composable
 fun CardSetName(
     setName: String,
@@ -442,10 +450,3 @@ fun CardSetName(
         color = Color.LightGray
     )
 }
-
-
-//@Preview
-//@Composable
-//private fun HomeScreenPreview() {
-//    HomeScreen(onCardClick = { navController.navigate(CardScreenDestination)})
-//}
