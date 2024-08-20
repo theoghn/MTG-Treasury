@@ -30,6 +30,4 @@ class ApiService @Inject constructor(
         type = type,
         superType = superType,
     )
-
-
 }

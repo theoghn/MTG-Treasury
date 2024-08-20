@@ -192,11 +192,12 @@ fun SheetContent(
             horizontalArrangement = Arrangement.Start
         ) {
             card.manaCost.split("{", "}").forEach { color ->
-                println(color)
-                AsyncSvg(
-                    modifier = Modifier.size(18.dp),
-                    uri = "https://svgs.scryfall.io/card-symbols/$color.svg"
-                )
+                if (color.isNotEmpty()) {
+                    AsyncSvg(
+                        modifier = Modifier.padding(end = 16.dp).size(18.dp),
+                        uri = "https://svgs.scryfall.io/card-symbols/$color.svg"
+                    )
+                }
             }
         }
 

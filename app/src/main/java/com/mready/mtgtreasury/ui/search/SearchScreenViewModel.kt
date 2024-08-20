@@ -19,6 +19,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -32,25 +34,23 @@ class SearchScreenViewModel @Inject constructor(private val api: ApiService) : V
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     val searchResults: StateFlow<List<String>> =
         searchQuery.asStateFlow()
-            .debounce(300)
-            .flatMapLatest { query ->
-                flow {
-                    if (query.isEmpty()) {
-                        emit(emptyList())
-                    } else {
-                        try {
-                            val results = api.getCardSuggestions(query)
+
+            .mapLatest { query ->
+                if (query.isEmpty()) {
+                    emptyList()
+                } else {
+                    try {
+                        val results = api.getCardSuggestions(query)
 //                            stringsFlow.update { results }
-                            emit(results)
-                        } catch (e: Exception) {
-                            emit(emptyList())
-                        }
+                        results
+                    } catch (e: Exception) {
+                        emptyList()
                     }
                 }
-            }.stateIn(
+            }.debounce(300).stateIn(
                 scope = viewModelScope,
                 initialValue = emptyList(),
-                started = SharingStarted.WhileSubscribed(5_000)
+                started = SharingStarted.WhileSubscribed(5000)
             )
 
     fun onSearchQueryChange(newQuery: String) {

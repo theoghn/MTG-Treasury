@@ -23,17 +23,16 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.AbsoluteCutCornerShape
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Done
@@ -41,9 +40,15 @@ import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CardElevation
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -60,13 +65,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.mready.mtgtreasury.R
+import com.mready.mtgtreasury.models.card.MtgCard
 import com.mready.mtgtreasury.ui.components.AsyncSvg
 import com.mready.mtgtreasury.ui.components.PrimaryButton
 import com.mready.mtgtreasury.ui.theme.AccentColor
@@ -243,7 +254,7 @@ fun FilterSearchScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(65.dp)
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -301,28 +312,38 @@ fun FilterSearchScreen(
                 .fillMaxSize()
                 .background(Color.Transparent)
         ) {
-            LazyColumn(
-                modifier = Modifier.padding(bottom = 24.dp)
+            LazyVerticalGrid(
+                modifier = Modifier.padding(horizontal = 12.dp),
+                columns = GridCells.Fixed(2),
+                contentPadding = PaddingValues(bottom = 32.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Log.d("cards", cards.size.toString())
                 items(cards) { mtgCard ->
-                    Row(
-                        modifier = Modifier
-                            .padding(horizontal = 20.dp, vertical = 12.dp)
-                            .fillMaxWidth()
-                            .clickable {
-                                onNavigateToCard(mtgCard.id)
-                                Log.d("tried navigation to", mtgCard.id)
-                            }
-                        ,
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = mtgCard.name,
-                            color = Color.White
-                        )
-                    }
+                    MtgCardItem(
+//                        modifier = Modifier.padding() ,
+                        mtgCard = mtgCard,
+                        onClick = {
+                            onNavigateToCard(mtgCard.id)
+                        }
+                    )
+//                    Row(
+//                        modifier = Modifier
+//                            .padding(horizontal = 20.dp, vertical = 12.dp)
+//                            .fillMaxWidth()
+//                            .clickable {
+//                                onNavigateToCard(mtgCard.id)
+//                                Log.d("tried navigation to", mtgCard.id)
+//                            },
+//                        verticalAlignment = Alignment.CenterVertically,
+//                        horizontalArrangement = Arrangement.SpaceBetween
+//                    ) {
+//                        Text(
+//                            text = mtgCard.name,
+//                            color = Color.White
+//                        )
+//                    }
                 }
             }
         }
@@ -421,7 +442,7 @@ fun FilterSearchScreen(
                         .padding(horizontal = 16.dp)
                         .fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
-                ){
+                ) {
                     Button(
                         modifier = Modifier
                             .height(50.dp)
@@ -890,7 +911,99 @@ fun TypeBottomSheet(
                         color = Color.Gray
                     )
                 }
+            }
+        }
+    }
+}
 
+
+@Composable
+fun MtgCardItem(
+    modifier: Modifier = Modifier,
+    mtgCard: MtgCard,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = modifier
+            .height(300.dp)
+            .shadow(
+                elevation = 2.dp,
+                shape = RoundedCornerShape(4.dp),
+                ambientColor = Color.White,
+                spotColor = Color.White
+            ),
+        onClick = { onClick() },
+        colors = CardDefaults.cardColors(
+            containerColor = BoxColor,
+            contentColor = BoxColor
+        ),
+        shape = RoundedCornerShape(4.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 8.dp, vertical = 12.dp)
+        ) {
+            AsyncImage(
+                model = mtgCard.imageUris.borderCrop,
+                modifier = Modifier
+                    .padding(bottom = 8.dp)
+                    .height(160.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(Color.Transparent)
+                    .align(Alignment.CenterHorizontally),
+                contentScale = ContentScale.FillHeight,
+                contentDescription = null
+            )
+
+            Text(
+                modifier = Modifier.padding(bottom = 8.dp),
+                text = mtgCard.name,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                fontSize = 12.sp,
+                lineHeight = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.White
+            )
+
+            Text(
+                text = mtgCard.setName,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                fontSize = 10.sp,
+                lineHeight = 14.sp,
+                color = Color.White
+            )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.euro, mtgCard.prices.eur),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    fontSize = 16.sp,
+                    lineHeight = 16.sp,
+                    color = Color.White
+                )
+
+                PrimaryButton(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape),
+                    onClick = {  },
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null,
+                        tint = Color.White
+                    )
+                }
             }
         }
     }

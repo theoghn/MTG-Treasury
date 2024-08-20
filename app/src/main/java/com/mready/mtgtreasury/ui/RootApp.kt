@@ -10,13 +10,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.mready.mtgtreasury.ui.auth.login.LoginDestination
+import com.mready.mtgtreasury.ui.auth.signup.SignUpDestination
 import com.mready.mtgtreasury.ui.card.CardScreen
 import com.mready.mtgtreasury.ui.card.CardScreenDestination
 import com.mready.mtgtreasury.ui.navigation.NavigationScreen
 import com.mready.mtgtreasury.ui.navigation.NavigationScreenDestination
 
 @Composable
-fun MainApp(modifier: Modifier = Modifier) {
+fun RootApp(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -67,6 +69,14 @@ fun MainApp(modifier: Modifier = Modifier) {
                     id = destination.id,
                     onBack = { navController.popBackStack() }
                 )
+            }
+
+            composable<SignUpDestination>{
+
+            }
+
+            composable<LoginDestination>{
+
             }
         }
     }
