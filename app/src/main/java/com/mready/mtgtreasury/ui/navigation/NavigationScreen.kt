@@ -52,6 +52,7 @@ fun NavigationScreen(
         DecksScreenDestination,
         ProfileScreenDestination
     )
+
     val navIcons = listOf(
         Pair(R.drawable.ic_bnav_home, R.drawable.ic_bnav_home_selected),
         Pair(R.drawable.ic_bnav_search, R.drawable.ic_bnav_search_selected),
@@ -66,7 +67,6 @@ fun NavigationScreen(
             .fillMaxSize(),
         containerColor = MainBackgroundColor,
         bottomBar = {
-
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
@@ -104,7 +104,6 @@ fun NavigationScreen(
                                 }
                             }
                         )
-
                     }
                 }
             }
@@ -121,21 +120,11 @@ fun NavigationScreen(
             startDestination = HomeScreenDestination,
         ) {
             composable<HomeScreenDestination> {
-                HomeScreen(
-                    onCardClick = { id ->
-                        navigateToCard(
-                            id
-                        )
-                    }
-                )
+                HomeScreen(onCardClick = { id -> navigateToCard(id) })
             }
 
             composable<SearchScreenDestination> {
-                SearchScreen(onCardClick = { id ->
-                    navigateToCard(
-                        id
-                    )
-                })
+                SearchScreen(onCardClick = { id -> navigateToCard(id) })
             }
 
             composable<DecksScreenDestination> {

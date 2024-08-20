@@ -78,6 +78,7 @@ fun CardScreen(
     LaunchedEffect(key1 = id) {
         viewModel.getCard(id)
     }
+
     Box(modifier = modifier.fillMaxSize()) {
         when (val currentState = uiState) {
             is CardScreenUiState.Loading -> {
@@ -210,12 +211,6 @@ fun SheetContent(
             modifier = Modifier
                 .padding(horizontal = 20.dp)
                 .padding(bottom = 8.dp),
-            oracleText = card.oracleText
-        )
-
-        OracleText(
-            modifier = Modifier
-                .padding(horizontal = 20.dp),
             oracleText = card.oracleText
         )
 
@@ -368,7 +363,7 @@ fun LegalModeItem(
             modifier = Modifier
                 .width(80.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .background(if (legal == "legal") LegalChipColor else NotLegalChipColor),
+                .background(if (legal == stringResource(id = R.string.text_legal).lowercase()) LegalChipColor else NotLegalChipColor),
             contentAlignment = Alignment.Center
         ) {
             Text(

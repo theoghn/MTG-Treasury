@@ -1,9 +1,9 @@
 package com.mready.mtgtreasury.models.card
 
-import kotlinx.serialization.Serializable
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
+
 data class MtgCard(
     val id: String,
     val name: String,
@@ -11,7 +11,6 @@ data class MtgCard(
     val releaseDate: String,
     val manaCost: String,
     val type: String,
-//    the text on card that describes it s power
     val oracleText: String,
     val power: String?,
     val colors: List<String>,
@@ -53,6 +52,5 @@ fun MtgCard.getNumberOfLegalFormats(): Int {
     val count = CardLegalities::class.members
         .filter { it.returnType.classifier == String::class }
         .count { it.call(legalities) == "legal" }
-    println(count)
     return count / 2
 }

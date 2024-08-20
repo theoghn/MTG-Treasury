@@ -46,12 +46,10 @@ fun HexagonBox(
     onClick: () -> Unit,
     content: @Composable BoxScope.() -> Unit
 ) {
-    val shapeColor = AccentColor
     val borderColor = NavBarAccent
     var isPressed by remember { mutableStateOf(false) }
 
     val gradientColors = listOf(Color(0xFFA774FA),Color(0xFF6115DB))
-    val brush = Brush.linearGradient(gradientColors)
 
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.86f else 1f,

@@ -94,14 +94,12 @@ fun HomeScreen(
                         color = Color.White,
                     )
                     Text(
-                        text = "$38.46",
+                        text = "$38.46", //TODO get actual value
                         fontSize = 40.sp,
                         color = Color.White,
                     )
                 }
 
-
-                //TODO Sa extracti string-urile hardocadate
                 Text(
                     modifier = Modifier
                         .padding(bottom = 8.dp, top = 20.dp, start = 32.dp)
@@ -132,8 +130,6 @@ fun HomeScreen(
                     )
 
                     Box(modifier = Modifier.fillMaxSize()) {
-                        //TODO Extrage orice content de sine statator care ar putea exista independent de ecran intr-un composable separat
-                        //TODO Codul sa fie mai readable si mai usor de parcurs
                         Column(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -193,11 +189,11 @@ fun HomeScreen(
                                 Image(
                                     modifier = Modifier.size(18.dp),
                                     painter = painterResource(
-                                        id =
-                                        if (card?.foil == true)
+                                        id = if (card?.foil == true) {
                                             R.drawable.icons8_checkmark_48
-                                        else
+                                        } else {
                                             R.drawable.icons8_cancel_48
+                                        }
                                     ),
                                     contentDescription = null
                                 )
@@ -206,13 +202,17 @@ fun HomeScreen(
                             DescriptionField(
                                 modifier = Modifier.padding(horizontal = 4.dp),
                                 firstPart = stringResource(R.string.text_legal),
-                                secondPart = "${card?.getNumberOfLegalFormats() ?: 99} / 14"
+                                secondPart = stringResource(
+                                    R.string.x_max_set,
+                                    card?.getNumberOfLegalFormats() ?: 99
+                                )
                             )
 
                             DescriptionField(
                                 modifier = Modifier.padding(horizontal = 4.dp),
                                 firstPart = stringResource(R.string.text_release),
-                                secondPart = card?.releaseDate?.formatReleaseDate() ?: stringResource(R.string.text_unknown)
+                                secondPart = card?.releaseDate?.formatReleaseDate()
+                                    ?: stringResource(R.string.text_unknown)
                             )
                         }
 
@@ -319,12 +319,10 @@ fun HomeScreen(
                                     fontWeight = FontWeight.SemiBold,
                                     color = AccentColor,
                                 )
-
                             }
                         }
                     }
                 }
-
 
                 Box(
                     modifier = Modifier.fillMaxWidth(),
@@ -358,6 +356,7 @@ fun HomeScreen(
                                 colorFilter = ColorFilter.tint(Color.White),
                                 contentDescription = null
                             )
+
                             Column {
                                 Text(
                                     modifier = Modifier.padding(horizontal = 8.dp),
@@ -390,7 +389,6 @@ fun HomeScreen(
 }
 
 
-//TODO parametrii mai sugestivi , acel key nu imi spune nimic
 @Composable
 fun DescriptionField(
     modifier: Modifier = Modifier,
@@ -421,8 +419,7 @@ fun DescriptionField(
     )
 }
 
-//TODO Ai nevoie de un nume mai sugestiv la composable si la parametrii
-// uitandu-ma la definirea functiei habar n-am ce face acest composable
+
 @Composable
 fun CardSetName(
     setName: String,
