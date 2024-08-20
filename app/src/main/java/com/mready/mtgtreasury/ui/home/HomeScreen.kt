@@ -52,6 +52,7 @@ import com.mready.mtgtreasury.models.card.formatReleaseDate
 import com.mready.mtgtreasury.models.card.getNumberOfLegalFormats
 import com.mready.mtgtreasury.ui.components.PrimaryButton
 import com.mready.mtgtreasury.ui.components.ShimmerBox
+import com.mready.mtgtreasury.ui.components.TwoColorText
 import com.mready.mtgtreasury.ui.theme.AccentColor
 import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
 import com.mready.mtgtreasury.ui.theme.BoxColor
@@ -173,7 +174,7 @@ fun HomeScreen(
                                 color = Color.White,
                             )
 
-                            DescriptionField(
+                            TwoColorText(
                                 modifier = Modifier.padding(horizontal = 4.dp),
                                 firstPart = stringResource(R.string.text_rank),
                                 secondPart = "${card?.edhRank ?: 0}"
@@ -203,13 +204,13 @@ fun HomeScreen(
                                 )
                             }
 
-                            DescriptionField(
+                            TwoColorText(
                                 modifier = Modifier.padding(horizontal = 4.dp),
                                 firstPart = stringResource(R.string.text_legal),
                                 secondPart = "${card?.getNumberOfLegalFormats() ?: 99} / 14"
                             )
 
-                            DescriptionField(
+                            TwoColorText(
                                 modifier = Modifier.padding(horizontal = 4.dp),
                                 firstPart = stringResource(R.string.text_release),
                                 secondPart = card?.releaseDate?.formatReleaseDate() ?: stringResource(R.string.text_unknown)
@@ -325,7 +326,6 @@ fun HomeScreen(
                     }
                 }
 
-
                 Box(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.TopStart
@@ -369,13 +369,13 @@ fun HomeScreen(
                                     color = Color.White
                                 )
 
-                                DescriptionField(
+                                TwoColorText(
                                     modifier = Modifier.padding(horizontal = 8.dp),
                                     firstPart = stringResource(R.string.text_cards),
                                     secondPart = "${set.cardCount}"
                                 )
 
-                                DescriptionField(
+                                TwoColorText(
                                     modifier = Modifier.padding(horizontal = 8.dp),
                                     firstPart = stringResource(R.string.text_release),
                                     secondPart = set.releaseDate.formatReleaseDate()
@@ -389,40 +389,6 @@ fun HomeScreen(
     }
 }
 
-
-//TODO parametrii mai sugestivi , acel key nu imi spune nimic
-@Composable
-fun DescriptionField(
-    modifier: Modifier = Modifier,
-    firstPart: String,
-    secondPart: String,
-    secondPartColor: Color = Color.LightGray,
-    fontSize: TextUnit = 12.sp
-) {
-    Text(
-        modifier = modifier,
-        text =
-        buildAnnotatedString {
-            withStyle(style = SpanStyle(color = secondPartColor)) {
-                append("$firstPart ")
-            }
-            withStyle(
-                style = SpanStyle(
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White
-                )
-            ) {
-                append(secondPart)
-            }
-        },
-        fontSize = fontSize,
-        fontWeight = FontWeight.Normal,
-        color = Color.White
-    )
-}
-
-//TODO Ai nevoie de un nume mai sugestiv la composable si la parametrii
-// uitandu-ma la definirea functiei habar n-am ce face acest composable
 @Composable
 fun CardSetName(
     setName: String,

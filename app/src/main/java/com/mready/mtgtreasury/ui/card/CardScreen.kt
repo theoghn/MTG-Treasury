@@ -54,7 +54,7 @@ import com.mready.mtgtreasury.models.card.MtgCard
 import com.mready.mtgtreasury.models.card.formatReleaseDate
 import com.mready.mtgtreasury.ui.components.AsyncSvg
 import com.mready.mtgtreasury.ui.components.PrimaryButton
-import com.mready.mtgtreasury.ui.home.DescriptionField
+import com.mready.mtgtreasury.ui.components.TwoColorText
 import com.mready.mtgtreasury.ui.theme.BottomBarColor
 import com.mready.mtgtreasury.ui.theme.BoxColor
 import com.mready.mtgtreasury.ui.theme.LegalChipColor
@@ -78,6 +78,7 @@ fun CardScreen(
     LaunchedEffect(key1 = id) {
         viewModel.getCard(id)
     }
+
     Box(modifier = modifier.fillMaxSize()) {
         when (val currentState = uiState) {
             is CardScreenUiState.Loading -> {
@@ -227,19 +228,19 @@ fun SheetContent(
             fontWeight = FontWeight.SemiBold,
         )
 
-        DescriptionField(
+        TwoColorText(
             firstPart = stringResource(R.string.text_artist),
             secondPart = card.artist,
             secondPartColor = Color.LightGray
         )
 
-        DescriptionField(
+        TwoColorText(
             firstPart = stringResource(R.string.text_rank),
             secondPart = card.edhRank.toString(),
             secondPartColor = Color.LightGray
         )
 
-        DescriptionField(
+        TwoColorText(
             firstPart = stringResource(R.string.text_release),
             secondPart = card.releaseDate.formatReleaseDate(),
             secondPartColor = Color.LightGray

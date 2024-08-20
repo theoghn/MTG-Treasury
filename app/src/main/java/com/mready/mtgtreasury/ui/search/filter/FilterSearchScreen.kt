@@ -32,7 +32,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Done
@@ -42,15 +41,12 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CardElevation
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -84,6 +80,7 @@ import com.mready.mtgtreasury.ui.theme.AccentColor
 import com.mready.mtgtreasury.ui.theme.BoxColor
 import com.mready.mtgtreasury.ui.theme.LegalChipColor
 import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
+import com.mready.mtgtreasury.utility.Constants
 
 enum class SheetFilters {
     TYPE,
@@ -93,107 +90,6 @@ enum class SheetFilters {
     MANA,
 }
 
-object SearchFilterValues {
-    val TYPE = listOf(
-        "Artifact",
-        "Battle",
-        "Conspiracy",
-        "Creature",
-        "Dungeon",
-        "Emblem",
-        "Enchantment",
-        "Hero",
-        "Instant",
-        "Kindred",
-        "Land",
-        "Phenomenon",
-        "Plane",
-        "Planeswalker",
-        "Scheme",
-        "Sorcery",
-        "Vanguard"
-    )
-    val SUPERTYPE = listOf("Basic", "Legendary", "Ongoing", "Snow", "World")
-    val RARITY = listOf("Common", "Uncommon", "Rare", "Mythic", "Special", "Bonus")
-    val COLOR = listOf("W", "U", "B", "R", "G")
-    val MANA_COST = mapOf(
-        "X" to "X",
-        "Y" to "Y",
-        "Z" to "Z",
-        "0" to "0",
-        "½" to "HALF",
-        "1" to "1",
-        "2" to "2",
-        "3" to "3",
-        "4" to "4",
-        "5" to "5",
-        "6" to "6",
-        "7" to "7",
-        "8" to "8",
-        "9" to "9",
-        "10" to "10",
-        "11" to "11",
-        "12" to "12",
-        "13" to "13",
-        "14" to "14",
-        "15" to "15",
-        "16" to "16",
-        "17" to "17",
-        "18" to "18",
-        "19" to "19",
-        "20" to "20",
-        "∞" to "INFINITY",
-        "W/U" to "WU",
-        "W/B" to "WB",
-        "B/R" to "BR",
-        "B/G" to "BG",
-        "U/B" to "UB",
-        "U/R" to "UR",
-        "R/G" to "RG",
-        "R/W" to "RW",
-        "G/W" to "GW",
-        "G/U" to "GU",
-        "B/G/P" to "BGP",
-        "B/R/P" to "BRP",
-        "G/U/P" to "GUP",
-        "G/W/P" to "GWP",
-        "R/G/P" to "RGP",
-        "R/W/P" to "RWP",
-        "U/B/P" to "UBP",
-        "U/R/P" to "URP",
-        "W/B/P" to "WBP",
-        "W/U/P" to "WUP",
-        "C/W" to "CW",
-        "C/U" to "CU",
-        "C/B" to "CB",
-        "C/R" to "CR",
-        "C/G" to "CG",
-        "2/W" to "2W",
-        "2/U" to "2U",
-        "2/B" to "2B",
-        "2/R" to "2R",
-        "2/G" to "2G",
-        "H" to "H",
-        "W/P" to "WP",
-        "U/P" to "UP",
-        "B/P" to "BP",
-        "R/P" to "RP",
-        "G/P" to "GP",
-        "C/P" to "CP",
-        "HW" to "HW",
-        "HR" to "HR",
-        "W" to "W",
-        "U" to "U",
-        "B" to "B",
-        "R" to "R",
-        "G" to "G",
-        "C" to "C",
-        "S" to "S",
-        "L" to "L",
-        "D" to "D"
-    )
-
-}
 
 data class FilterProperties(
     val selectedCardColors: List<String>
@@ -205,7 +101,7 @@ data class FilterProperties(
 fun FilterSearchScreen(
     modifier: Modifier = Modifier,
     viewModel: FilterSearchViewModel = hiltViewModel(),
-    searchName: String?,
+    searchQuery: String?,
     onNavigateToCard: (String) -> Unit,
     onNavigateToSearch: () -> Unit
 ) {
@@ -226,13 +122,9 @@ fun FilterSearchScreen(
     val manaCosts by viewModel.manaCosts.collectAsState()
     val cards by viewModel.cards.collectAsState()
 
-//    var filterProperties by rememberSaveable { mutableStateOf(FilterProperties(selectedCardColors = emptyList())) }
-    val scope = rememberCoroutineScope()
-
-
-    LaunchedEffect(searchName) {
+    LaunchedEffect(searchQuery) {
         viewModel.searchCards(
-            name = searchName ?: "",
+            name = searchQuery ?: "",
             manaCost = selectedCardManaCosts,
             colors = selectedCardColors,
             rarity = selectedCardRarities,
@@ -272,7 +164,7 @@ fun FilterSearchScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = if (searchName.isNullOrBlank()) "Search Cards" else searchName,
+                        text = if (searchQuery.isNullOrBlank()) "Search Cards" else searchQuery,
                         color = Color.LightGray,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold
@@ -328,174 +220,29 @@ fun FilterSearchScreen(
                             onNavigateToCard(mtgCard.id)
                         }
                     )
-//                    Row(
-//                        modifier = Modifier
-//                            .padding(horizontal = 20.dp, vertical = 12.dp)
-//                            .fillMaxWidth()
-//                            .clickable {
-//                                onNavigateToCard(mtgCard.id)
-//                                Log.d("tried navigation to", mtgCard.id)
-//                            },
-//                        verticalAlignment = Alignment.CenterVertically,
-//                        horizontalArrangement = Arrangement.SpaceBetween
-//                    ) {
-//                        Text(
-//                            text = mtgCard.name,
-//                            color = Color.White
-//                        )
-//                    }
                 }
             }
         }
     }
 
     if (isBottomSheetVisible) {
-        ModalBottomSheet(
-            sheetState = bottomSheetState,
+        AdvancedSearchModalBottomSheet(
+            bottomSheetState = bottomSheetState,
             onDismissRequest = { isBottomSheetVisible = false },
-            windowInsets = WindowInsets.statusBars,
-            containerColor = MainBackgroundColor,
-            dragHandle = {},
-            shape = AbsoluteCutCornerShape(0.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .windowInsetsPadding(WindowInsets.systemBars)
-                    .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.Start,
-            ) {
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    Icon(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .clip(CircleShape)
-                            .clickable { isBottomSheetVisible = false }
-                            .align(Alignment.TopStart)
-                            .padding(4.dp),
-                        imageVector = Icons.Default.Clear,
-                        contentDescription = null,
-                        tint = AccentColor
-                    )
-
-                    Text(
-                        modifier = Modifier
-                            .padding(top = 4.dp)
-                            .align(Alignment.TopCenter),
-                        text = "Advanced Search",
-                        fontSize = 20.sp,
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                    )
-                }
-
-                Text(
-                    modifier = Modifier.padding(vertical = 16.dp),
-                    text = "Type & Rarity",
-                    fontSize = 16.sp,
-                    color = Color.White,
-                    fontWeight = FontWeight.SemiBold,
+            onApplyFilters = {
+                viewModel.searchCards(
+                    name = searchQuery ?: "",
+                    manaCost = selectedCardManaCosts,
+                    colors = selectedCardColors,
+                    rarity = selectedCardRarities,
+                    type = selectedCardTypes,
+                    superType = selectedCardSuperTypes
                 )
-
-                FilterItem(
-                    text = "Type",
-                    updateSelectedFilter = { selectedFilter = SheetFilters.TYPE },
-                    showFilterSheet = { isFilterBottomSheetVisible = true }
-                )
-
-                FilterItem(
-                    text = "Super Type",
-                    updateSelectedFilter = { selectedFilter = SheetFilters.SUPERTYPE },
-                    showFilterSheet = { isFilterBottomSheetVisible = true }
-                )
-
-                FilterItem(
-                    text = "Rarity",
-                    updateSelectedFilter = { selectedFilter = SheetFilters.RARITY },
-                    showFilterSheet = { isFilterBottomSheetVisible = true }
-                )
-
-                Text(
-                    modifier = Modifier.padding(vertical = 16.dp),
-                    text = "Color",
-                    fontSize = 16.sp,
-                    color = Color.White,
-                    fontWeight = FontWeight.SemiBold,
-                )
-
-                FilterItem(
-                    text = "Color",
-                    updateSelectedFilter = { selectedFilter = SheetFilters.COLOR },
-                    showFilterSheet = { isFilterBottomSheetVisible = true }
-                )
-
-                FilterItem(
-                    text = "Mana Cost",
-                    updateSelectedFilter = { selectedFilter = SheetFilters.MANA },
-                    showFilterSheet = { isFilterBottomSheetVisible = true }
-                )
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                Row(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Button(
-                        modifier = Modifier
-                            .height(50.dp)
-                            .weight(1f),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                        border = BorderStroke(1.dp, AccentColor.copy(alpha = 0.5f)),
-                        contentPadding = PaddingValues(),
-                        onClick = { isBottomSheetVisible = false },
-                    ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Text(
-                                text = "Cancel",
-                                fontSize = 16.sp,
-                                color = AccentColor,
-                                fontWeight = FontWeight.SemiBold,
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.width(16.dp))
-
-                    PrimaryButton(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(50.dp)
-                            .clip(RoundedCornerShape(12.dp)),
-                        onClick = {
-                            viewModel.searchCards(
-                                name = searchName ?: "",
-                                manaCost = selectedCardManaCosts,
-                                colors = selectedCardColors,
-                                rarity = selectedCardRarities,
-                                type = selectedCardTypes,
-                                superType = selectedCardSuperTypes
-                            )
-                            isBottomSheetVisible = false
-                        }
-                    ) {
-                        Text(
-                            text = "Apply Filters",
-                            fontSize = 16.sp,
-                            color = Color.White,
-                            fontWeight = FontWeight.SemiBold,
-                        )
-                    }
-                }
-
-
-            }
-        }
+                isBottomSheetVisible = false
+            },
+            updateSelectedFilter = { selectedFilter = it },
+            showFilterSheet = { isFilterBottomSheetVisible = true }
+        )
     }
 
 
@@ -514,7 +261,7 @@ fun FilterSearchScreen(
                 SheetFilters.TYPE -> {
                     TypeBottomSheet(
                         title = "Type",
-                        listValues = SearchFilterValues.TYPE,
+                        listValues = Constants.SearchFilterValues.TYPE,
                         selectedCardTypes = selectedCardTypes,
                         hideFilter = { isFilterBottomSheetVisible = false },
                         saveChanges = { selectedCardTypes = it }
@@ -524,7 +271,7 @@ fun FilterSearchScreen(
                 SheetFilters.SUPERTYPE -> {
                     TypeBottomSheet(
                         title = "Super Type",
-                        listValues = SearchFilterValues.SUPERTYPE,
+                        listValues = Constants.SearchFilterValues.SUPERTYPE,
                         selectedCardTypes = selectedCardSuperTypes,
                         hideFilter = { isFilterBottomSheetVisible = false },
                         saveChanges = { selectedCardSuperTypes = it }
@@ -534,7 +281,7 @@ fun FilterSearchScreen(
                 SheetFilters.RARITY -> {
                     TypeBottomSheet(
                         title = "Rarity",
-                        listValues = SearchFilterValues.RARITY,
+                        listValues = Constants.SearchFilterValues.RARITY,
                         selectedCardTypes = selectedCardRarities,
                         hideFilter = { isFilterBottomSheetVisible = false },
                         saveChanges = { selectedCardRarities = it }
@@ -561,6 +308,156 @@ fun FilterSearchScreen(
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AdvancedSearchModalBottomSheet(
+    bottomSheetState: SheetState,
+    onDismissRequest: () -> Unit,
+    updateSelectedFilter: (SheetFilters) -> Unit,
+    showFilterSheet: () -> Unit,
+    onApplyFilters: () -> Unit
+) {
+    ModalBottomSheet(
+        sheetState = bottomSheetState,
+        onDismissRequest = onDismissRequest,
+        windowInsets = WindowInsets.statusBars,
+        containerColor = MainBackgroundColor,
+        dragHandle = {},
+        shape = AbsoluteCutCornerShape(0.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .windowInsetsPadding(WindowInsets.systemBars)
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.Start,
+        ) {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                Icon(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .clickable { onDismissRequest() }
+                        .align(Alignment.TopStart)
+                        .padding(4.dp),
+                    imageVector = Icons.Default.Clear,
+                    contentDescription = null,
+                    tint = AccentColor
+                )
+
+                Text(
+                    modifier = Modifier
+                        .padding(top = 4.dp)
+                        .align(Alignment.TopCenter),
+                    text = "Advanced Search",
+                    fontSize = 20.sp,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+
+            Text(
+                modifier = Modifier.padding(vertical = 16.dp),
+                text = "Type & Rarity",
+                fontSize = 16.sp,
+                color = Color.White,
+                fontWeight = FontWeight.SemiBold,
+            )
+
+            FilterItem(
+                text = "Type",
+                updateSelectedFilter = { updateSelectedFilter(SheetFilters.TYPE) },
+                showFilterSheet = showFilterSheet
+            )
+
+            FilterItem(
+                text = "Super Type",
+                updateSelectedFilter = { updateSelectedFilter(SheetFilters.SUPERTYPE) },
+                showFilterSheet = showFilterSheet
+            )
+
+            FilterItem(
+                text = "Rarity",
+                updateSelectedFilter = { updateSelectedFilter(SheetFilters.RARITY) },
+                showFilterSheet = showFilterSheet
+            )
+
+            Text(
+                modifier = Modifier.padding(vertical = 16.dp),
+                text = "Color",
+                fontSize = 16.sp,
+                color = Color.White,
+                fontWeight = FontWeight.SemiBold,
+            )
+
+            FilterItem(
+                text = "Color",
+                updateSelectedFilter = { updateSelectedFilter(SheetFilters.COLOR) },
+                showFilterSheet = showFilterSheet
+            )
+
+            FilterItem(
+                text = "Mana Cost",
+                updateSelectedFilter = { updateSelectedFilter(SheetFilters.MANA) },
+                showFilterSheet = showFilterSheet
+            )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Button(
+                    modifier = Modifier
+                        .height(50.dp)
+                        .weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                    border = BorderStroke(1.dp, AccentColor.copy(alpha = 0.5f)),
+                    contentPadding = PaddingValues(),
+                    onClick = onDismissRequest,
+                ) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = "Cancel",
+                            fontSize = 16.sp,
+                            color = AccentColor,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                PrimaryButton(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(50.dp)
+                        .clip(RoundedCornerShape(12.dp)),
+                    onClick = {
+                        onApplyFilters()
+                        onDismissRequest()
+                    }
+                ) {
+                    Text(
+                        text = "Apply Filters",
+                        fontSize = 16.sp,
+                        color = Color.White,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+            }
+        }
+    }
+}
+
+
 
 @Composable
 fun FilterBottomSheet(
@@ -770,7 +667,7 @@ fun ManaBottomSheet(
                                         }
 
                                     },
-                                uri = "https://svgs.scryfall.io/card-symbols/${SearchFilterValues.MANA_COST[manaCost]}.svg"
+                                uri = "https://svgs.scryfall.io/card-symbols/${Constants.SearchFilterValues.MANA_COST[manaCost]}.svg"
                             )
                         }
                     }
@@ -805,7 +702,7 @@ fun ColorBottomSheet(
                 fontWeight = FontWeight.SemiBold,
             )
             LazyVerticalGrid(columns = GridCells.Fixed(5)) {
-                items(SearchFilterValues.COLOR) { color ->
+                items(Constants.SearchFilterValues.COLOR) { color ->
                     Box(
                         modifier = Modifier
                             .padding(vertical = 8.dp)

@@ -1,11 +1,10 @@
 package com.mready.mtgtreasury.ui.search.filter
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mready.mtgtreasury.models.MtgSet
 import com.mready.mtgtreasury.models.card.MtgCard
-import com.mready.mtgtreasury.services.ApiService
+import com.mready.mtgtreasury.services.CardsService
+import com.mready.mtgtreasury.utility.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,14 +14,14 @@ import javax.inject.Inject
 
 
 @HiltViewModel
-class FilterSearchViewModel @Inject constructor(private val api: ApiService) : ViewModel() {
+class FilterSearchViewModel @Inject constructor(private val api: CardsService) : ViewModel() {
     val manaCosts = MutableStateFlow<Map<String, String>>(emptyMap())
     val cards = MutableStateFlow<List<MtgCard>>(emptyList())
 
     fun getCosts() {
         viewModelScope.launch {
             delay(300)
-            manaCosts.update { SearchFilterValues.MANA_COST }
+            manaCosts.update { Constants.SearchFilterValues.MANA_COST }
         }
     }
 

@@ -129,11 +129,6 @@ fun NavigationScreen(
 
             composable<SearchScreenDestination> {
                 SearchScreen(
-                    onCardClick = { id ->
-                        navigateToCard(
-                            id
-                        )
-                    },
                     onNavigateToFilterSearch = { searchName ->
                         navController.navigate(FilterSearchScreenDestination(searchName)){
                             restoreState = true
@@ -145,7 +140,7 @@ fun NavigationScreen(
             composable<FilterSearchScreenDestination> { navBackStackEntry ->
                 val destination: FilterSearchScreenDestination = navBackStackEntry.toRoute()
                 FilterSearchScreen(
-                    searchName = destination.searchName,
+                    searchQuery = destination.searchName,
                     onNavigateToSearch = {
                         val x = navController.popBackStack(route = SearchScreenDestination, inclusive = false)
                         if(!x){
