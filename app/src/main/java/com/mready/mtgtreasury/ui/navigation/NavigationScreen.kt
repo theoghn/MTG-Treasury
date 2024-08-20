@@ -1,6 +1,5 @@
 package com.mready.mtgtreasury.ui.navigation
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -40,8 +39,8 @@ import com.mready.mtgtreasury.ui.search.SearchScreen
 import com.mready.mtgtreasury.ui.search.SearchScreenDestination
 import com.mready.mtgtreasury.ui.search.filter.FilterSearchScreen
 import com.mready.mtgtreasury.ui.search.filter.FilterSearchScreenDestination
-import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
 import com.mready.mtgtreasury.ui.theme.BottomBarColor
+import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
 
 @Composable
 fun NavigationScreen(
@@ -191,9 +190,3 @@ fun NavBarItem(
         )
     }
 }
-
-//@Preview()
-//@Composable
-//private fun NavBarItemPreview() {
-//    RootScreen()
-//}
