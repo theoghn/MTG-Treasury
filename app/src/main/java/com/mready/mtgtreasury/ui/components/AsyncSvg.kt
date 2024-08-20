@@ -19,7 +19,6 @@ fun AsyncSvg(
             .data(uri)
             .decoderFactory(SvgDecoder.Factory())
             .build(),
-//        colorFilter = ColorFilter.tint(Color.White),
         contentDescription = null
     )
 }

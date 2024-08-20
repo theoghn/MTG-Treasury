@@ -60,19 +60,6 @@ fun NavigationScreen(
     )
     val navController = rememberNavController()
     var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
-//    val destinationWithoutNavbar = listOf<String?>(
-//        CardScreenDestination::class.java.name,
-//    )
-//    val currentBackStackEntry by navController.currentBackStackEntryAsState()
-//    val isNavBarVisible by remember {
-//        derivedStateOf {
-//            currentBackStackEntry?.destination?.route.toString() !in destinationWithoutNavbar
-//        }
-//    }
-//    LaunchedEffect(key1 =  currentBackStackEntry) {
-//        Log.d("destination", currentBackStackEntry?.destination?.route.toString())
-//    }
-
 
     Scaffold(
         modifier = modifier
@@ -132,31 +119,6 @@ fun NavigationScreen(
                 .fillMaxSize(),
             navController = navController,
             startDestination = HomeScreenDestination,
-//            enterTransition = {
-//                slideIntoContainer(
-//                    AnimatedContentTransitionScope.SlideDirection.Start,
-//                    tween(700)
-//                )
-//            },
-//            exitTransition = {
-//                slideOutOfContainer(
-//                    AnimatedContentTransitionScope.SlideDirection.Start,
-//                    tween(700)
-//                )
-//            },
-//            popEnterTransition = {
-//                slideIntoContainer(
-//                    AnimatedContentTransitionScope.SlideDirection.End,
-//                    tween(700)
-//                )
-//            },
-//            popExitTransition = {
-//                slideOutOfContainer(
-//                    AnimatedContentTransitionScope.SlideDirection.End,
-//                    tween(700)
-//                )
-//            }
-
         ) {
             composable<HomeScreenDestination> {
                 HomeScreen(
@@ -206,9 +168,3 @@ fun NavBarItem(
         )
     }
 }
-
-//@Preview()
-//@Composable
-//private fun NavBarItemPreview() {
-//    RootScreen()
-//}

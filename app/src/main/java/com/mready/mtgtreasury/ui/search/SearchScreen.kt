@@ -14,8 +14,5 @@ import androidx.compose.ui.unit.sp
 fun SearchScreen(modifier: Modifier = Modifier, onCardClick: (String) -> Unit) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text(text = "Search", fontSize = 38.sp, color = Color.White)
-//        Button(onClick = { onCardClick() }) {
-//
-//        }
     }
 }

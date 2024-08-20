@@ -186,6 +186,7 @@ fun HomeScreen(
                                     fontWeight = FontWeight.Normal,
                                     color = Color.LightGray,
                                 )
+
                                 Image(
                                     modifier = Modifier.size(18.dp),
                                     painter = painterResource(
@@ -275,7 +276,6 @@ fun HomeScreen(
                                 modifier = Modifier
                                     .padding(start = 12.dp)
                                     .width(80.dp)
-//                                    .clip(RoundedCornerShape(4.dp))
                                     .background(Color.Transparent),
                                 contentScale = ContentScale.FillWidth,
                                 contentDescription = null
@@ -442,10 +442,3 @@ fun CardSetName(
         color = Color.LightGray
     )
 }
-
-
-//@Preview
-//@Composable
-//private fun HomeScreenPreview() {
-//    HomeScreen(onCardClick = { navController.navigate(CardScreenDestination)})
-//}

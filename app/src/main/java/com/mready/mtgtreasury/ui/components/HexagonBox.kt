@@ -46,8 +46,6 @@ fun HexagonBox(
     onClick: () -> Unit,
     content: @Composable BoxScope.() -> Unit
 ) {
-//    val shapeColor = IconPurple
-//    val borderColor = IconYellow
     val shapeColor = AccentColor
     val borderColor = NavBarAccent
     var isPressed by remember { mutableStateOf(false) }
@@ -75,7 +73,6 @@ fun HexagonBox(
                         if (x) {
                             isPressed = false
                             onClick()
-//                            change colors
                         } else {
                             isPressed = false
                         }

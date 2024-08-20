@@ -15,16 +15,10 @@ import javax.inject.Inject
 class CardViewModel @Inject constructor(private val api: ScryfallApi) : ViewModel() {
     val uiState = MutableStateFlow<CardScreenUiState>(CardScreenUiState.Loading)
 
-//    init {
-//        getCard("1")
-//    }
-
     fun getCard(id: String) {
         if (uiState.value == CardScreenUiState.Loading) {
             viewModelScope.launch {
                 val card = api.getCard(id)
-//                val mostValuableCards = api.getMostValuableCards()
-//                val newestSets = api.getNewestSets()
                 uiState.update { CardScreenUiState.CardUi(card) }
             }
         }
@@ -33,9 +27,7 @@ class CardViewModel @Inject constructor(private val api: ScryfallApi) : ViewMode
 
 sealed class CardScreenUiState {
     data class CardUi(
-        val mtgCard: MtgCard?,
-//        val mostValuableCards: List<MtgCard>,
-//        val newestSets: List<MtgSet>
+        val mtgCard: MtgCard?
     ) : CardScreenUiState()
 
     data object Loading : CardScreenUiState()

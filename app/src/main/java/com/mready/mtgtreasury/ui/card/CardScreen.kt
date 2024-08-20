@@ -76,7 +76,6 @@ fun CardScreen(
     val screenHeight = configuration.screenHeightDp.dp
 
     LaunchedEffect(key1 = id) {
-//        viewModel.getCard("4ec318c6-b718-436f-b9e8-e0c6154e5010")
         viewModel.getCard(id)
     }
     Box(modifier = modifier.fillMaxSize()) {
@@ -161,9 +160,6 @@ fun CardScreen(
         }
     }
 }
-
-
-
 
 @Composable
 fun SheetContent(
