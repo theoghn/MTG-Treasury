@@ -138,15 +138,3 @@ fun Path.customHexagon(radius: Float, size: Size) {
 
     close()
 }
-
-class HexagonShape : Shape {
-    override fun createOutline(
-        size: Size,
-        layoutDirection: LayoutDirection,
-        density: Density
-    ): Outline {
-        return Outline.Generic(
-            path = drawCustomHexagonPath(size)
-        )
-    }
-}
