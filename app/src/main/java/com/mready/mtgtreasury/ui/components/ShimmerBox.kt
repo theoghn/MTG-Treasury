@@ -14,13 +14,16 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
 @Composable
-fun ShimmerBox(modifier: Modifier = Modifier) {
+fun ShimmerBox(
+    modifier: Modifier = Modifier,
+    color: Color = Color.LightGray
+) {
     Box(
         modifier = modifier.background(
             shimmerBrush(
                 targetValue = 1300f,
                 showShimmer = true,
-                color = Color.DarkGray
+                color = color
             )
         )
     )
@@ -30,7 +33,7 @@ fun ShimmerBox(modifier: Modifier = Modifier) {
 fun shimmerBrush(
     showShimmer: Boolean = true,
     targetValue: Float = 1000f,
-    color: Color = Color.LightGray
+    color: Color
 ): Brush {
     return if (showShimmer) {
         val shimmerColors = listOf(

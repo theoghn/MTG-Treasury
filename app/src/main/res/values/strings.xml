@@ -1,3 +1,19 @@
 <resources>
     <string name="app_name">MTG Treasury</string>
+    <string name="home_collection_value">Current collection value</string>
+    <string name="home_card_of_the_day">Card of the Day</string>
+    <string name="home_mysterious_card">Mysterious Card</string>
+    <string name="euro">%1$s €</string>
+    <string name="text_rank">Rank</string>
+    <string name="text_foil">Foil</string>
+    <string name="home_most_valuable_cards">Most Valuable Cards</string>
+    <string name="home_newest_sets">Newest Sets</string>
+    <string name="text_legal">Legal</string>
+    <string name="text_release">Release</string>
+    <string name="text_unknown">unknown</string>
+    <string name="text_cards">Cards</string>
+    <string name="text_additional_info">Additional Info</string>
+    <string name="text_artist">Artist</string>
+    <string name="text_legalities">Legalities</string>
+    <string name="x_max_set">%1$s / 14</string>
 </resources>

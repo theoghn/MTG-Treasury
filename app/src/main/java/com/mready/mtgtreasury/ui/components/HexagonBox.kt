@@ -46,14 +46,10 @@ fun HexagonBox(
     onClick: () -> Unit,
     content: @Composable BoxScope.() -> Unit
 ) {
-//    val shapeColor = IconPurple
-//    val borderColor = IconYellow
-    val shapeColor = AccentColor
     val borderColor = NavBarAccent
     var isPressed by remember { mutableStateOf(false) }
 
     val gradientColors = listOf(Color(0xFFA774FA),Color(0xFF6115DB))
-    val brush = Brush.linearGradient(gradientColors)
 
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.86f else 1f,
@@ -75,7 +71,6 @@ fun HexagonBox(
                         if (x) {
                             isPressed = false
                             onClick()
-//                            change colors
                         } else {
                             isPressed = false
                         }
@@ -142,16 +137,4 @@ fun Path.customHexagon(radius: Float, size: Size) {
     lineTo((centerX + triangleHeight).toFloat(), centerY + radius / 2)
 
     close()
-}
-
-class HexagonShape : Shape {
-    override fun createOutline(
-        size: Size,
-        layoutDirection: LayoutDirection,
-        density: Density
-    ): Outline {
-        return Outline.Generic(
-            path = drawCustomHexagonPath(size)
-        )
-    }
 }

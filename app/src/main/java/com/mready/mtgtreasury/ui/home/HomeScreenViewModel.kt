@@ -20,20 +20,18 @@ class HomeScreenViewModel @Inject constructor(private val api: ScryfallApi) : Vi
     }
 
     private fun getCard() {
-        if (uiState.value == HomeScreenUiState.Loading) {
-            viewModelScope.launch {
-                val card = api.getCard()
-                val mostValuableCards = api.getMostValuableCards()
-                val newestSets = api.getNewestSets()
-                uiState.update { HomeScreenUiState.HomeUi(card, mostValuableCards,newestSets) }
-            }
+        viewModelScope.launch {
+            val card = api.getRandomCard()
+            val mostValuableCards = api.getMostValuableCards()
+            val newestSets = api.getNewestSets()
+            uiState.update { HomeScreenUiState.HomeUi(card, mostValuableCards, newestSets) }
         }
     }
 }
 
 sealed class HomeScreenUiState {
     data class HomeUi(
-        val mtgCard: MtgCard?,
+        val mtgCard: MtgCard,
         val mostValuableCards: List<MtgCard>,
         val newestSets: List<MtgSet>
     ) : HomeScreenUiState()

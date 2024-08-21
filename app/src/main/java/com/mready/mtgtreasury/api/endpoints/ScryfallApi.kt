@@ -6,6 +6,8 @@ import com.mready.mtgtreasury.models.card.MtgCard
 import com.mready.mtgtreasury.models.card.CardImageUris
 import com.mready.mtgtreasury.models.card.CardLegalities
 import com.mready.mtgtreasury.models.card.CardPrices
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import net.mready.apiclient.get
 import net.mready.json.Json
 import javax.inject.Inject
@@ -15,7 +17,7 @@ import javax.inject.Singleton
 class ScryfallApi @Inject constructor(
     private val apiClient: ScryfallApiClient
 ) {
-    suspend fun getCard(): MtgCard {
+    suspend fun getRandomCard(): MtgCard {
         return apiClient.get(
             endpoint = "cards/random"
         ) { json ->
@@ -23,13 +25,19 @@ class ScryfallApi @Inject constructor(
         }
     }
 
+    suspend fun getCard(id: String): MtgCard {
+        return apiClient.get(
+            endpoint = "cards/$id"
+        ) { json ->
+            json.toCard()
+        }
+    }
 
     suspend fun getMostValuableCards(): List<MtgCard> {
         return apiClient.get(
             endpoint = "cards/search",
             query = mapOf("q" to "eur>2000", "order" to "eur")
         ) { json ->
-            //TODO Ideal daca iti permite apiul sa incarci doar cate ai nevoie din start
             json["data"].array.map { it.toCard() }.take(3)
         }
     }
@@ -48,11 +56,12 @@ class ScryfallApi @Inject constructor(
 }
 
 private fun Json.toCard() = MtgCard(
+    id = this["id"].string,
     name = this["name"].string,
     releaseDate = this["released_at"].string,
     manaCost = this["mana_cost"].stringOrNull ?: "",
     type = this["type_line"].string,
-    oracleText = this["oracle_text"].stringOrNull ?: "",
+    oracleText = this["oracle_text"].stringOrNull ?: "This is a simple card",
     power = this["power"].stringOrNull,
     colors = this["colors"].arrayOrNull?.map { it.string } ?: emptyList(),
     imageUris = this["image_uris"].toCardUris(),
@@ -60,12 +69,13 @@ private fun Json.toCard() = MtgCard(
     edhRank = this["edhrec_rank"].intOrNull ?: 0,
     setAbbreviation = this["set"].string,
     setName = this["set_name"].string,
+    artist = this["artist"].stringOrNull ?: "unknown",
     prices = this["prices"].toCardPrices(),
     legalities = this["legalities"].toCardLegalities()
 )
 
 private fun Json.toCardUris() = CardImageUris(
-    borderCrop = this["border_crop"].string,
+    borderCrop = this["border_crop"].stringOrNull ?: "",
     artCrop = this["art_crop"].string,
     normalSize = this["normal"].string,
     largeSize = this["large"].string,
@@ -74,10 +84,8 @@ private fun Json.toCardUris() = CardImageUris(
 
 private fun Json.toCardLegalities() = CardLegalities(
     standard = this["standard"].string,
-//    future = this["future"].string,
     historic = this["historic"].string,
     timeless = this["timeless"].string,
-//    gladiator = this["gladiator"].string,
     pioneer = this["pioneer"].string,
     explorer = this["explorer"].string,
     modern = this["modern"].string,
@@ -87,14 +95,8 @@ private fun Json.toCardLegalities() = CardLegalities(
     penny = this["penny"].string,
     commander = this["commander"].string,
     oathBreaker = this["oathbreaker"].string,
-//    standardBrawl = this["standardbrawl"].string,
     brawl = this["brawl"].string,
     alchemy = this["alchemy"].string,
-//    pauperCommander = this["paupercommander"].string,
-//    duel = this["duel"].string,
-//    oldSchool = this["oldschool"].string,
-//    preModern = this["premodern"].string,
-//    predh = this["predh"].string
 )
 
 private fun Json.toCardPrices() = CardPrices(
