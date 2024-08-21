@@ -185,76 +185,84 @@ private fun ColumnScope.MostValuableCards(
             .background(BoxColor)
     ) {
         mostValuableCards.forEachIndexed { index, mtgCard ->
-            //TODO Extrage conteuntul ce tine de acest card intr-un composable separat(ex ValuableCardItem)
+            ValuableCardItem(onCardClick, mtgCard, index)
+        }
+    }
+}
+
+@Composable
+private fun ValuableCardItem(
+    onCardClick: (String) -> Unit,
+    mtgCard: MtgCard,
+    index: Int
+) {
+    Row(
+        modifier = Modifier
+            .clickable { onCardClick(mtgCard.id) }
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(28.dp)
+                .clip(CircleShape)
+                .background(Color.DarkGray),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "#${index + 1}",
+                fontSize = 12.sp,
+                color = Color.White,
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Bold,
+            )
+        }
+
+        AsyncImage(
+            model = mtgCard.imageUris.smallSize,
+            modifier = Modifier
+                .padding(start = 12.dp)
+                .width(80.dp)
+                .background(Color.Transparent),
+            contentScale = ContentScale.FillWidth,
+            contentDescription = null
+        )
+
+        Column(
+            modifier = Modifier
+                .padding(horizontal = 12.dp)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.Start
+        ) {
+            Text(
+                text = mtgCard.name,
+                fontSize = 14.sp,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.LightGray,
+            )
+
             Row(
                 modifier = Modifier
-                    .clickable { onCardClick(mtgCard.id) }
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 12.dp),
+                    .padding(horizontal = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(28.dp)
-                        .clip(CircleShape)
-                        .background(Color.DarkGray),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "#${index + 1}",
-                        fontSize = 12.sp,
-                        color = Color.White,
-                        textAlign = TextAlign.Center,
-                        fontWeight = FontWeight.Bold,
-                    )
-                }
-
-                AsyncImage(
-                    model = mtgCard.imageUris.smallSize,
-                    modifier = Modifier
-                        .padding(start = 12.dp)
-                        .width(80.dp)
-                        .background(Color.Transparent),
-                    contentScale = ContentScale.FillWidth,
-                    contentDescription = null
+                CardSetName(
+                    setName = mtgCard.setName,
+                    setAbbreviation = mtgCard.setAbbreviation,
+                    fontSize = 10,
                 )
-
-                Column(
-                    modifier = Modifier
-                        .padding(horizontal = 12.dp)
-                        .fillMaxWidth(),
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    Text(
-                        text = mtgCard.name,
-                        fontSize = 14.sp,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color.LightGray,
-                    )
-
-                    Row(
-                        modifier = Modifier
-                            .padding(horizontal = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        CardSetName(
-                            setName = mtgCard.setName,
-                            setAbbreviation = mtgCard.setAbbreviation,
-                            fontSize = 10,
-                        )
-                    }
-
-                    Text(
-                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp),
-                        text = stringResource(id = R.string.euro, mtgCard.prices.eur),
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = AccentColor,
-                    )
-                }
             }
+
+            Text(
+                modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp),
+                text = stringResource(id = R.string.euro, mtgCard.prices.eur),
+                fontSize = 24.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = AccentColor,
+            )
         }
     }
 }
