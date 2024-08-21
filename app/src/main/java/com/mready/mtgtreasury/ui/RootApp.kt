@@ -14,6 +14,7 @@ import androidx.navigation.toRoute
 import com.mready.mtgtreasury.ui.auth.signin.SignInDestination
 import com.mready.mtgtreasury.ui.auth.signin.SignInScreen
 import com.mready.mtgtreasury.ui.auth.signup.SignUpDestination
+import com.mready.mtgtreasury.ui.auth.signup.SingUpScreen
 import com.mready.mtgtreasury.ui.card.CardScreen
 import com.mready.mtgtreasury.ui.card.CardScreenDestination
 import com.mready.mtgtreasury.ui.navigation.NavigationScreen
@@ -75,7 +76,22 @@ fun RootApp(modifier: Modifier = Modifier) {
             }
 
             composable<SignUpDestination>{
-
+                SingUpScreen(
+                    onNavigateToHome = {
+                        navController.navigate(NavigationScreenDestination){
+                            popUpTo(SignUpDestination){
+                                inclusive = true
+                            }
+                        }
+                    },
+                    onNavigateToSingIn = {
+                        navController.navigate(SignInDestination){
+                            popUpTo(SignUpDestination){
+                                inclusive = true
+                            }
+                        }
+                    }
+                )
             }
 
             composable<SignInDestination>{

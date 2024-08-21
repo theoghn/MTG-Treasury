@@ -28,7 +28,7 @@ import com.mready.mtgtreasury.ui.components.TwoColorText
 @Composable
 fun SingUpScreen(
     onNavigateToHome: () -> Unit,
-    onNavigateToSingUp: () -> Unit
+    onNavigateToSingIn: () -> Unit
 ) {
     val email = rememberSaveable { mutableStateOf("") }
     val password = rememberSaveable { mutableStateOf("") }
@@ -45,7 +45,7 @@ fun SingUpScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Sign in.",
+                text = "Sign up.",
                 fontSize = 28.sp,
                 color = Color.White,
                 fontWeight = FontWeight.Bold
@@ -89,7 +89,7 @@ fun SingUpScreen(
                 }
             ) {
                 Text(
-                    text = "Sign in",
+                    text = "Sign up",
                     fontSize = 16.sp,
                     color = Color.White,
                     fontWeight = FontWeight.SemiBold,
@@ -97,17 +97,10 @@ fun SingUpScreen(
             }
 
             TwoColorText(
-                modifier = Modifier.clickable { onNavigateToSingUp() },
-                firstPart = "Don't have an account?",
-                secondPart = "Create Account",
+                modifier = Modifier.clickable { onNavigateToSingIn() },
+                firstPart = "Already have an account?",
+                secondPart = "Login",
                 fontSize = 14.sp
-            )
-
-            Text(
-                text = "Forgot Password?",
-                fontSize = 14.sp,
-                color = Color.White,
-                fontWeight = FontWeight.SemiBold,
             )
         }
     }
