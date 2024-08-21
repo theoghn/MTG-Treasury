@@ -9,6 +9,7 @@ import javax.inject.Singleton
 class UserService @Inject constructor(
     private val userClient: UserApi
 ) {
-    suspend fun createAccount(email: String, password: String) = userClient.createAccount(email, password)
+    suspend fun createAccount(email: String, password: String, username: String) = userClient.createAccount(email, password, username)
+
     suspend fun signIn(email: String, password: String) = userClient.signIn(email, password)
 }

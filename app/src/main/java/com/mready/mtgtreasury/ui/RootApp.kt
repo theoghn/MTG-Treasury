@@ -11,6 +11,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 import com.mready.mtgtreasury.ui.auth.signin.SignInDestination
 import com.mready.mtgtreasury.ui.auth.signin.SignInScreen
 import com.mready.mtgtreasury.ui.auth.signup.SignUpDestination
@@ -25,12 +27,24 @@ import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
 fun RootApp(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
 
-    Box(modifier = modifier.fillMaxSize().background(MainBackgroundColor)) {
+    val user = Firebase.auth.currentUser
+    val startDestination = if (user != null) {
+//        SignInDestination
+        NavigationScreenDestination
+    } else {
+        SignInDestination
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MainBackgroundColor)
+    ) {
         NavHost(
             modifier = Modifier
                 .fillMaxSize(),
             navController = navController,
-            startDestination = SignInDestination,
+            startDestination = startDestination,
             enterTransition = {
                 slideIntoContainer(
                     AnimatedContentTransitionScope.SlideDirection.Start,
@@ -75,18 +89,18 @@ fun RootApp(modifier: Modifier = Modifier) {
                 )
             }
 
-            composable<SignUpDestination>{
+            composable<SignUpDestination> {
                 SingUpScreen(
                     onNavigateToHome = {
-                        navController.navigate(NavigationScreenDestination){
-                            popUpTo(SignUpDestination){
+                        navController.navigate(NavigationScreenDestination) {
+                            popUpTo(SignUpDestination) {
                                 inclusive = true
                             }
                         }
                     },
                     onNavigateToSingIn = {
-                        navController.navigate(SignInDestination){
-                            popUpTo(SignUpDestination){
+                        navController.navigate(SignInDestination) {
+                            popUpTo(SignUpDestination) {
                                 inclusive = true
                             }
                         }
@@ -94,18 +108,18 @@ fun RootApp(modifier: Modifier = Modifier) {
                 )
             }
 
-            composable<SignInDestination>{
-                SignInScreen (
+            composable<SignInDestination> {
+                SignInScreen(
                     onNavigateToHome = {
-                        navController.navigate(NavigationScreenDestination){
-                            popUpTo(SignInDestination){
+                        navController.navigate(NavigationScreenDestination) {
+                            popUpTo(SignInDestination) {
                                 inclusive = true
                             }
                         }
                     },
                     onNavigateToSingUp = {
-                        navController.navigate(SignUpDestination){
-                            popUpTo(SignInDestination){
+                        navController.navigate(SignUpDestination) {
+                            popUpTo(SignInDestination) {
                                 inclusive = true
                             }
                         }

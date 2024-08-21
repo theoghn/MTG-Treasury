@@ -20,29 +20,46 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.mready.mtgtreasury.ui.components.PrimaryButton
 import com.mready.mtgtreasury.ui.components.TwoColorText
 import com.mready.mtgtreasury.ui.theme.AccentColor
-import com.mready.mtgtreasury.ui.theme.BoxColor
 import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
+import com.mready.mtgtreasury.R
 
 @Composable
 fun SignInScreen(
-    onNavigateToHome : () -> Unit,
+    viewModel: SignInViewModel = hiltViewModel(),
+    onNavigateToHome: () -> Unit,
     onNavigateToSingUp: () -> Unit
 ) {
-    val email = rememberSaveable { mutableStateOf("") }
-    val password = rememberSaveable { mutableStateOf("") }
+    var email by rememberSaveable { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
+
+    val user by viewModel.user.collectAsState()
+
+    LaunchedEffect(user) {
+        user?.let {
+            onNavigateToHome()
+        }
+    }
 
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -65,26 +82,24 @@ fun SignInScreen(
             Spacer(modifier = Modifier.height(44.dp))
 
             BaseTextField(
-//            modifier = Modifier.fillMaxWidth(),
-                fieldValue = email.value,
+                fieldValue = email,
                 placeholderText = "Email",
                 onValueChange = {
-                    email.value = it
+                    email = it
                 },
                 onClearClick = {
-                    email.value = ""
+                    email = ""
                 }
             )
 
-            BaseTextField(
-//            modifier = Modifier.fillMaxWidth(),
-                fieldValue = password.value,
+            PasswordField(
+                fieldValue = password,
                 placeholderText = "Password",
                 onValueChange = {
-                    password.value = it
+                    password = it
                 },
                 onClearClick = {
-                    password.value = ""
+                    password = ""
                 }
             )
 
@@ -96,7 +111,7 @@ fun SignInScreen(
                     .height(50.dp)
                     .clip(RoundedCornerShape(12.dp)),
                 onClick = {
-                    onNavigateToHome()
+                    viewModel.signIn(email, password)
                 }
             ) {
                 Text(
@@ -147,15 +162,6 @@ fun BaseTextField(
             fontSize = 14.sp,
             color = Color.White
         ),
-//        keyboardOptions = KeyboardOptions.Default.copy(
-//            imeAction = ImeAction.Search
-//        ),
-//        keyboardActions = KeyboardActions(
-//            onSearch = {
-//                keyboardController?.hide()
-//                onNavigateToFilterSearch(searchQuery)
-//            }
-//        ),
         decorationBox = { innerTextField ->
             Row(
                 modifier = Modifier
@@ -173,13 +179,65 @@ fun BaseTextField(
                     }
                     innerTextField()
                 }
+            }
+        },
+        cursorBrush = SolidColor(AccentColor)
+    )
+}
 
+@Composable
+fun PasswordField(
+    modifier: Modifier = Modifier,
+    fieldValue: String,
+    placeholderText: String,
+    onValueChange: (String) -> Unit,
+    onClearClick: () -> Unit
+) {
+    var passwordVisibility by rememberSaveable { mutableStateOf(false) }
+
+    BasicTextField(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(MainBackgroundColor, RoundedCornerShape(12.dp))
+            .border(1.dp, Color.LightGray, RoundedCornerShape(12.dp))
+            .padding(vertical = 8.dp),
+        value = fieldValue,
+        onValueChange = {
+            onValueChange(it)
+        },
+        visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
+        singleLine = true,
+        textStyle = LocalTextStyle.current.copy(
+            fontSize = 14.sp,
+            color = Color.White
+        ),
+        decorationBox = { innerTextField ->
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = 12.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(modifier = Modifier.weight(1f)) {
+                    if (fieldValue.isEmpty()) {
+                        Text(
+                            text = placeholderText,
+                            fontSize = 14.sp,
+                            color = Color.LightGray,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                    innerTextField()
+                }
                 if (fieldValue.isNotEmpty()) {
                     Icon(
                         modifier = Modifier.clickable {
-                            onClearClick()
+                            passwordVisibility = !passwordVisibility
                         },
-                        imageVector = Icons.Default.Clear,
+                        painter = if (passwordVisibility) {
+                            painterResource(id = R.drawable.eye_outline)
+                        } else {
+                            painterResource(id = R.drawable.eye_off_outline)
+                        },
                         contentDescription = null,
                         tint = Color.White
                     )

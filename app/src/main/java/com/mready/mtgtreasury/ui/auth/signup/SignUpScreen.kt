@@ -12,8 +12,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -21,17 +25,31 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.mready.mtgtreasury.ui.auth.signin.BaseTextField
+import com.mready.mtgtreasury.ui.auth.signin.PasswordField
 import com.mready.mtgtreasury.ui.components.PrimaryButton
 import com.mready.mtgtreasury.ui.components.TwoColorText
 
 @Composable
 fun SingUpScreen(
+    viewModel: SignUpViewModel = hiltViewModel(),
     onNavigateToHome: () -> Unit,
-    onNavigateToSingIn: () -> Unit
+    onNavigateToSingIn: () -> Unit,
 ) {
-    val email = rememberSaveable { mutableStateOf("") }
-    val password = rememberSaveable { mutableStateOf("") }
+    var email by rememberSaveable { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
+    var username by rememberSaveable { mutableStateOf("") }
+    var passwordConfirmation by rememberSaveable { mutableStateOf("") }
+
+    val exception by viewModel.exception.collectAsState()
+    val user by viewModel.user.collectAsState()
+
+    LaunchedEffect(user) {
+        user?.let {
+            onNavigateToHome()
+        }
+    }
 
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -51,29 +69,53 @@ fun SingUpScreen(
                 fontWeight = FontWeight.Bold
             )
 
-            Spacer(modifier = Modifier.height(44.dp))
+            Text(
+                modifier = Modifier.align(Alignment.Start),
+                text = exception,
+                color = Color.Red
+            )
 
             BaseTextField(
-//            modifier = Modifier.fillMaxWidth(),
-                fieldValue = email.value,
-                placeholderText = "Email",
+                fieldValue = username,
+                placeholderText = "Username",
                 onValueChange = {
-                    email.value = it
+                    username = it
                 },
                 onClearClick = {
-                    email.value = ""
+                    username = ""
                 }
             )
 
             BaseTextField(
-//            modifier = Modifier.fillMaxWidth(),
-                fieldValue = password.value,
-                placeholderText = "Password",
+                fieldValue = email,
+                placeholderText = "Email",
                 onValueChange = {
-                    password.value = it
+                    email = it
                 },
                 onClearClick = {
-                    password.value = ""
+                    email = ""
+                }
+            )
+
+            PasswordField(
+                fieldValue = password,
+                placeholderText = "Password",
+                onValueChange = {
+                    password = it
+                },
+                onClearClick = {
+                    password = ""
+                }
+            )
+
+            PasswordField(
+                fieldValue = passwordConfirmation,
+                placeholderText = "Confirm password",
+                onValueChange = {
+                    passwordConfirmation = it
+                },
+                onClearClick = {
+                    passwordConfirmation = ""
                 }
             )
 
@@ -85,7 +127,7 @@ fun SingUpScreen(
                     .height(50.dp)
                     .clip(RoundedCornerShape(12.dp)),
                 onClick = {
-                    onNavigateToHome()
+                    viewModel.createAccount(email, password, passwordConfirmation, username)
                 }
             ) {
                 Text(

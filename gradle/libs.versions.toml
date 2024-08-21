@@ -19,6 +19,7 @@ hiltAndroidCompiler = "2.51.1"
 coilCompose = "2.2.2"
 material3 = "1.2.1"
 firebaseAuthKtx = "23.0.0"
+firebaseFirestoreKtx = "25.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -52,6 +53,7 @@ hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltA
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroidCompiler" }
 library = { module = "com.github.chuckerteam.chucker:library", version.ref = "library" }
 firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebaseAuthKtx" }
+firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
 
 
 [plugins]
