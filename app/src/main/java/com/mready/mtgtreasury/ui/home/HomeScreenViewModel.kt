@@ -31,7 +31,7 @@ class HomeScreenViewModel @Inject constructor(private val api: ScryfallApi) : Vi
 
 sealed class HomeScreenUiState {
     data class HomeUi(
-        val mtgCard: MtgCard?,
+        val mtgCard: MtgCard,
         val mostValuableCards: List<MtgCard>,
         val newestSets: List<MtgSet>
     ) : HomeScreenUiState()

@@ -269,7 +269,7 @@ private fun ValuableCardItem(
 
 @Composable
 private fun ColumnScope.CardOfTheDay(
-    card: MtgCard?,
+    card: MtgCard,
     onCardClick: (String) -> Unit
 ) {
     Text(
@@ -291,7 +291,7 @@ private fun ColumnScope.CardOfTheDay(
             .background(BoxColor),
     ) {
         AsyncImage(
-            model = card?.imageUris?.borderCrop,
+            model = card.imageUris.borderCrop,
             modifier = Modifier
                 .padding(12.dp)
                 .width(169.dp)
@@ -311,7 +311,7 @@ private fun ColumnScope.CardOfTheDay(
                 Text(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    text = card?.name ?: stringResource(R.string.home_mysterious_card),
+                    text = card.name,
                     fontSize = 18.sp,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
@@ -327,15 +327,15 @@ private fun ColumnScope.CardOfTheDay(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     CardSetName(
-                        setName = card?.setName ?: "",
-                        setAbbreviation = card?.setAbbreviation ?: "",
+                        setName = card.setName,
+                        setAbbreviation = card.setAbbreviation,
                         fontSize = 10,
                     )
                 }
 
                 Text(
                     modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp),
-                    text = stringResource(R.string.euro, card?.prices?.eur ?: "0.0"),
+                    text = stringResource(R.string.euro, card.prices.eur),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Color.White,
@@ -344,7 +344,7 @@ private fun ColumnScope.CardOfTheDay(
                 DescriptionField(
                     modifier = Modifier.padding(horizontal = 4.dp),
                     firstPart = stringResource(R.string.text_rank),
-                    secondPart = "${card?.edhRank ?: 0}"
+                    secondPart = "${card.edhRank}"
                 )
 
                 Row(
@@ -361,7 +361,7 @@ private fun ColumnScope.CardOfTheDay(
                     Image(
                         modifier = Modifier.size(18.dp),
                         painter = painterResource(
-                            id = if (card?.foil == true) {
+                            id = if (card.foil) {
                                 R.drawable.icons8_checkmark_48
                             } else {
                                 R.drawable.icons8_cancel_48
@@ -376,14 +376,14 @@ private fun ColumnScope.CardOfTheDay(
                     firstPart = stringResource(R.string.text_legal),
                     secondPart = stringResource(
                         R.string.x_max_set,
-                        card?.getNumberOfLegalFormats() ?: 99
+                        card.getNumberOfLegalFormats() ?: 99
                     )
                 )
 
                 DescriptionField(
                     modifier = Modifier.padding(horizontal = 4.dp),
                     firstPart = stringResource(R.string.text_release),
-                    secondPart = card?.releaseDate?.formatReleaseDate()
+                    secondPart = card.releaseDate.formatReleaseDate()
                         ?: stringResource(R.string.text_unknown)
                 )
             }
@@ -394,7 +394,7 @@ private fun ColumnScope.CardOfTheDay(
                     .size(36.dp)
                     .clip(CircleShape)
                     .align(Alignment.BottomEnd),
-                onClick = { card?.id?.let { onCardClick(it) } },
+                onClick = { onCardClick(card.id) },
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowForward,
