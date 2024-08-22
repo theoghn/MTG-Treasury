@@ -1,12 +1,16 @@
 package com.mready.mtgtreasury.ui
 
+import android.util.Log
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -24,15 +28,28 @@ import com.mready.mtgtreasury.ui.navigation.NavigationScreenDestination
 import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
 
 @Composable
-fun RootApp(modifier: Modifier = Modifier) {
+fun RootApp(
+    modifier: Modifier = Modifier,
+    viewModel: RootViewModel = hiltViewModel()
+) {
     val navController = rememberNavController()
+    val isUserLoggedIn = viewModel.isUserLoggedIn.collectAsState()
 
     val user = Firebase.auth.currentUser
-    val startDestination = if (user != null) {
-//        SignInDestination
-        NavigationScreenDestination
-    } else {
-        SignInDestination
+
+    LaunchedEffect(isUserLoggedIn.value) {
+        Log.d("RootApp", "isUserLoggedIn: $isUserLoggedIn")
+        if (!isUserLoggedIn.value) {
+            navController.navigate(SignInDestination) {
+                launchSingleTop = true
+                popUpTo(0) { inclusive = true }
+            }
+        } else {
+            navController.navigate(NavigationScreenDestination) {
+                launchSingleTop = true
+                popUpTo(0) { inclusive = true }
+            }
+        }
     }
 
     Box(
@@ -44,7 +61,7 @@ fun RootApp(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .fillMaxSize(),
             navController = navController,
-            startDestination = startDestination,
+            startDestination = SignInDestination,
             enterTransition = {
                 slideIntoContainer(
                     AnimatedContentTransitionScope.SlideDirection.Start,

@@ -73,13 +73,18 @@ class ScryfallApi @Inject constructor(
         rarity: List<String>,
         manaCost: List<String>,
     ): List<MtgCard> {
-        return apiClient.get(
-            endpoint = "cards/search",
-            query = mapOf(
-                "q" to buildSearchQuery(name, type, superType, colors, rarity, manaCost),
-            )
-        ) { json ->
-            json["data"].array.map { it.toCard() }
+        try {
+            val x = apiClient.get(
+                endpoint = "cards/search",
+                query = mapOf(
+                    "q" to buildSearchQuery(name, type, superType, colors, rarity, manaCost),
+                )
+            ) { json ->
+                json["data"].array.map { it.toCard() }
+            }
+            return x
+        } catch (e: Exception) {
+            return emptyList()
         }
     }
 
@@ -94,8 +99,7 @@ class ScryfallApi @Inject constructor(
         val query = buildString {
             if (type.isEmpty() && superType.isEmpty() && colors.isEmpty() && rarity.isEmpty() && manaCost.isEmpty()) {
                 append("name:$name")
-            }
-            else {
+            } else {
                 if (name.isNotEmpty())
                     append("name:$name")
             }

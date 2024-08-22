@@ -1,6 +1,6 @@
 package com.mready.mtgtreasury.ui.search.filter
 
-import android.util.Log
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -55,7 +55,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -64,6 +63,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -72,10 +72,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.mready.mtgtreasury.R
 import com.mready.mtgtreasury.models.card.MtgCard
 import com.mready.mtgtreasury.ui.components.AsyncSvg
 import com.mready.mtgtreasury.ui.components.PrimaryButton
+import com.mready.mtgtreasury.ui.components.SecondaryButton
+import com.mready.mtgtreasury.ui.components.ShimmerBox
 import com.mready.mtgtreasury.ui.theme.AccentColor
 import com.mready.mtgtreasury.ui.theme.BoxColor
 import com.mready.mtgtreasury.ui.theme.LegalChipColor
@@ -105,6 +108,9 @@ fun FilterSearchScreen(
     onNavigateToCard: (String) -> Unit,
     onNavigateToSearch: () -> Unit
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+    val manaCosts by viewModel.manaCosts.collectAsState()
+
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val filterBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -119,18 +125,17 @@ fun FilterSearchScreen(
     var selectedCardTypes by rememberSaveable { mutableStateOf(listOf<String>()) }
     var selectedCardSuperTypes by rememberSaveable { mutableStateOf(listOf<String>()) }
 
-    val manaCosts by viewModel.manaCosts.collectAsState()
-    val cards by viewModel.cards.collectAsState()
-
-    LaunchedEffect(searchQuery) {
-        viewModel.searchCards(
-            name = searchQuery ?: "",
-            manaCost = selectedCardManaCosts,
-            colors = selectedCardColors,
-            rarity = selectedCardRarities,
-            type = selectedCardTypes,
-            superType = selectedCardSuperTypes
-        )
+    LaunchedEffect(uiState) {
+        if (uiState !is FilterSearchScreenUiState.FilterSearchScreenUi) {
+            viewModel.searchCards(
+                name = searchQuery ?: "",
+                manaCost = selectedCardManaCosts,
+                colors = selectedCardColors,
+                rarity = selectedCardRarities,
+                type = selectedCardTypes,
+                superType = selectedCardSuperTypes
+            )
+        }
     }
 
     LaunchedEffect(selectedFilter) {
@@ -198,31 +203,76 @@ fun FilterSearchScreen(
         },
         containerColor = MainBackgroundColor
     ) {
-        Box(
-            modifier = Modifier
-                .padding(top = it.calculateTopPadding())
-                .fillMaxSize()
-                .background(Color.Transparent)
-        ) {
-            LazyVerticalGrid(
-                modifier = Modifier.padding(horizontal = 12.dp),
-                columns = GridCells.Fixed(2),
-                contentPadding = PaddingValues(bottom = 32.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Log.d("cards", cards.size.toString())
-                items(cards) { mtgCard ->
-                    MtgCardItem(
-//                        modifier = Modifier.padding() ,
-                        mtgCard = mtgCard,
-                        onClick = {
-                            onNavigateToCard(mtgCard.id)
+        when (val currentState = uiState) {
+            is FilterSearchScreenUiState.Loading -> {
+                FilterSearchShimmerScreen(
+                    modifier = Modifier
+                        .padding(top = it.calculateTopPadding())
+                )
+            }
+
+            is FilterSearchScreenUiState.FilterSearchScreenUi -> {
+                val cards = currentState.cards
+
+                Box(
+                    modifier = Modifier
+                        .padding(top = it.calculateTopPadding())
+                        .fillMaxSize()
+                        .background(Color.Transparent)
+                ) {
+                    LazyVerticalGrid(
+                        modifier = Modifier.padding(horizontal = 12.dp),
+                        columns = GridCells.Fixed(2),
+                        contentPadding = PaddingValues(bottom = 32.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        items(cards) { mtgCard ->
+                            MtgCardItem(
+                                mtgCard = mtgCard,
+                                onClick = {
+                                    onNavigateToCard(mtgCard.id)
+                                },
+                                onAddToInventory = {
+                                    viewModel.addCardToInventory(mtgCard.id)
+                                },
+                                onRemoveFromInventory = {
+                                    viewModel.removeCardFromInventory(mtgCard.id)
+                                },
+                                isInInventory = mtgCard.isInInventory
+                            )
                         }
-                    )
+                    }
+                }
+            }
+
+            FilterSearchScreenUiState.Empty -> {
+                Box(
+                    Modifier
+                        .padding(top = it.calculateTopPadding())
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "ಥ_ಥ",
+                            fontSize = 50.sp,
+                            color = Color.White
+                        )
+                        Text(
+                            text = "No Cards Found",
+                            fontSize = 18.sp,
+                            color = Color.White
+                        )
+                    }
                 }
             }
         }
+
+
     }
 
     if (isBottomSheetVisible) {
@@ -456,7 +506,6 @@ fun AdvancedSearchModalBottomSheet(
         }
     }
 }
-
 
 
 @Composable
@@ -818,6 +867,9 @@ fun TypeBottomSheet(
 fun MtgCardItem(
     modifier: Modifier = Modifier,
     mtgCard: MtgCard,
+    isInInventory: Boolean,
+    onAddToInventory: () -> Unit,
+    onRemoveFromInventory: () -> Unit,
     onClick: () -> Unit
 ) {
     Card(
@@ -842,7 +894,10 @@ fun MtgCardItem(
                 .padding(horizontal = 8.dp, vertical = 12.dp)
         ) {
             AsyncImage(
-                model = mtgCard.imageUris.borderCrop,
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(mtgCard.imageUris.borderCrop)
+                    .crossfade(true)
+                    .build(),
                 modifier = Modifier
                     .padding(bottom = 8.dp)
                     .height(160.dp)
@@ -850,6 +905,8 @@ fun MtgCardItem(
                     .background(Color.Transparent)
                     .align(Alignment.CenterHorizontally),
                 contentScale = ContentScale.FillHeight,
+                placeholder = painterResource(id = R.drawable.card_back),
+                error = painterResource(id = R.drawable.card_back),
                 contentDescription = null
             )
 
@@ -889,18 +946,64 @@ fun MtgCardItem(
                     color = Color.White
                 )
 
-                PrimaryButton(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape),
-                    onClick = {  },
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = null,
-                        tint = Color.White
-                    )
+                Crossfade(targetState = isInInventory, label = "") {
+                    if (it) {
+                        PrimaryButton(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape),
+                            onClick = {
+                                onRemoveFromInventory()
+                            },
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Done,
+                                contentDescription = null,
+                                tint = Color.White
+                            )
+                        }
+                    } else {
+                        SecondaryButton(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape),
+                            onClick = {
+                                onAddToInventory()
+                            },
+                            shape = CircleShape
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = null,
+                                tint = Color.White
+                            )
+                        }
+                    }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun FilterSearchShimmerScreen(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+    ) {
+        LazyVerticalGrid(
+            modifier = Modifier.padding(horizontal = 12.dp),
+            columns = GridCells.Fixed(2),
+            contentPadding = PaddingValues(bottom = 32.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            items(6) {
+                ShimmerBox(
+                    modifier = Modifier
+                        .height(300.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                )
             }
         }
     }

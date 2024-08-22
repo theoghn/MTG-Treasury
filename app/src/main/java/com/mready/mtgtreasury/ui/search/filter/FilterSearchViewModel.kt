@@ -4,19 +4,24 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mready.mtgtreasury.models.card.MtgCard
 import com.mready.mtgtreasury.services.CardsService
+import com.mready.mtgtreasury.services.InventoryService
 import com.mready.mtgtreasury.utility.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
 @HiltViewModel
-class FilterSearchViewModel @Inject constructor(private val api: CardsService) : ViewModel() {
+class FilterSearchViewModel @Inject constructor(
+    private val api: CardsService,
+    private val inventoryService: InventoryService
+) : ViewModel() {
     val manaCosts = MutableStateFlow<Map<String, String>>(emptyMap())
-    val cards = MutableStateFlow<List<MtgCard>>(emptyList())
+    val uiState = MutableStateFlow<FilterSearchScreenUiState>(FilterSearchScreenUiState.Loading)
 
     fun getCosts() {
         viewModelScope.launch {
@@ -34,24 +39,49 @@ class FilterSearchViewModel @Inject constructor(private val api: CardsService) :
         superType: List<String>,
     ) {
         viewModelScope.launch {
-            cards.update{
-                api.getCardsByFilters(
-                    name = name,
-                    manaCost = manaCost,
-                    colors = colors,
-                    rarity = rarity,
-                    type = type,
-                    superType = superType,
-                )
+            uiState.update { FilterSearchScreenUiState.Loading }
+
+            inventoryService.getInventory().collect { inventory ->
+                uiState.update {
+                    var cards = api.getCardsByFilters(
+                        name = name,
+                        manaCost = manaCost,
+                        colors = colors,
+                        rarity = rarity,
+                        type = type,
+                        superType = superType,
+                    )
+                    cards = cards.map { it.copy(isInInventory = inventory.contains(it.id)) }
+
+                    if (cards.isEmpty()) {
+                        FilterSearchScreenUiState.Empty
+                    } else {
+                        FilterSearchScreenUiState.FilterSearchScreenUi(cards)
+                    }
+                }
             }
+
+        }
+    }
+
+    fun addCardToInventory(cardId: String) {
+        viewModelScope.launch {
+            inventoryService.addCardToInventory(cardId)
+        }
+    }
+
+    fun removeCardFromInventory(cardId: String) {
+        viewModelScope.launch {
+            inventoryService.removeCardFromInventory(cardId)
         }
     }
 }
 
 sealed class FilterSearchScreenUiState {
-    data class HomeUi(
+    data class FilterSearchScreenUi(
         val cards: List<MtgCard>,
     ) : FilterSearchScreenUiState()
 
     data object Loading : FilterSearchScreenUiState()
+    data object Empty : FilterSearchScreenUiState()
 }

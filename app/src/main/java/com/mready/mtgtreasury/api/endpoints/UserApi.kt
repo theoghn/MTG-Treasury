@@ -2,13 +2,27 @@ package com.mready.mtgtreasury.api.endpoints
 
 import android.util.Log
 import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.toObject
 import com.mready.mtgtreasury.models.User
 import com.mready.mtgtreasury.utility.awaitOrNull
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.channels.trySendBlocking
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.concurrent.CancellationException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,6 +31,23 @@ import javax.inject.Singleton
 class UserApi @Inject constructor() {
     private val auth = Firebase.auth
     private val db = Firebase.firestore
+    private val isUserPresent = MutableStateFlow(false)
+
+    init {
+        auth.addAuthStateListener {
+            if (it.currentUser == null) {
+                Log.d("UserApi", "init: User not present")
+                isUserPresent.update { false }
+            } else {
+                Log.d("UserApi", "init: User present")
+                isUserPresent.update { true }
+            }
+        }
+    }
+
+    fun isUserPresent(): StateFlow<Boolean> {
+        return isUserPresent
+    }
 
     suspend fun createAccount(email: String, password: String, username: String): FirebaseUser? {
         val user = auth.createUserWithEmailAndPassword(email, password).awaitOrNull()?.user
@@ -39,51 +70,6 @@ class UserApi @Inject constructor() {
         return auth.signInWithEmailAndPassword(email, password).awaitOrNull()?.user
     }
 
-    suspend fun addCardToInventory(cardId: String) {
-        val userId = auth.currentUser?.uid
-        if (userId == null) {
-            Log.e("UserApi", "addCardToInventory: User not logged in")
-            return
-        }
 
-        val userDoc = db.collection("users").document(userId)
-
-        userDoc.update("inventory", FieldValue.arrayUnion(cardId)).awaitOrNull()
-    }
-
-    suspend fun removeCardFromInventory(cardId: String) {
-        val userId = auth.currentUser?.uid
-
-        if (userId == null) {
-            Log.e("UserApi", "removeCardFromInventory: User not logged in")
-            return
-        }
-
-        val userDoc = db.collection("users").document(userId)
-
-        userDoc.update("inventory", FieldValue.arrayRemove(cardId)).awaitOrNull()
-    }
-
-    suspend fun addCardToWishlist(cardId: String) {
-        val userId = auth.currentUser?.uid
-        if (userId == null) {
-            Log.e("UserApi", "addCardToInventory: User not logged in")
-            return
-        }
-
-        val userDoc = db.collection("users").document(userId)
-        userDoc.update("wishlist", FieldValue.arrayUnion(cardId)).awaitOrNull()
-    }
-
-    suspend fun removeCardFromWishlist(cardId: String) {
-        val userId = auth.currentUser?.uid
-
-        if (userId == null) {
-            Log.e("UserApi", "removeCardFromInventory: User not logged in")
-            return
-        }
-
-        val userDoc = db.collection("users").document(userId)
-        userDoc.update("wishlist", FieldValue.arrayRemove(cardId)).awaitOrNull()
-    }
 }
+

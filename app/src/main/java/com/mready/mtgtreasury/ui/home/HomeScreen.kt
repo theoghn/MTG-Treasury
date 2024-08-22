@@ -3,8 +3,10 @@ package com.mready.mtgtreasury.ui.home
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -56,6 +58,7 @@ import com.mready.mtgtreasury.ui.components.TwoColorText
 import com.mready.mtgtreasury.ui.theme.AccentColor
 import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
 import com.mready.mtgtreasury.ui.theme.BoxColor
+import com.mready.mtgtreasury.ui.theme.ShimmerColor
 
 @Composable
 fun HomeScreen(
@@ -68,7 +71,7 @@ fun HomeScreen(
 
     when (val currentState = uiState) {
         is HomeScreenUiState.Loading -> {
-            ShimmerBox(modifier = Modifier.fillMaxSize())
+            HomeShimmer()
         }
 
         is HomeScreenUiState.HomeUi -> {
@@ -78,7 +81,6 @@ fun HomeScreen(
 
             Column(
                 modifier = modifier
-                    .padding()
                     .fillMaxSize()
                     .background(MainBackgroundColor)
                     .verticalScroll(state = scrollState),
@@ -101,8 +103,6 @@ fun HomeScreen(
                     )
                 }
 
-
-                //TODO Sa extracti string-urile hardocadate
                 Text(
                     modifier = Modifier
                         .padding(bottom = 8.dp, top = 20.dp, start = 32.dp)
@@ -129,7 +129,9 @@ fun HomeScreen(
                             .clip(RoundedCornerShape(4.dp))
                             .background(Color.Transparent),
                         contentScale = ContentScale.FillWidth,
-                        contentDescription = null
+                        contentDescription = null,
+                        placeholder = painterResource(id = R.drawable.card_back),
+                        error = painterResource(id = R.drawable.card_back)
                     )
 
                     Box(modifier = Modifier.fillMaxSize()) {
@@ -213,7 +215,8 @@ fun HomeScreen(
                             TwoColorText(
                                 modifier = Modifier.padding(horizontal = 4.dp),
                                 firstPart = stringResource(R.string.text_release),
-                                secondPart = card?.releaseDate?.formatReleaseDate() ?: stringResource(R.string.text_unknown)
+                                secondPart = card?.releaseDate?.formatReleaseDate()
+                                    ?: stringResource(R.string.text_unknown)
                             )
                         }
 
@@ -283,7 +286,9 @@ fun HomeScreen(
                                     .width(80.dp)
                                     .background(Color.Transparent),
                                 contentScale = ContentScale.FillWidth,
-                                contentDescription = null
+                                contentDescription = null,
+                                placeholder = painterResource(id = R.drawable.card_back),
+                                error = painterResource(id = R.drawable.card_back)
                             )
 
                             Column(
@@ -339,11 +344,14 @@ fun HomeScreen(
                     )
                 }
 
-                LazyRow(modifier = Modifier.padding(bottom = 40.dp)) {
+                LazyRow(
+                    modifier = Modifier.padding(bottom = 40.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
                     items(newestSets) { set ->
                         Row(
                             modifier = Modifier
-                                .padding(start = 12.dp)
                                 .clip(shape = RoundedCornerShape(12.dp))
                                 .background(BoxColor)
                                 .padding(8.dp),
@@ -415,4 +423,56 @@ fun CardSetName(
         fontWeight = FontWeight.Normal,
         color = Color.LightGray
     )
+}
+
+@Composable
+fun HomeShimmer() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MainBackgroundColor),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Column(
+            modifier = Modifier.padding(top = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            ShimmerBox(
+                modifier = Modifier
+                    .padding(bottom = 8.dp)
+                    .width(240.dp)
+                    .height(24.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+                color = ShimmerColor
+            )
+
+            ShimmerBox(
+                modifier = Modifier
+                    .padding(bottom = 8.dp)
+                    .width(130.dp)
+                    .height(54.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+                color = ShimmerColor
+            )
+
+            ShimmerBox(
+                modifier = Modifier
+                    .padding(horizontal = 12.dp, vertical = 20.dp)
+                    .fillMaxWidth()
+                    .height(265.dp)
+                    .clip(shape = RoundedCornerShape(12.dp)),
+                color = ShimmerColor
+            )
+
+            ShimmerBox(
+                modifier = Modifier
+                    .padding(horizontal = 12.dp, vertical = 20.dp)
+                    .fillMaxWidth()
+                    .height(400.dp)
+                    .clip(shape = RoundedCornerShape(12.dp)),
+                color = ShimmerColor
+            )
+
+        }
+    }
 }

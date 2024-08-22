@@ -1,10 +1,12 @@
 package com.mready.mtgtreasury.ui.card
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,6 +24,9 @@ import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -38,6 +43,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
@@ -55,6 +61,7 @@ import com.mready.mtgtreasury.models.card.formatReleaseDate
 import com.mready.mtgtreasury.ui.components.AsyncSvg
 import com.mready.mtgtreasury.ui.components.PrimaryButton
 import com.mready.mtgtreasury.ui.components.TwoColorText
+import com.mready.mtgtreasury.ui.theme.AccentColor
 import com.mready.mtgtreasury.ui.theme.BottomBarColor
 import com.mready.mtgtreasury.ui.theme.BoxColor
 import com.mready.mtgtreasury.ui.theme.LegalChipColor
@@ -70,6 +77,7 @@ fun CardScreen(
     onBack: () -> Boolean
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
     val scaffoldState = rememberBottomSheetScaffoldState()
 
     val configuration = LocalConfiguration.current
@@ -91,6 +99,8 @@ fun CardScreen(
 
             is CardScreenUiState.CardUi -> {
                 val card = currentState.mtgCard
+                val isFavorite = currentState.isFavorite
+                val isInInventory = currentState.isInInventory
 
                 BottomSheetScaffold(
                     modifier = Modifier.fillMaxWidth(),
@@ -110,7 +120,7 @@ fun CardScreen(
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
+//                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             PrimaryButton(
                                 modifier = Modifier
@@ -126,21 +136,67 @@ fun CardScreen(
                                 )
                             }
 
+                            Spacer(modifier = Modifier.weight(1f))
+
+                            PrimaryButton(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape),
+                                onClick = {
+                                    if (isInInventory) {
+                                        viewModel.removeCardFromInventory(card.id)
+                                    } else {
+                                        viewModel.addCardToInventory(card.id)
+                                    }
+                                },
+                            ) {
+                                Crossfade(targetState = isInInventory, label = "") {
+                                    Icon(
+                                        imageVector = if (it) {
+                                            Icons.Default.Done
+                                        } else {
+                                            Icons.Default.Add
+                                        },
+                                        contentDescription = null,
+                                        tint = if (it) {
+                                            Color.White
+                                        } else {
+                                            Color.White
+                                        }
+                                    )
+                                }
+                            }
+
                             PrimaryButton(
                                 modifier = Modifier
                                     .padding(horizontal = 16.dp)
                                     .size(40.dp)
                                     .clip(CircleShape),
-                                onClick = { },
+                                onClick = {
+                                    if (isFavorite) {
+                                        viewModel.removeCardFromWishlist(card.id)
+                                    } else {
+                                        viewModel.addCardToWishlist(card.id)
+                                    }
+                                },
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.FavoriteBorder,
-                                    contentDescription = null,
-                                    tint = Color.White
-                                )
+                                Crossfade(targetState = isFavorite, label = "") {
+                                    Icon(
+                                        imageVector = if (it) {
+                                            Icons.Default.Favorite
+                                        } else {
+                                            Icons.Default.FavoriteBorder
+                                        },
+                                        contentDescription = null,
+                                        tint = if (it) {
+                                            Color.White
+                                        } else {
+                                            Color.White
+                                        }
+                                    )
+                                }
                             }
                         }
-
 
                         Box(modifier = Modifier.fillMaxSize()) {
                             AsyncImage(
@@ -152,7 +208,9 @@ fun CardScreen(
                                     .background(Color.Transparent)
                                     .align(Alignment.TopCenter),
                                 contentScale = ContentScale.FillWidth,
-                                contentDescription = null
+                                contentDescription = null,
+                                placeholder = painterResource(id = R.drawable.card_back),
+                                error = painterResource(id = R.drawable.card_back)
                             )
                         }
                     }
@@ -184,20 +242,6 @@ fun SheetContent(
             fontWeight = FontWeight.Bold,
         )
 
-        Row(
-            modifier = Modifier.padding(vertical = 8.dp),
-            horizontalArrangement = Arrangement.Start
-        ) {
-            card.manaCost.split("{", "}").forEach { color ->
-                if (color.isNotEmpty()) {
-                    AsyncSvg(
-                        modifier = Modifier.padding(end = 16.dp).size(18.dp),
-                        uri = "https://svgs.scryfall.io/card-symbols/$color.svg"
-                    )
-                }
-            }
-        }
-
         Text(
             modifier = Modifier
                 .padding(bottom = 8.dp)
@@ -206,6 +250,30 @@ fun SheetContent(
             fontSize = 12.sp,
             color = Color.White,
             fontWeight = FontWeight.SemiBold,
+        )
+
+        Row(
+            modifier = Modifier.padding(bottom = 8.dp),
+            horizontalArrangement = Arrangement.Start
+        ) {
+            card.manaCost.split("{", "}").forEach { color ->
+                if (color.isNotEmpty()) {
+                    AsyncSvg(
+                        modifier = Modifier
+                            .padding(end = 16.dp)
+                            .size(18.dp),
+                        uri = "https://svgs.scryfall.io/card-symbols/$color.svg"
+                    )
+                }
+            }
+        }
+
+        Text(
+            modifier = Modifier.padding(bottom = 8.dp),
+            text = stringResource(id = R.string.euro, card.prices.eur),
+            fontSize = 30.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = AccentColor,
         )
 
         OracleText(
