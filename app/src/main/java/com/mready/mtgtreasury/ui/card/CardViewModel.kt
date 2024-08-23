@@ -2,15 +2,12 @@ package com.mready.mtgtreasury.ui.card
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mready.mtgtreasury.api.endpoints.UserApi
 import com.mready.mtgtreasury.models.card.MtgCard
 import com.mready.mtgtreasury.services.CardsService
 import com.mready.mtgtreasury.services.InventoryService
-import com.mready.mtgtreasury.services.UserService
 import com.mready.mtgtreasury.services.WishlistService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch

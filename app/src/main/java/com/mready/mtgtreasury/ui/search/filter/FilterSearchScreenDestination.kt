@@ -6,4 +6,4 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 @Parcelize
-data class FilterSearchScreenDestination(val searchName: String?) : Parcelable
+data class FilterSearchScreenDestination(val searchName: String) : Parcelable

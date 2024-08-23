@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import com.mready.mtgtreasury.ui.root.RootApp
 import com.mready.mtgtreasury.ui.theme.MTGTreasuryTheme
 import dagger.hilt.android.AndroidEntryPoint
 

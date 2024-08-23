@@ -7,18 +7,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.sp
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
-fun ProfileScreen(modifier: Modifier = Modifier) {
+fun ProfileScreen(
+    viewModel: ProfileViewModel = hiltViewModel()
+) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(text = "Profile", fontSize = 38.sp, color = Color.White)
-        Button(onClick = { Firebase.auth.signOut() }) {
+        Button(onClick = { viewModel.signOut() }) {
             Text(text = "Sign out")
-
         }
     }
 }

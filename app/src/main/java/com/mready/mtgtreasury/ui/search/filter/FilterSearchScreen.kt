@@ -290,7 +290,12 @@ fun FilterSearchScreen(
                 )
                 isBottomSheetVisible = false
             },
-            updateSelectedFilter = { selectedFilter = it },
+            updateSelectedFilter = {
+                selectedFilter = it
+                if (it == SheetFilters.MANA) {
+                    viewModel.getCosts()
+                }
+            },
             showFilterSheet = { isFilterBottomSheetVisible = true }
         )
     }

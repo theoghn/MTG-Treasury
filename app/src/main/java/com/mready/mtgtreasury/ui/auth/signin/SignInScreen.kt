@@ -7,20 +7,17 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,28 +35,22 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.mready.mtgtreasury.R
 import com.mready.mtgtreasury.ui.components.PrimaryButton
 import com.mready.mtgtreasury.ui.components.TwoColorText
 import com.mready.mtgtreasury.ui.theme.AccentColor
 import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
-import com.mready.mtgtreasury.R
 
 @Composable
 fun SignInScreen(
     viewModel: SignInViewModel = hiltViewModel(),
-    onNavigateToHome: () -> Unit,
     onNavigateToSingUp: () -> Unit
 ) {
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
 
-    val user by viewModel.user.collectAsState()
-
-    LaunchedEffect(user) {
-        user?.let {
-            onNavigateToHome()
-        }
-    }
+    val loading by viewModel.loading.collectAsState()
+    val exception by viewModel.exception.collectAsState()
 
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -79,16 +70,21 @@ fun SignInScreen(
                 fontWeight = FontWeight.Bold
             )
 
-            Spacer(modifier = Modifier.height(44.dp))
+            if (loading) {
+                CircularProgressIndicator()
+            }
+
+            Text(
+                modifier = Modifier.align(Alignment.Start),
+                text = exception,
+                color = Color.Red
+            )
 
             BaseTextField(
                 fieldValue = email,
                 placeholderText = "Email",
                 onValueChange = {
                     email = it
-                },
-                onClearClick = {
-                    email = ""
                 }
             )
 
@@ -97,9 +93,6 @@ fun SignInScreen(
                 placeholderText = "Password",
                 onValueChange = {
                     password = it
-                },
-                onClearClick = {
-                    password = ""
                 }
             )
 
@@ -145,7 +138,6 @@ fun BaseTextField(
     fieldValue: String,
     placeholderText: String,
     onValueChange: (String) -> Unit,
-    onClearClick: () -> Unit
 ) {
     BasicTextField(
         modifier = modifier
@@ -191,7 +183,6 @@ fun PasswordField(
     fieldValue: String,
     placeholderText: String,
     onValueChange: (String) -> Unit,
-    onClearClick: () -> Unit
 ) {
     var passwordVisibility by rememberSaveable { mutableStateOf(false) }
 

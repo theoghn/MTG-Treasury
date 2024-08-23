@@ -14,9 +14,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.mready.mtgtreasury.R
@@ -42,10 +40,11 @@ import com.mready.mtgtreasury.ui.search.filter.FilterSearchScreenDestination
 import com.mready.mtgtreasury.ui.theme.BottomBarColor
 import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
 
+
 @Composable
 fun NavigationScreen(
     modifier: Modifier = Modifier,
-    navigateToCard: (String) -> Unit,
+    navigateToCard: (String) -> Unit
 ) {
     val navigationSections = listOf(
         HomeScreenDestination,
@@ -60,7 +59,8 @@ fun NavigationScreen(
         Pair(R.drawable.ic_bnav_profile, R.drawable.ic_bnav_profile_selected)
     )
     val navController = rememberNavController()
-    var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination?.route.toString().split("/")[0]
 
     Scaffold(
         modifier = modifier
@@ -83,16 +83,16 @@ fun NavigationScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    navigationSections.forEachIndexed { index, section ->
+                    navigationSections.forEachIndexed {  index, section ->
+                        val isSelected = section::class.qualifiedName == currentDestination
                         NavBarItem(
-                            isSelected = selectedIndex == index,
-                            iconId = if (selectedIndex == index) {
+                            isSelected = isSelected,
+                            iconId = if (isSelected) {
                                 navIcons[index].second
                             } else {
                                 navIcons[index].first
                             },
                             onClick = {
-                                selectedIndex = index
                                 navController.navigate(section) {
                                     popUpTo(navController.graph.findStartDestination().id) {
                                         saveState = true
@@ -130,7 +130,7 @@ fun NavigationScreen(
             composable<SearchScreenDestination> {
                 SearchScreen(
                     onNavigateToFilterSearch = { searchName ->
-                        navController.navigate(FilterSearchScreenDestination(searchName)){
+                        navController.navigate(FilterSearchScreenDestination(searchName)) {
                             restoreState = true
                         }
                     }
@@ -142,8 +142,11 @@ fun NavigationScreen(
                 FilterSearchScreen(
                     searchQuery = destination.searchName,
                     onNavigateToSearch = {
-                        val x = navController.popBackStack(route = SearchScreenDestination, inclusive = false)
-                        if(!x){
+                        val x = navController.popBackStack(
+                            route = SearchScreenDestination,
+                            inclusive = false
+                        )
+                        if (!x) {
                             navController.navigate(SearchScreenDestination)
                         }
                     },
