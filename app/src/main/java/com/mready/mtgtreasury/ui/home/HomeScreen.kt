@@ -146,13 +146,13 @@ private fun NewestSets(newestSets: List<MtgSet>) {
                         color = Color.White
                     )
 
-                    DescriptionField(
+                    TwoColorText(
                         modifier = Modifier.padding(horizontal = 8.dp),
                         firstPart = stringResource(R.string.text_cards),
                         secondPart = "${set.cardCount}"
                     )
 
-                    DescriptionField(
+                    TwoColorText(
                         modifier = Modifier.padding(horizontal = 8.dp),
                         firstPart = stringResource(R.string.text_release),
                         secondPart = set.releaseDate.formatReleaseDate()
@@ -372,7 +372,7 @@ private fun ColumnScope.CardOfTheDay(
                     )
                 }
 
-                DescriptionField(
+                TwoColorText(
                     modifier = Modifier.padding(horizontal = 4.dp),
                     firstPart = stringResource(R.string.text_legal),
                     secondPart = stringResource(
