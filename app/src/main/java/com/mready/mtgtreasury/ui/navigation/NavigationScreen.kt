@@ -54,6 +54,7 @@ fun NavigationScreen(
         DecksScreenDestination,
         ProfileScreenDestination
     )
+
     val navIcons = listOf(
         Pair(R.drawable.ic_bnav_home, R.drawable.ic_bnav_home_selected),
         Pair(R.drawable.ic_bnav_search, R.drawable.ic_bnav_search_selected),
@@ -120,13 +121,7 @@ fun NavigationScreen(
             startDestination = HomeScreenDestination,
         ) {
             composable<HomeScreenDestination> {
-                HomeScreen(
-                    onCardClick = { id ->
-                        navigateToCard(
-                            id
-                        )
-                    }
-                )
+                HomeScreen(onCardClick = { id -> navigateToCard(id) })
             }
 
             composable<SearchScreenDestination> {
@@ -144,11 +139,8 @@ fun NavigationScreen(
                 FilterSearchScreen(
                     searchQuery = destination.searchName,
                     onNavigateToSearch = {
-                        val x = navController.popBackStack(
-                            route = SearchScreenDestination,
-                            inclusive = false
-                        )
-                        if (!x) {
+                        val isPopSuccessful = navController.popBackStack(route = SearchScreenDestination, inclusive = false)
+                        if(!isPopSuccessful){
                             navController.navigate(SearchScreenDestination)
                         }
                     },

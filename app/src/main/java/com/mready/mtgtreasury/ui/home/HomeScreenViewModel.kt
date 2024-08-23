@@ -33,7 +33,7 @@ class HomeScreenViewModel @Inject constructor(private val cardsService: CardsSer
 
 sealed class HomeScreenUiState {
     data class HomeUi(
-        val mtgCard: MtgCard?,
+        val mtgCard: MtgCard,
         val mostValuableCards: List<MtgCard>,
         val newestSets: List<MtgSet>
     ) : HomeScreenUiState()

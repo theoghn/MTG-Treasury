@@ -35,4 +35,5 @@
     <string name="account_existance_question">Don\'t have an account?</string>
     <string name="create_account">Create Account</string>
     <string name="forgot_password">Forgot Password?</string>
+    <string name="x_max_set">%1$s / 14</string>
 </resources>

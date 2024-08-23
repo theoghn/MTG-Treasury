@@ -1,9 +1,13 @@
 package com.mready.mtgtreasury.models.card
 
-import kotlinx.serialization.Serializable
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
+
+import java.time.format.DateTimeFormatter
+import kotlin.random.*
+
+
 data class MtgCard(
     val id: String,
     val name: String,
@@ -11,7 +15,6 @@ data class MtgCard(
     val releaseDate: String,
     val manaCost: String,
     val type: String,
-//    the text on card that describes it s power
     val oracleText: String,
     val power: String?,
     val colors: List<String>,
@@ -27,27 +30,10 @@ data class MtgCard(
 )
 
 fun String.formatReleaseDate(): String {
-    val customAbbreviations = mapOf(
-        "January" to "Jan",
-        "February" to "Feb",
-        "March" to "Mar",
-        "April" to "Apr",
-        "May" to "May",
-        "June" to "Jun",
-        "July" to "Jul",
-        "August" to "Aug",
-        "September" to "Sept",
-        "October" to "Oct",
-        "November" to "Nov",
-        "December" to "Dec"
-    )
     val parsedDate = LocalDate.parse(this)
-
-    val monthFullName = parsedDate.month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)
-    val year = parsedDate.year
-    val monthAbbreviation = customAbbreviations[monthFullName] ?: monthFullName
-
-    return "$monthAbbreviation $year"
+    val customFormat = DateTimeFormatter.ofPattern("MMM yyyy", Locale.ENGLISH)
+    val formattedDate = parsedDate.format(customFormat)
+    return formattedDate
 }
 
 fun MtgCard.getNumberOfLegalFormats(): Int {
@@ -55,6 +41,5 @@ fun MtgCard.getNumberOfLegalFormats(): Int {
     val count = CardLegalities::class.members
         .filter { it.returnType.classifier == String::class }
         .count { it.call(legalities) == "legal" }
-    println(count)
     return count / 2
 }
