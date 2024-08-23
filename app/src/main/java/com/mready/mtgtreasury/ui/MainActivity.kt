@@ -17,7 +17,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge(navigationBarStyle = SystemBarStyle.light(Color.Transparent.toArgb(), Color.Transparent.toArgb()))
         setContent {
             MTGTreasuryTheme {
-                MainApp()
+                RootApp()
             }
         }
     }

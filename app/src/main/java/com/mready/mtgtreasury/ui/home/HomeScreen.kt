@@ -55,6 +55,7 @@ import com.mready.mtgtreasury.models.card.formatReleaseDate
 import com.mready.mtgtreasury.models.card.getNumberOfLegalFormats
 import com.mready.mtgtreasury.ui.components.PrimaryButton
 import com.mready.mtgtreasury.ui.components.ShimmerBox
+import com.mready.mtgtreasury.ui.components.TwoColorText
 import com.mready.mtgtreasury.ui.theme.AccentColor
 import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
 import com.mready.mtgtreasury.ui.theme.BoxColor
@@ -145,13 +146,13 @@ private fun NewestSets(newestSets: List<MtgSet>) {
                         color = Color.White
                     )
 
-                    DescriptionField(
+                    TwoColorText(
                         modifier = Modifier.padding(horizontal = 8.dp),
                         firstPart = stringResource(R.string.text_cards),
                         secondPart = "${set.cardCount}"
                     )
 
-                    DescriptionField(
+                    TwoColorText(
                         modifier = Modifier.padding(horizontal = 8.dp),
                         firstPart = stringResource(R.string.text_release),
                         secondPart = set.releaseDate.formatReleaseDate()
@@ -267,7 +268,7 @@ private fun ValuableCardItem(
     }
 }
 
-@Composable
+                @Composable
 private fun ColumnScope.CardOfTheDay(
     card: MtgCard,
     onCardClick: (String) -> Unit
@@ -341,7 +342,7 @@ private fun ColumnScope.CardOfTheDay(
                     color = Color.White,
                 )
 
-                DescriptionField(
+                TwoColorText(
                     modifier = Modifier.padding(horizontal = 4.dp),
                     firstPart = stringResource(R.string.text_rank),
                     secondPart = "${card.edhRank}"
@@ -371,7 +372,7 @@ private fun ColumnScope.CardOfTheDay(
                     )
                 }
 
-                DescriptionField(
+                TwoColorText(
                     modifier = Modifier.padding(horizontal = 4.dp),
                     firstPart = stringResource(R.string.text_legal),
                     secondPart = stringResource(
@@ -380,7 +381,7 @@ private fun ColumnScope.CardOfTheDay(
                     )
                 )
 
-                DescriptionField(
+                TwoColorText(
                     modifier = Modifier.padding(horizontal = 4.dp),
                     firstPart = stringResource(R.string.text_release),
                     secondPart = card.releaseDate.formatReleaseDate()
@@ -424,38 +425,6 @@ private fun CollectionValue() {
         )
     }
 }
-
-
-@Composable
-fun DescriptionField(
-    modifier: Modifier = Modifier,
-    firstPart: String,
-    secondPart: String,
-    secondPartColor: Color = Color.LightGray,
-    fontSize: TextUnit = 12.sp
-) {
-    Text(
-        modifier = modifier,
-        text =
-        buildAnnotatedString {
-            withStyle(style = SpanStyle(color = secondPartColor)) {
-                append("$firstPart ")
-            }
-            withStyle(
-                style = SpanStyle(
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White
-                )
-            ) {
-                append(secondPart)
-            }
-        },
-        fontSize = fontSize,
-        fontWeight = FontWeight.Normal,
-        color = Color.White
-    )
-}
-
 
 @Composable
 fun CardSetName(

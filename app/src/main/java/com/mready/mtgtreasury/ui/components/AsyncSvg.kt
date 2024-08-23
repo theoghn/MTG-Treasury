@@ -7,7 +7,6 @@ import coil.compose.AsyncImage
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
 
-
 @Composable
 fun AsyncSvg(
     modifier: Modifier = Modifier,
@@ -19,6 +18,6 @@ fun AsyncSvg(
             .data(uri)
             .decoderFactory(SvgDecoder.Factory())
             .build(),
-        contentDescription = null
+        contentDescription = null,
     )
 }

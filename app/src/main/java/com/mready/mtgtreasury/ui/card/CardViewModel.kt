@@ -2,8 +2,8 @@ package com.mready.mtgtreasury.ui.card
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mready.mtgtreasury.api.endpoints.ScryfallApi
 import com.mready.mtgtreasury.models.card.MtgCard
+import com.mready.mtgtreasury.services.CardsService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -12,7 +12,7 @@ import javax.inject.Inject
 
 
 @HiltViewModel
-class CardViewModel @Inject constructor(private val api: ScryfallApi) : ViewModel() {
+class CardViewModel @Inject constructor(private val api: CardsService) : ViewModel() {
     val uiState = MutableStateFlow<CardScreenUiState>(CardScreenUiState.Loading)
 
     fun getCard(id: String) {

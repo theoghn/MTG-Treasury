@@ -25,10 +25,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.mready.mtgtreasury.R
-import com.mready.mtgtreasury.ui.card.CardScreenDestination
 import com.mready.mtgtreasury.ui.components.HexagonBox
 import com.mready.mtgtreasury.ui.decks.DecksScreen
 import com.mready.mtgtreasury.ui.decks.DecksScreenDestination
@@ -38,8 +37,10 @@ import com.mready.mtgtreasury.ui.profile.ProfileScreen
 import com.mready.mtgtreasury.ui.profile.ProfileScreenDestination
 import com.mready.mtgtreasury.ui.search.SearchScreen
 import com.mready.mtgtreasury.ui.search.SearchScreenDestination
-import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
+import com.mready.mtgtreasury.ui.search.filter.FilterSearchScreen
+import com.mready.mtgtreasury.ui.search.filter.FilterSearchScreenDestination
 import com.mready.mtgtreasury.ui.theme.BottomBarColor
+import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
 
 @Composable
 fun NavigationScreen(
@@ -48,7 +49,7 @@ fun NavigationScreen(
 ) {
     val navigationSections = listOf(
         HomeScreenDestination,
-        SearchScreenDestination,
+        FilterSearchScreenDestination(""),
         DecksScreenDestination,
         ProfileScreenDestination
     )
@@ -85,8 +86,6 @@ fun NavigationScreen(
                 ) {
                     navigationSections.forEachIndexed { index, section ->
                         NavBarItem(
-                            modifier = Modifier
-                                .padding(bottom = if (index == 0 || index == 3) 0.dp else 0.dp),
                             isSelected = selectedIndex == index,
                             iconId = if (selectedIndex == index) {
                                 navIcons[index].second
@@ -124,7 +123,31 @@ fun NavigationScreen(
             }
 
             composable<SearchScreenDestination> {
-                SearchScreen(onCardClick = { id -> navigateToCard(id) })
+                SearchScreen(
+                    onNavigateToFilterSearch = { searchName ->
+                        navController.navigate(FilterSearchScreenDestination(searchName)){
+                            restoreState = true
+                        }
+                    }
+                )
+            }
+
+            composable<FilterSearchScreenDestination> { navBackStackEntry ->
+                val destination: FilterSearchScreenDestination = navBackStackEntry.toRoute()
+                FilterSearchScreen(
+                    searchQuery = destination.searchName,
+                    onNavigateToSearch = {
+                        val isPopSuccessful = navController.popBackStack(route = SearchScreenDestination, inclusive = false)
+                        if(!isPopSuccessful){
+                            navController.navigate(SearchScreenDestination)
+                        }
+                    },
+                    onNavigateToCard = { id ->
+                        navigateToCard(
+                            id
+                        )
+                    }
+                )
             }
 
             composable<DecksScreenDestination> {
