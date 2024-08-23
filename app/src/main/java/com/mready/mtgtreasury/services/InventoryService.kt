@@ -6,7 +6,7 @@ import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
-import com.mready.mtgtreasury.models.User
+import com.mready.mtgtreasury.models.AppUser
 import com.mready.mtgtreasury.utility.awaitOrNull
 import com.mready.mtgtreasury.utility.requireUserId
 import kotlinx.coroutines.channels.awaitClose
@@ -47,8 +47,8 @@ class InventoryService @Inject constructor() {
                     if (error != null) {
                         close(error)
                     }
-                    Log.d("InventoryService", "getInventory: ${value?.toObject<User>()?.inventory?.size}")
-                    trySendBlocking((value!!.toObject<User>()!!.inventory))
+                    Log.d("InventoryService", "getInventory: ${value?.toObject<AppUser>()?.inventory?.size}")
+                    trySendBlocking((value!!.toObject<AppUser>()!!.inventory))
                 }
 
             awaitClose {

@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeScreenViewModel @Inject constructor(private val api: CardsService) : ViewModel() {
+class HomeScreenViewModel @Inject constructor(private val cardsService: CardsService) : ViewModel() {
     val uiState = MutableStateFlow<HomeScreenUiState>(HomeScreenUiState.Loading)
 
     init {
@@ -22,9 +22,9 @@ class HomeScreenViewModel @Inject constructor(private val api: CardsService) : V
     private fun getCard() {
         if (uiState.value == HomeScreenUiState.Loading) {
             viewModelScope.launch {
-                val card = api.getRandomCard()
-                val mostValuableCards = api.getMostValuableCards()
-                val newestSets = api.getNewestSets()
+                val card = cardsService.getRandomCard()
+                val mostValuableCards = cardsService.getMostValuableCards()
+                val newestSets = cardsService.getNewestSets()
                 uiState.update { HomeScreenUiState.HomeUi(card, mostValuableCards,newestSets) }
             }
         }

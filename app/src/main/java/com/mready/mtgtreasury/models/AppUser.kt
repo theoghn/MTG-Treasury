@@ -2,7 +2,7 @@ package com.mready.mtgtreasury.models
 
 import com.google.firebase.firestore.DocumentId
 
-data class User(
+data class AppUser(
     @DocumentId val id: String = "",
     val username: String = "",
     val wishlist: List<String> = listOf(),

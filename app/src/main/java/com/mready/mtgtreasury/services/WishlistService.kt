@@ -6,7 +6,7 @@ import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
-import com.mready.mtgtreasury.models.User
+import com.mready.mtgtreasury.models.AppUser
 import com.mready.mtgtreasury.utility.awaitOrNull
 import com.mready.mtgtreasury.utility.requireUserId
 import kotlinx.coroutines.channels.awaitClose
@@ -52,7 +52,7 @@ class WishlistService @Inject constructor() {
                         close(error)
                     }
 
-                    trySendBlocking((value!!.toObject<User>()!!.wishlist))
+                    trySendBlocking((value!!.toObject<AppUser>()!!.wishlist))
                 }
 
             awaitClose {
