@@ -44,7 +44,9 @@ import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
 @Composable
 fun NavigationScreen(
     modifier: Modifier = Modifier,
-    navigateToCard: (String) -> Unit
+    navigateToCard: (String) -> Unit,
+    navigateToDeckCreation: () -> Unit,
+    navigateToDeck: (String) -> Unit
 ) {
     val navigationSections = listOf(
         HomeScreenDestination,
@@ -159,7 +161,16 @@ fun NavigationScreen(
             }
 
             composable<DecksScreenDestination> {
-                DecksScreen()
+                DecksScreen(
+                    onNavigateToDeck = { id ->
+                        navigateToDeck(
+                            id
+                        )
+                    },
+                    onNavigateToDeckCreation = {
+                        navigateToDeckCreation()
+                    }
+                )
             }
 
             composable<ProfileScreenDestination> {

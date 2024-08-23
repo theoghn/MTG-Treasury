@@ -34,5 +34,23 @@ class DecksService @Inject constructor() {
 
     }
 
+    suspend fun getDecks(): List<Deck> {
+        val userId = auth.requireUserId
 
+        val decks = db.collection("decks").whereEqualTo("uid", userId).get().awaitOrNull()
+
+        return decks?.toObjects(Deck::class.java) ?: emptyList()
+    }
+
+    suspend fun deleteDeck(deckId: String) {
+        db.collection("decks").document(deckId).delete().awaitOrNull()
+    }
+
+    suspend fun addCardsToDeck(deckId: String, cardIds: List<String>) {
+        db.collection("decks").document(deckId).update("cardIds", FieldValue.arrayUnion(cardIds)).awaitOrNull()
+    }
+
+    suspend fun removeCardFromDeck(deckId: String, cardId: String) {
+        db.collection("decks").document(deckId).update("cardIds", FieldValue.arrayRemove(cardId)).awaitOrNull()
+    }
 }

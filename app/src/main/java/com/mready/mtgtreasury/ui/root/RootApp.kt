@@ -21,6 +21,9 @@ import com.mready.mtgtreasury.ui.auth.signup.SignUpDestination
 import com.mready.mtgtreasury.ui.auth.signup.SingUpScreen
 import com.mready.mtgtreasury.ui.card.CardScreen
 import com.mready.mtgtreasury.ui.card.CardScreenDestination
+import com.mready.mtgtreasury.ui.decks.create.DeckCreationScreen
+import com.mready.mtgtreasury.ui.decks.create.DeckCreationScreenDestination
+import com.mready.mtgtreasury.ui.decks.view.DeckScreenDestination
 import com.mready.mtgtreasury.ui.navigation.NavigationScreen
 import com.mready.mtgtreasury.ui.navigation.NavigationScreenDestination
 import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
@@ -102,6 +105,16 @@ fun RootApp(
                                 mainNavController.navigate(
                                     CardScreenDestination(id)
                                 )
+                            },
+                            navigateToDeckCreation = {
+                                mainNavController.navigate(
+                                    DeckCreationScreenDestination
+                                )
+                            },
+                            navigateToDeck = { id: String ->
+                                mainNavController.navigate(
+                                    DeckScreenDestination(id)
+                                )
                             }
                         )
                     }
@@ -111,6 +124,20 @@ fun RootApp(
                         CardScreen(
                             id = destination.id,
                             onBack = { mainNavController.popBackStack() }
+                        )
+                    }
+
+                    composable<DeckScreenDestination> { backStackEntry ->
+                        val destination: CardScreenDestination = backStackEntry.toRoute()
+                        CardScreen(
+                            id = destination.id,
+                            onBack = { mainNavController.popBackStack() }
+                        )
+                    }
+
+                    composable<DeckCreationScreenDestination> {
+                        DeckCreationScreen(
+
                         )
                     }
                 }
