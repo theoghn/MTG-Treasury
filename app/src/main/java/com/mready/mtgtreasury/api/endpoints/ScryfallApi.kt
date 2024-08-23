@@ -66,7 +66,6 @@ class ScryfallApi @Inject constructor(
 
     suspend fun getCardsByFilters(
         name: String,
-//        set: String,
         type: List<String>,
         superType: List<String>,
         colors: List<String>,
@@ -109,15 +108,6 @@ class ScryfallApi @Inject constructor(
         Log.d("ScryfallApi", "buildSearchQuery: $query")
         return query
     }
-
-//    suspend fun getSymbols(): List<String> {
-//        return apiClient.get(
-//            endpoint = "symbology"
-//        ) { json ->
-//            json["data"].array.map { it["symbol"].string.split("{","}")[1] }
-//        }
-//    }
-
 }
 
 private fun Json.toCard() = MtgCard(
@@ -172,7 +162,6 @@ private fun Json.toCardPrices() = CardPrices(
     tix = this["tix"].stringOrNull ?: "0.0",
     usdEtched = this["usd_etched"].stringOrNull ?: "0.0"
 )
-
 
 private fun Json.toSet() = MtgSet(
     name = this["name"].string,

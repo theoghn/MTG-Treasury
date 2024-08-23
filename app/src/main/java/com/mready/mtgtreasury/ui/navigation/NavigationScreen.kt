@@ -137,8 +137,8 @@ fun NavigationScreen(
                 FilterSearchScreen(
                     searchQuery = destination.searchName,
                     onNavigateToSearch = {
-                        val x = navController.popBackStack(route = SearchScreenDestination, inclusive = false)
-                        if(!x){
+                        val isPopSuccessful = navController.popBackStack(route = SearchScreenDestination, inclusive = false)
+                        if(!isPopSuccessful){
                             navController.navigate(SearchScreenDestination)
                         }
                     },
