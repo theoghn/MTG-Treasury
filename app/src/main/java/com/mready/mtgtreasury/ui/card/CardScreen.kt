@@ -214,10 +214,6 @@ fun SheetContent(
             oracleText = card.oracleText
         )
 
-        OracleText(
-            oracleText = card.oracleText
-        )
-
         Text(
             modifier = Modifier
                 .padding(bottom = 8.dp, top = 24.dp)

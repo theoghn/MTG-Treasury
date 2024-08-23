@@ -16,19 +16,14 @@ class CardViewModel @Inject constructor(private val api: CardsService) : ViewMod
     val uiState = MutableStateFlow<CardScreenUiState>(CardScreenUiState.Loading)
 
     fun getCard(id: String) {
-        if (uiState.value == CardScreenUiState.Loading) {
-            viewModelScope.launch {
-                val card = api.getCard(id)
-                uiState.update { CardScreenUiState.CardUi(card) }
-            }
+        viewModelScope.launch {
+            val card = api.getCard(id)
+            uiState.update { CardScreenUiState.CardUi(card) }
         }
     }
 }
 
 sealed class CardScreenUiState {
-    data class CardUi(
-        val mtgCard: MtgCard?
-    ) : CardScreenUiState()
-
+    data class CardUi(val mtgCard: MtgCard?) : CardScreenUiState()
     data object Loading : CardScreenUiState()
 }
