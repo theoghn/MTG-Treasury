@@ -169,7 +169,7 @@ fun FilterSearchScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = if (searchQuery.isNullOrBlank()) "Search Cards" else searchQuery,
+                        text = if (searchQuery.isNullOrBlank()) stringResource(R.string.search_cards) else searchQuery,
                         color = Color.LightGray,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold
@@ -258,12 +258,12 @@ fun FilterSearchScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "ಥ_ಥ",
+                            text = stringResource(R.string.sad_face),
                             fontSize = 50.sp,
                             color = Color.White
                         )
                         Text(
-                            text = "No Cards Found",
+                            text = stringResource(R.string.no_cards_found),
                             fontSize = 18.sp,
                             color = Color.White
                         )
@@ -405,7 +405,7 @@ fun AdvancedSearchModalBottomSheet(
                     modifier = Modifier
                         .padding(top = 4.dp)
                         .align(Alignment.TopCenter),
-                    text = "Advanced Search",
+                    text = stringResource(R.string.advanced_search),
                     fontSize = 20.sp,
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
@@ -414,46 +414,46 @@ fun AdvancedSearchModalBottomSheet(
 
             Text(
                 modifier = Modifier.padding(vertical = 16.dp),
-                text = "Type & Rarity",
+                text = stringResource(R.string.type_and_rarity),
                 fontSize = 16.sp,
                 color = Color.White,
                 fontWeight = FontWeight.SemiBold,
             )
 
             FilterItem(
-                text = "Type",
+                text = stringResource(R.string.type),
                 updateSelectedFilter = { updateSelectedFilter(SheetFilters.TYPE) },
                 showFilterSheet = showFilterSheet
             )
 
             FilterItem(
-                text = "Super Type",
+                text = stringResource(R.string.super_type),
                 updateSelectedFilter = { updateSelectedFilter(SheetFilters.SUPERTYPE) },
                 showFilterSheet = showFilterSheet
             )
 
             FilterItem(
-                text = "Rarity",
+                text = stringResource(R.string.rarity),
                 updateSelectedFilter = { updateSelectedFilter(SheetFilters.RARITY) },
                 showFilterSheet = showFilterSheet
             )
 
             Text(
                 modifier = Modifier.padding(vertical = 16.dp),
-                text = "Color",
+                text = stringResource(R.string.color),
                 fontSize = 16.sp,
                 color = Color.White,
                 fontWeight = FontWeight.SemiBold,
             )
 
             FilterItem(
-                text = "Color",
+                text = stringResource(R.string.color),
                 updateSelectedFilter = { updateSelectedFilter(SheetFilters.COLOR) },
                 showFilterSheet = showFilterSheet
             )
 
             FilterItem(
-                text = "Mana Cost",
+                text = stringResource(R.string.mana_cost),
                 updateSelectedFilter = { updateSelectedFilter(SheetFilters.MANA) },
                 showFilterSheet = showFilterSheet
             )
@@ -480,7 +480,7 @@ fun AdvancedSearchModalBottomSheet(
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
-                            text = "Cancel",
+                            text = stringResource(R.string.cancel),
                             fontSize = 16.sp,
                             color = AccentColor,
                             fontWeight = FontWeight.SemiBold,
@@ -501,7 +501,7 @@ fun AdvancedSearchModalBottomSheet(
                     }
                 ) {
                     Text(
-                        text = "Apply Filters",
+                        text = stringResource(R.string.apply_filters),
                         fontSize = 16.sp,
                         color = Color.White,
                         fontWeight = FontWeight.SemiBold,
@@ -583,7 +583,7 @@ fun FilterBottomSheet(
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        text = "Cancel",
+                        text = stringResource(id = R.string.cancel),
                         fontSize = 16.sp,
                         color = AccentColor,
                         fontWeight = FontWeight.SemiBold,
@@ -604,7 +604,7 @@ fun FilterBottomSheet(
                 }
             ) {
                 Text(
-                    text = "Apply Filters",
+                    text = stringResource(R.string.apply_filters),
                     fontSize = 16.sp,
                     color = Color.White,
                     fontWeight = FontWeight.SemiBold,
@@ -664,7 +664,7 @@ fun ManaBottomSheet(
 
     FilterBottomSheet(
         modifier = Modifier.fillMaxHeight(0.7f),
-        title = "Mana Cost",
+        title = stringResource(R.string.mana_cost),
         hideFilter = { hideFilter() },
         saveChanges = { saveChanges(temporaryCardManaCosts) }
     ) {
@@ -676,7 +676,7 @@ fun ManaBottomSheet(
         {
             Text(
                 modifier = Modifier.padding(16.dp),
-                text = "Select Mana Cost",
+                text = stringResource(R.string.select_mana_cost),
                 fontSize = 16.sp,
                 color = Color.White,
                 fontWeight = FontWeight.SemiBold,
@@ -740,7 +740,7 @@ fun ColorBottomSheet(
     var temporaryCardColors by rememberSaveable { mutableStateOf(selectedCardColors) }
 
     FilterBottomSheet(
-        title = "Color",
+        title = stringResource(R.string.color),
         hideFilter = { hideFilter() },
         saveChanges = { saveChanges(temporaryCardColors) }
     ) {
@@ -750,7 +750,7 @@ fun ColorBottomSheet(
                 modifier = Modifier
                     .padding(16.dp)
                     .weight(1f, false),
-                text = "Select Mana Cost",
+                text = stringResource(R.string.select_color),
                 fontSize = 16.sp,
                 color = Color.White,
                 fontWeight = FontWeight.SemiBold,

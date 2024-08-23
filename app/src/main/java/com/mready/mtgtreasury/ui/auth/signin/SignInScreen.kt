@@ -29,6 +29,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -82,7 +83,7 @@ fun SignInScreen(
 
             BaseTextField(
                 fieldValue = email,
-                placeholderText = "Email",
+                placeholderText = stringResource(R.string.email),
                 onValueChange = {
                     email = it
                 }
@@ -90,7 +91,7 @@ fun SignInScreen(
 
             PasswordField(
                 fieldValue = password,
-                placeholderText = "Password",
+                placeholderText = stringResource(R.string.password),
                 onValueChange = {
                     password = it
                 }
@@ -108,7 +109,7 @@ fun SignInScreen(
                 }
             ) {
                 Text(
-                    text = "Sign in",
+                    text = stringResource(R.string.sign_in),
                     fontSize = 16.sp,
                     color = Color.White,
                     fontWeight = FontWeight.SemiBold,
@@ -117,13 +118,13 @@ fun SignInScreen(
 
             TwoColorText(
                 modifier = Modifier.clickable { onNavigateToSingUp() },
-                firstPart = "Don't have an account?",
-                secondPart = "Create Account",
+                firstPart = stringResource(R.string.account_existance_question),
+                secondPart = stringResource(R.string.create_account),
                 fontSize = 14.sp
             )
 
             Text(
-                text = "Forgot Password?",
+                text = stringResource(R.string.forgot_password),
                 fontSize = 14.sp,
                 color = Color.White,
                 fontWeight = FontWeight.SemiBold,

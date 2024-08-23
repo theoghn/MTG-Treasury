@@ -15,4 +15,24 @@
     <string name="text_additional_info">Additional Info</string>
     <string name="text_artist">Artist</string>
     <string name="text_legalities">Legalities</string>
+    <string name="search_cards">Search Cards</string>
+    <string name="sad_face">ಥ_ಥ</string>
+    <string name="no_cards_found">No Cards Found</string>
+    <string name="advanced_search">Advanced Search</string>
+    <string name="type_and_rarity"><![CDATA[Type & Rarity]]></string>
+    <string name="type">Type</string>
+    <string name="super_type">Super Type</string>
+    <string name="rarity">Rarity</string>
+    <string name="color">Color</string>
+    <string name="mana_cost">Mana Cost</string>
+    <string name="cancel">Cancel</string>
+    <string name="apply_filters">Apply Filters</string>
+    <string name="select_mana_cost">Select Mana Cost</string>
+    <string name="select_color">Select Color</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="sign_in">Sign in</string>
+    <string name="account_existance_question">Don\'t have an account?</string>
+    <string name="create_account">Create Account</string>
+    <string name="forgot_password">Forgot Password?</string>
 </resources>
