@@ -9,7 +9,6 @@ import com.mready.mtgtreasury.utility.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -41,7 +40,7 @@ class FilterSearchViewModel @Inject constructor(
         viewModelScope.launch {
             uiState.update { FilterSearchScreenUiState.Loading }
 
-            inventoryService.getInventory().collect { inventory ->
+            inventoryService.getInventoryFlow().collect { inventory ->
                 uiState.update {
                     var cards = api.getCardsByFilters(
                         name = name,
@@ -51,7 +50,15 @@ class FilterSearchViewModel @Inject constructor(
                         type = type,
                         superType = superType,
                     )
-                    cards = cards.map { it.copy(isInInventory = inventory.contains(it.id)) }
+                    cards = cards.map {
+                        it.copy(
+                            qty = if (inventory.contains(it.id)) {
+                                inventory[it.id]!!
+                            } else {
+                                0
+                            }
+                        )
+                    }
 
                     if (cards.isEmpty()) {
                         FilterSearchScreenUiState.Empty
@@ -70,9 +77,9 @@ class FilterSearchViewModel @Inject constructor(
         }
     }
 
-    fun removeCardFromInventory(cardId: String) {
+    fun removeCardFromInventory(cardId: String, currentQuantity: Int) {
         viewModelScope.launch {
-            inventoryService.removeCardFromInventory(cardId)
+            inventoryService.removeCardFromInventory(cardId = cardId, currentQuantity = currentQuantity)
         }
     }
 }

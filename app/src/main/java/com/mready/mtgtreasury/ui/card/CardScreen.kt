@@ -4,7 +4,9 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -25,10 +27,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -59,13 +62,14 @@ import com.mready.mtgtreasury.models.card.CardLegalities
 import com.mready.mtgtreasury.models.card.MtgCard
 import com.mready.mtgtreasury.models.card.formatReleaseDate
 import com.mready.mtgtreasury.ui.components.AsyncSvg
-import com.mready.mtgtreasury.ui.components.PrimaryButton
+import com.mready.mtgtreasury.ui.components.SecondaryButton
 import com.mready.mtgtreasury.ui.components.TwoColorText
 import com.mready.mtgtreasury.ui.theme.AccentColor
 import com.mready.mtgtreasury.ui.theme.BottomBarColor
 import com.mready.mtgtreasury.ui.theme.BoxColor
 import com.mready.mtgtreasury.ui.theme.LegalChipColor
 import com.mready.mtgtreasury.ui.theme.NotLegalChipColor
+import com.mready.mtgtreasury.utility.Constants
 import kotlin.reflect.full.memberProperties
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -100,14 +104,15 @@ fun CardScreen(
             is CardScreenUiState.CardUi -> {
                 val card = currentState.mtgCard
                 val isFavorite = currentState.isFavorite
-                val isInInventory = currentState.isInInventory
+                val isInInventory = currentState.qtyInInventory != 0
+                val qty = currentState.qtyInInventory
 
                 BottomSheetScaffold(
                     modifier = Modifier.fillMaxWidth(),
                     sheetPeekHeight = screenHeight * 2 / 5,
                     scaffoldState = scaffoldState,
                     sheetContent = {
-                        card?.let { SheetContent(card = card, screenHeight = screenHeight) }
+                        SheetContent(card = card, screenHeight = screenHeight)
                     },
                     containerColor = BoxColor,
                     sheetContainerColor = BottomBarColor
@@ -122,12 +127,12 @@ fun CardScreen(
                             modifier = Modifier.fillMaxWidth(),
 //                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            PrimaryButton(
+                            SecondaryButton(
                                 modifier = Modifier
                                     .padding(horizontal = 16.dp)
-                                    .size(40.dp)
-                                    .clip(CircleShape),
+                                    .size(40.dp),
                                 onClick = { onBack() },
+                                shape = CircleShape
                             ) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -138,40 +143,39 @@ fun CardScreen(
 
                             Spacer(modifier = Modifier.weight(1f))
 
-                            PrimaryButton(
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .clip(CircleShape),
-                                onClick = {
-                                    if (isInInventory) {
-                                        viewModel.removeCardFromInventory(card.id)
-                                    } else {
-                                        viewModel.addCardToInventory(card.id)
-                                    }
-                                },
-                            ) {
-                                Crossfade(targetState = isInInventory, label = "") {
-                                    Icon(
-                                        imageVector = if (it) {
-                                            Icons.Default.Done
-                                        } else {
-                                            Icons.Default.Add
-                                        },
-                                        contentDescription = null,
-                                        tint = if (it) {
-                                            Color.White
-                                        } else {
-                                            Color.White
-                                        }
-                                    )
-                                }
-                            }
+//                            PrimaryButton(
+//                                modifier = Modifier
+//                                    .size(40.dp)
+//                                    .clip(CircleShape),
+//                                onClick = {
+//                                    if (isInInventory) {
+//                                        viewModel.removeCardFromInventory(card.id, qty)
+//                                    } else {
+//                                        viewModel.addCardToInventory(card.id)
+//                                    }
+//                                },
+//                            ) {
+//                                Crossfade(targetState = isInInventory, label = "") {
+//                                    Icon(
+//                                        imageVector = if (it) {
+//                                            Icons.Default.Done
+//                                        } else {
+//                                            Icons.Default.Add
+//                                        },
+//                                        contentDescription = null,
+//                                        tint = if (it) {
+//                                            Color.White
+//                                        } else {
+//                                            Color.White
+//                                        }
+//                                    )
+//                                }
+//                            }
 
-                            PrimaryButton(
+                            SecondaryButton(
                                 modifier = Modifier
                                     .padding(horizontal = 16.dp)
-                                    .size(40.dp)
-                                    .clip(CircleShape),
+                                    .size(40.dp),
                                 onClick = {
                                     if (isFavorite) {
                                         viewModel.removeCardFromWishlist(card.id)
@@ -179,6 +183,7 @@ fun CardScreen(
                                         viewModel.addCardToWishlist(card.id)
                                     }
                                 },
+                                shape = CircleShape
                             ) {
                                 Crossfade(targetState = isFavorite, label = "") {
                                     Icon(
@@ -189,7 +194,7 @@ fun CardScreen(
                                         },
                                         contentDescription = null,
                                         tint = if (it) {
-                                            Color.White
+                                            Color.Red
                                         } else {
                                             Color.White
                                         }
@@ -215,7 +220,79 @@ fun CardScreen(
                         }
                     }
                 }
+
+                InventoryManager(
+                    card = card,
+                    qty = qty,
+                    addCardToInventory = { viewModel.addCardToInventory(card.id) },
+                    removeCardFromInventory = { viewModel.removeCardFromInventory(card.id, qty) }
+                )
             }
+        }
+    }
+}
+
+@Composable
+private fun BoxScope.InventoryManager(
+    card: MtgCard,
+    qty: Int,
+    addCardToInventory: () -> Unit,
+    removeCardFromInventory: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .padding(20.dp)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(Constants.MainGradient.brush)
+            .align(Alignment.BottomCenter)
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text(
+            text = "In Inventory",
+            color = Color.White,
+        )
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Button(
+            modifier = Modifier.size(40.dp),
+            onClick = { removeCardFromInventory() },
+            enabled = qty > 0,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = BoxColor,
+                disabledContainerColor = BoxColor.copy(alpha = 0.7f)
+            ),
+            shape = CircleShape,
+            contentPadding = PaddingValues(0.dp)
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.baseline_remove_24),
+                contentDescription = null,
+                tint = Color.White
+
+            )
+        }
+
+        Text(
+            text = qty.toString(),
+            color = Color.White
+        )
+
+        Button(
+            modifier = Modifier.size(40.dp),
+            onClick = { addCardToInventory() },
+            colors = ButtonDefaults.buttonColors(containerColor = BoxColor),
+            shape = CircleShape,
+            contentPadding = PaddingValues(0.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = null,
+                tint = Color.White
+            )
         }
     }
 }
@@ -230,9 +307,9 @@ fun SheetContent(
 //    72 dp for the top bar + buttons
     Column(
         modifier = modifier
-            .padding(bottom = 30.dp)
+            .padding(bottom = 80.dp)
             .padding(horizontal = 20.dp)
-            .heightIn(max = screenHeight - 72.dp - 30.dp)
+            .heightIn(max = screenHeight - 72.dp - 80.dp)
             .verticalScroll(state = scrollState)
     ) {
         Text(

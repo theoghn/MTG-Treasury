@@ -3,6 +3,7 @@ package com.mready.mtgtreasury.ui.search.filter
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -55,6 +56,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -84,6 +86,8 @@ import com.mready.mtgtreasury.ui.theme.BoxColor
 import com.mready.mtgtreasury.ui.theme.LegalChipColor
 import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
 import com.mready.mtgtreasury.utility.Constants
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 enum class SheetFilters {
     TYPE,
@@ -237,9 +241,9 @@ fun FilterSearchScreen(
                                     viewModel.addCardToInventory(mtgCard.id)
                                 },
                                 onRemoveFromInventory = {
-                                    viewModel.removeCardFromInventory(mtgCard.id)
+                                    viewModel.removeCardFromInventory(mtgCard.id, mtgCard.qty)
                                 },
-                                isInInventory = mtgCard.isInInventory
+                                isInInventory = mtgCard.qty > 0
                             )
                         }
                     }
@@ -877,6 +881,11 @@ fun MtgCardItem(
     onRemoveFromInventory: () -> Unit,
     onClick: () -> Unit
 ) {
+    var loading by rememberSaveable {
+        mutableStateOf(false)
+    }
+    val scope = rememberCoroutineScope()
+
     Card(
         modifier = modifier
             .height(300.dp)
@@ -893,100 +902,124 @@ fun MtgCardItem(
         ),
         shape = RoundedCornerShape(4.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 8.dp, vertical = 12.dp)
-        ) {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(mtgCard.imageUris.borderCrop)
-                    .crossfade(true)
-                    .build(),
+        Box(modifier = Modifier.fillMaxSize()) {
+            Box(
                 modifier = Modifier
-                    .padding(bottom = 8.dp)
-                    .height(160.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(Color.Transparent)
-                    .align(Alignment.CenterHorizontally),
-                contentScale = ContentScale.FillHeight,
-                placeholder = painterResource(id = R.drawable.card_back),
-                error = painterResource(id = R.drawable.card_back),
-                contentDescription = null
-            )
-
-            Text(
-                modifier = Modifier.padding(bottom = 8.dp),
-                text = mtgCard.name,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                fontSize = 12.sp,
-                lineHeight = 14.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = Color.White
-            )
-
-            Text(
-                text = mtgCard.setName,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                fontSize = 10.sp,
-                lineHeight = 14.sp,
-                color = Color.White
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(12.dp)
+                    .size(14.dp)
+                    .clip(CircleShape)
+                    .border(1.dp, Color.White, CircleShape)
+                    .background(if (isInInventory) LegalChipColor else Color.Transparent)
+                    .padding(2.dp)
             ) {
+                if (isInInventory) {
+                    Icon(
+                        imageVector = Icons.Default.Done,
+                        contentDescription = null,
+                        tint = Color.White
+                    )
+                }
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 8.dp, vertical = 12.dp)
+            ) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(mtgCard.imageUris.borderCrop)
+                        .crossfade(true)
+                        .build(),
+                    modifier = Modifier
+                        .padding(bottom = 8.dp)
+                        .height(160.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(Color.Transparent)
+                        .align(Alignment.CenterHorizontally),
+                    contentScale = ContentScale.FillHeight,
+                    placeholder = painterResource(id = R.drawable.card_back),
+                    error = painterResource(id = R.drawable.card_back),
+                    contentDescription = null
+                )
+
                 Text(
-                    text = stringResource(R.string.euro, mtgCard.prices.eur),
+                    modifier = Modifier.padding(bottom = 8.dp),
+                    text = mtgCard.name,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    fontSize = 16.sp,
-                    lineHeight = 16.sp,
+                    fontSize = 12.sp,
+                    lineHeight = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
                     color = Color.White
                 )
 
-                Crossfade(targetState = isInInventory, label = "") {
-                    if (it) {
-                        PrimaryButton(
-                            modifier = Modifier
-                                .size(32.dp)
-                                .clip(CircleShape),
-                            onClick = {
-                                onRemoveFromInventory()
-                            },
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Done,
-                                contentDescription = null,
-                                tint = Color.White
-                            )
-                        }
-                    } else {
-                        SecondaryButton(
-                            modifier = Modifier
-                                .size(32.dp)
-                                .clip(CircleShape),
-                            onClick = {
-                                onAddToInventory()
-                            },
-                            shape = CircleShape
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = null,
-                                tint = Color.White
-                            )
+                Text(
+                    text = mtgCard.setName,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    fontSize = 10.sp,
+                    lineHeight = 14.sp,
+                    color = Color.White
+                )
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.euro, mtgCard.prices.eur),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        fontSize = 16.sp,
+                        lineHeight = 16.sp,
+                        color = Color.White
+                    )
+
+                    Crossfade(targetState = loading, label = "") {
+                        if (it) {
+                            PrimaryButton(
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .clip(CircleShape),
+                                onClick = {},
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Done,
+                                    contentDescription = null,
+                                    tint = Color.White
+                                )
+                            }
+                        } else {
+                            SecondaryButton(
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .clip(CircleShape),
+                                onClick = {
+                                    scope.launch {
+                                        loading = true
+                                        onAddToInventory()
+                                        delay(700)
+                                        loading = false
+                                    }
+                                },
+                                shape = CircleShape
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = null,
+                                    tint = Color.White
+                                )
+                            }
                         }
                     }
                 }
             }
         }
+
     }
 }
 

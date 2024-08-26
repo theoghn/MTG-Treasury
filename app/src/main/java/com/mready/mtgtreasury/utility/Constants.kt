@@ -1,6 +1,13 @@
 package com.mready.mtgtreasury.utility
 
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+
 class Constants {
+    object MainGradient{
+        val gradientColors = listOf(Color(0xFFA774FA), Color(0xFF6115DB))
+        val brush = Brush.horizontalGradient(gradientColors)
+    }
 
     object SearchFilterValues {
         val TYPE = listOf(

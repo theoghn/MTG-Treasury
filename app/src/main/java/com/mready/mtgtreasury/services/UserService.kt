@@ -38,6 +38,7 @@ class UserService @Inject constructor() {
     fun isUserPresent(): StateFlow<Boolean?> {
         return isUserPresent
     }
+
     fun getUserState(): Boolean {
         return Firebase.auth.currentUser != null
     }
@@ -48,7 +49,7 @@ class UserService @Inject constructor() {
 
         val userData = hashMapOf(
             "username" to username,
-            "inventory" to listOf<String>(),
+            "inventory" to hashMapOf<String, Int>(),
             "wishlist" to listOf<String>()
         )
 

@@ -26,7 +26,7 @@ data class MtgCard(
     val setAbbreviation: String,
     val artist: String,
     val isFavorite : Boolean = false,
-    val isInInventory : Boolean = false
+    val qty : Int = 0
 )
 
 fun String.formatReleaseDate(): String {

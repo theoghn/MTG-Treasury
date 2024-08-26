@@ -6,5 +6,6 @@ data class Deck(
     @DocumentId val id: String = "",
     val uid: String = "",
     val name: String = "",
-    val cardIds: List<String> = listOf()
+    val deckImage: String = "",
+    val cards: HashMap<String,Int> = hashMapOf()
 )

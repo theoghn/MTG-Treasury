@@ -41,7 +41,8 @@ fun DeckBox(
 
     Box(
         modifier = modifier
-            .background(brush)
+            .background(brush),
+        contentAlignment = Alignment.Center
     ){
         composable()
     }

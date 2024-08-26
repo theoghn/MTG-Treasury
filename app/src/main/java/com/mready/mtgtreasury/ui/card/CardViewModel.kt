@@ -26,18 +26,23 @@ class CardViewModel @Inject constructor(
 
         viewModelScope.launch {
             val card = cardsService.getCard(id)
-            val combinedFlow = wishlistService.getWishlist().combine(inventoryService.getInventory()) { wishlist, inventory ->
-                Pair(wishlist, inventory)
-            }
+            val combinedFlow = wishlistService.getWishlist()
+                .combine(inventoryService.getInventoryFlow()) { wishlist, inventory ->
+                    Pair(wishlist, inventory)
+                }
             combinedFlow.collect {
                 val favoriteState = it.first.contains(card.id)
-                val inventoryState = it.second.contains(card.id)
+                val inventoryState = if (it.second.contains(card.id)) {
+                    it.second[card.id]!!
+                } else {
+                    0
+                }
 
                 uiState.update {
                     CardScreenUiState.CardUi(
                         mtgCard = card,
                         isFavorite = favoriteState,
-                        isInInventory = inventoryState
+                        qtyInInventory = inventoryState
                     )
                 }
             }
@@ -50,9 +55,9 @@ class CardViewModel @Inject constructor(
         }
     }
 
-    fun removeCardFromInventory(cardId: String) {
+    fun removeCardFromInventory(cardId: String, currentQuantity: Int) {
         viewModelScope.launch {
-            inventoryService.removeCardFromInventory(cardId)
+            inventoryService.removeCardFromInventory(cardId = cardId, currentQuantity = currentQuantity)
         }
     }
 
@@ -73,7 +78,7 @@ sealed class CardScreenUiState {
     data class CardUi(
         val mtgCard: MtgCard,
         val isFavorite: Boolean = false,
-        val isInInventory: Boolean = false
+        val qtyInInventory: Int = 0
     ) : CardScreenUiState()
 
     data object Loading : CardScreenUiState()

@@ -9,8 +9,12 @@ import com.mready.mtgtreasury.models.card.CardLegalities
 import com.mready.mtgtreasury.models.card.CardPrices
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
+import net.mready.apiclient.formBody
 import net.mready.apiclient.get
+import net.mready.apiclient.jsonObjectBody
+import net.mready.apiclient.post
 import net.mready.json.Json
+import net.mready.json.jsonArray
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -62,6 +66,28 @@ class ScryfallApi @Inject constructor(
         ) { json ->
             json["data"].array.map { it.string }.take(6)
         }
+    }
+
+    suspend fun getCardsByIds(ids: List<String>): List<MtgCard> {
+        try {
+            return apiClient.post(
+                endpoint = "cards/collection",
+                body = jsonObjectBody {
+                    obj["identifiers"] = jsonArray {
+                        ids.forEach {
+                            array += jsonObject {
+                                obj["id"] = it
+                            }
+                        }
+                    }
+                }
+            ) { json ->
+                json["data"].array.map { it.toCard() }
+            }
+        } catch (e: Exception) {
+            return emptyList()
+        }
+
     }
 
     suspend fun getCardsByFilters(

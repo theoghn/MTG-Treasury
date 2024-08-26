@@ -7,12 +7,14 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import com.mready.mtgtreasury.models.AppUser
+import com.mready.mtgtreasury.utility.await
 import com.mready.mtgtreasury.utility.awaitOrNull
 import com.mready.mtgtreasury.utility.requireUserId
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -28,17 +30,25 @@ class InventoryService @Inject constructor() {
         val userId = auth.requireUserId
 
         val userDoc = db.collection("users").document(userId)
-        userDoc.update("inventory", FieldValue.arrayUnion(cardId)).awaitOrNull()
+//        userDoc.update("inventory", FieldValue.arrayUnion(cardId)).awaitOrNull()
+        userDoc.update("inventory.$cardId", FieldValue.increment(1)).awaitOrNull()
     }
 
-    suspend fun removeCardFromInventory(cardId: String) {
+    suspend fun removeCardFromInventory(cardId: String, currentQuantity: Int) {
         val userId = auth.requireUserId
 
         val userDoc = db.collection("users").document(userId)
-        userDoc.update("inventory", FieldValue.arrayRemove(cardId)).awaitOrNull()
+//        userDoc.update("inventory", FieldValue.arrayRemove(cardId)).awaitOrNull()
+        if (currentQuantity > 1) {
+            userDoc.update("inventory.$cardId", FieldValue.increment(-1)).awaitOrNull()
+            return
+        }
+        else{
+            userDoc.update("inventory.$cardId", FieldValue.delete()).awaitOrNull()
+        }
     }
 
-    suspend fun getInventory(): Flow<List<String>> {
+    suspend fun getInventoryFlow(): Flow<HashMap<String,Int>> {
         val userId = auth.requireUserId
 
         return callbackFlow {
@@ -55,5 +65,11 @@ class InventoryService @Inject constructor() {
                 listener.remove()
             }
         }
+    }
+
+    suspend fun getInventory(): HashMap<String, Int> {
+        val userId = auth.requireUserId
+
+        return db.collection("users").document(userId).get().await().toObject<AppUser>()!!.inventory
     }
 }

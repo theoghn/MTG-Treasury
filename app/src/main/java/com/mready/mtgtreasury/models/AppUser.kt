@@ -6,5 +6,5 @@ data class AppUser(
     @DocumentId val id: String = "",
     val username: String = "",
     val wishlist: List<String> = listOf(),
-    val inventory: List<String> = listOf()
+    val inventory: HashMap<String,Int> = hashMapOf()
 )

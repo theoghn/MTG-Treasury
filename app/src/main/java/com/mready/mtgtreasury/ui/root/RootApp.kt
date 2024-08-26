@@ -23,6 +23,7 @@ import com.mready.mtgtreasury.ui.card.CardScreen
 import com.mready.mtgtreasury.ui.card.CardScreenDestination
 import com.mready.mtgtreasury.ui.decks.create.DeckCreationScreen
 import com.mready.mtgtreasury.ui.decks.create.DeckCreationScreenDestination
+import com.mready.mtgtreasury.ui.decks.view.DeckScreen
 import com.mready.mtgtreasury.ui.decks.view.DeckScreenDestination
 import com.mready.mtgtreasury.ui.navigation.NavigationScreen
 import com.mready.mtgtreasury.ui.navigation.NavigationScreenDestination
@@ -129,7 +130,7 @@ fun RootApp(
 
                     composable<DeckScreenDestination> { backStackEntry ->
                         val destination: CardScreenDestination = backStackEntry.toRoute()
-                        CardScreen(
+                        DeckScreen(
                             id = destination.id,
                             onBack = { mainNavController.popBackStack() }
                         )
@@ -137,7 +138,7 @@ fun RootApp(
 
                     composable<DeckCreationScreenDestination> {
                         DeckCreationScreen(
-
+                            onBack = { mainNavController.popBackStack() }
                         )
                     }
                 }
