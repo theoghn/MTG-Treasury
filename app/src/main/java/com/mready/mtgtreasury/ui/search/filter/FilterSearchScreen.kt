@@ -98,11 +98,6 @@ enum class SheetFilters {
 }
 
 
-data class FilterProperties(
-    val selectedCardColors: List<String>
-)
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FilterSearchScreen(
@@ -114,6 +109,7 @@ fun FilterSearchScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val manaCosts by viewModel.manaCosts.collectAsState()
+    val init by viewModel.init.collectAsState()
 
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val filterBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -129,17 +125,15 @@ fun FilterSearchScreen(
     var selectedCardTypes by rememberSaveable { mutableStateOf(listOf<String>()) }
     var selectedCardSuperTypes by rememberSaveable { mutableStateOf(listOf<String>()) }
 
-    LaunchedEffect(uiState) {
-        if (uiState !is FilterSearchScreenUiState.FilterSearchScreenUi) {
-            viewModel.searchCards(
-                name = searchQuery ?: "",
-                manaCost = selectedCardManaCosts,
-                colors = selectedCardColors,
-                rarity = selectedCardRarities,
-                type = selectedCardTypes,
-                superType = selectedCardSuperTypes
-            )
-        }
+    if(!init) {
+        viewModel.searchCards(
+            name = searchQuery ?: "",
+            manaCost = selectedCardManaCosts,
+            colors = selectedCardColors,
+            rarity = selectedCardRarities,
+            type = selectedCardTypes,
+            superType = selectedCardSuperTypes
+        )
     }
 
     LaunchedEffect(selectedFilter) {
@@ -239,9 +233,6 @@ fun FilterSearchScreen(
                                 },
                                 onAddToInventory = {
                                     viewModel.addCardToInventory(mtgCard.id)
-                                },
-                                onRemoveFromInventory = {
-                                    viewModel.removeCardFromInventory(mtgCard.id, mtgCard.qty)
                                 },
                                 isInInventory = mtgCard.qty > 0
                             )
@@ -716,12 +707,10 @@ fun ManaBottomSheet(
                             AsyncSvg(
                                 modifier = Modifier
                                     .clickable {
-                                        if (manaCost in temporaryCardManaCosts) {
-                                            temporaryCardManaCosts =
-                                                temporaryCardManaCosts - manaCost
+                                        temporaryCardManaCosts = if (manaCost in temporaryCardManaCosts) {
+                                            temporaryCardManaCosts - manaCost
                                         } else {
-                                            temporaryCardManaCosts =
-                                                temporaryCardManaCosts + manaCost
+                                            temporaryCardManaCosts + manaCost
                                         }
 
                                     },
@@ -878,7 +867,6 @@ fun MtgCardItem(
     mtgCard: MtgCard,
     isInInventory: Boolean,
     onAddToInventory: () -> Unit,
-    onRemoveFromInventory: () -> Unit,
     onClick: () -> Unit
 ) {
     var loading by rememberSaveable {

@@ -21,6 +21,7 @@ class FilterSearchViewModel @Inject constructor(
 ) : ViewModel() {
     val manaCosts = MutableStateFlow<Map<String, String>>(emptyMap())
     val uiState = MutableStateFlow<FilterSearchScreenUiState>(FilterSearchScreenUiState.Loading)
+    val init = MutableStateFlow(false)
 
     fun getCosts() {
         viewModelScope.launch {
@@ -41,45 +42,42 @@ class FilterSearchViewModel @Inject constructor(
             uiState.update { FilterSearchScreenUiState.Loading }
 
             inventoryService.getInventoryFlow().collect { inventory ->
-                uiState.update {
-                    var cards = api.getCardsByFilters(
-                        name = name,
-                        manaCost = manaCost,
-                        colors = colors,
-                        rarity = rarity,
-                        type = type,
-                        superType = superType,
-                    )
-                    cards = cards.map {
-                        it.copy(
-                            qty = if (inventory.contains(it.id)) {
-                                inventory[it.id]!!
-                            } else {
-                                0
-                            }
-                        )
-                    }
+                var cards = api.getCardsByFilters(
+                    name = name,
+                    manaCost = manaCost,
+                    colors = colors,
+                    rarity = rarity,
+                    type = type,
+                    superType = superType,
+                )
 
-                    if (cards.isEmpty()) {
-                        FilterSearchScreenUiState.Empty
-                    } else {
-                        FilterSearchScreenUiState.FilterSearchScreenUi(cards)
-                    }
+                cards = cards.map {
+                    it.copy(
+                        qty = if (inventory.contains(it.id)) {
+                            inventory[it.id]!!
+                        } else {
+                            0
+                        }
+                    )
+                }
+
+                delay(100)
+
+                if (cards.isEmpty()) {
+                    uiState.update { FilterSearchScreenUiState.Empty }
+                } else {
+                    uiState.update { FilterSearchScreenUiState.FilterSearchScreenUi(cards) }
                 }
             }
-
+        }
+        if (!init.value) {
+            init.value = true
         }
     }
 
     fun addCardToInventory(cardId: String) {
         viewModelScope.launch {
             inventoryService.addCardToInventory(cardId)
-        }
-    }
-
-    fun removeCardFromInventory(cardId: String, currentQuantity: Int) {
-        viewModelScope.launch {
-            inventoryService.removeCardFromInventory(cardId = cardId, currentQuantity = currentQuantity)
         }
     }
 }

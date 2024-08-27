@@ -3,18 +3,14 @@ package com.mready.mtgtreasury.api.endpoints
 import android.util.Log
 import com.mready.mtgtreasury.api.ScryfallApiClient
 import com.mready.mtgtreasury.models.MtgSet
-import com.mready.mtgtreasury.models.card.MtgCard
 import com.mready.mtgtreasury.models.card.CardImageUris
 import com.mready.mtgtreasury.models.card.CardLegalities
 import com.mready.mtgtreasury.models.card.CardPrices
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.update
-import net.mready.apiclient.formBody
+import com.mready.mtgtreasury.models.card.MtgCard
 import net.mready.apiclient.get
 import net.mready.apiclient.jsonObjectBody
 import net.mready.apiclient.post
 import net.mready.json.Json
-import net.mready.json.jsonArray
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -98,8 +94,8 @@ class ScryfallApi @Inject constructor(
         rarity: List<String>,
         manaCost: List<String>,
     ): List<MtgCard> {
-        try {
-            val x = apiClient.get(
+        return try {
+            apiClient.get(
                 endpoint = "cards/search",
                 query = mapOf(
                     "q" to buildSearchQuery(name, type, superType, colors, rarity, manaCost),
@@ -107,9 +103,8 @@ class ScryfallApi @Inject constructor(
             ) { json ->
                 json["data"].array.map { it.toCard() }
             }
-            return x
         } catch (e: Exception) {
-            return emptyList()
+            emptyList()
         }
     }
 
@@ -125,9 +120,11 @@ class ScryfallApi @Inject constructor(
             if (type.isEmpty() && superType.isEmpty() && colors.isEmpty() && rarity.isEmpty() && manaCost.isEmpty()) {
                 append("name:$name")
             } else {
-                if (name.isNotEmpty())
+                if (name.isNotEmpty()){
                     append("name:$name")
+                }
             }
+
             append(" unique:art")
             type.forEach { append(" type:$it") }
             superType.forEach { append(" type:$it") }
@@ -135,7 +132,6 @@ class ScryfallApi @Inject constructor(
             rarity.forEach { append(" r:$it") }
             manaCost.forEach { append(" mana:$it") }
         }
-        Log.d("ScryfallApi", "buildSearchQuery: $query")
         return query
     }
 }
