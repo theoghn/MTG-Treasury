@@ -166,7 +166,13 @@ fun NavigationScreen(
             }
 
             composable<ProfileScreenDestination> {
-                ProfileScreen()
+                ProfileScreen(
+                    onNavigateToCard = { id ->
+                        navigateToCard(
+                            id
+                        )
+                    }
+                )
             }
         }
     }

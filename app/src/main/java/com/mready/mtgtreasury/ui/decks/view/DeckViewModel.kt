@@ -16,14 +16,20 @@ import javax.inject.Inject
 @HiltViewModel
 class DeckViewModel @Inject constructor(
     private val decksService: DecksService,
-    private val cardsService: CardsService
+    private val cardsService: CardsService,
+    private val inventoryService: InventoryService
 ) : ViewModel() {
     val cards = MutableStateFlow(emptyList<MtgCard>())
+    val missingCardsIds = MutableStateFlow(emptyList<String>())
     val deck = MutableStateFlow<Deck?>(null)
 
     fun getCards(deckId: String) {
         viewModelScope.launch {
             deck.update { decksService.getDeck(deckId) }
+            val inventory = inventoryService.getInventory()
+            if (deck.value != null) {
+                missingCardsIds.update { deck.value!!.cards.keys.toList().filter { !inventory.contains(it) } }
+            }
 
             cardsService.getCardsByIds(deck.value?.cards?.keys?.toList() ?: emptyList())
                 .let { incomingCards ->

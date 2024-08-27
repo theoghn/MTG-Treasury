@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -55,6 +56,7 @@ fun DeckScreen(
     }
     val deck by viewModel.deck.collectAsState()
     val cards by viewModel.cards.collectAsState()
+    val missingCardsIds by viewModel.missingCardsIds.collectAsState()
 
     Scaffold(
         modifier = Modifier
@@ -93,6 +95,7 @@ fun DeckScreen(
                     items(cards) { card ->
                         DeckCardItem(
                             card = card,
+                            isInInventory = !missingCardsIds.contains(card.id),
                             qty = deck?.cards?.get(card.id) ?: 0
                         )
                     }
@@ -131,6 +134,7 @@ fun DeckScreen(
 @Composable
 fun DeckCardItem(
     card: MtgCard,
+    isInInventory: Boolean,
     qty: Int = 0
 ) {
     Box(modifier = Modifier.fillMaxWidth()) {
@@ -153,17 +157,22 @@ fun DeckCardItem(
                 .padding(8.dp)
                 .size(20.dp)
                 .clip(CircleShape)
-                .background(Color.Black.copy(alpha = 0.5f))
+                .background(if (isInInventory) Color.Black.copy(alpha = 0.5f) else Color.Red)
                 .align(Alignment.BottomEnd),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = qty.toString(),
-                color = Color.White,
-                fontSize = 12.sp,
-                lineHeight = 12.sp,
-                fontWeight = FontWeight.Bold
-            )
+            if (isInInventory) {
+                Text(
+                    text = qty.toString(),
+                    color = Color.White,
+                    fontSize = 12.sp,
+                    lineHeight = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            } else {
+                Icon(imageVector = Icons.Default.Clear, contentDescription = null)
+            }
+
         }
 
 

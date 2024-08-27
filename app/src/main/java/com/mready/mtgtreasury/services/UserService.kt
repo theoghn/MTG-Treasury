@@ -5,12 +5,21 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.toObject
+import com.mready.mtgtreasury.models.AppUser
+import com.mready.mtgtreasury.utility.await
 import com.mready.mtgtreasury.utility.awaitOrNull
+import com.mready.mtgtreasury.utility.requireUser
 import com.mready.mtgtreasury.utility.requireUserId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.channels.trySendBlocking
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -20,6 +29,7 @@ import javax.inject.Singleton
 @Singleton
 class UserService @Inject constructor() {
     private val auth = Firebase.auth
+    private val db = Firebase.firestore
     private val isUserPresent = MutableStateFlow<Boolean?>(null)
 
     init {
@@ -44,6 +54,22 @@ class UserService @Inject constructor() {
         return Firebase.auth.currentUser != null
     }
 
+    suspend fun getUserFlow() : Flow<AppUser?> {
+        return callbackFlow {
+            val listener =
+                db.collection("users").document(auth.requireUserId).addSnapshotListener { value, error ->
+                    if (error != null) {
+                        close(error)
+                    }
+                    trySendBlocking((value!!.toObject<AppUser>()))
+                }
+
+            awaitClose {
+                listener.remove()
+            }
+        }
+    }
+
     suspend fun createAccount(email: String, password: String, username: String): FirebaseUser {
         val user = auth.createUserWithEmailAndPassword(email, password).awaitOrNull()?.user
         val userId = auth.requireUserId
@@ -55,10 +81,8 @@ class UserService @Inject constructor() {
             "inventoryValue" to 0.0
         )
 
-        FirebaseFirestore.getInstance().collection("users").document(userId)
-            .set(userData).awaitOrNull()
+        db.collection("users").document(userId).set(userData).awaitOrNull()
 
-//        Log.d("UserApi", "createAccount: $x")
         return user!!
     }
 
@@ -73,8 +97,7 @@ class UserService @Inject constructor() {
     suspend fun updateInventoryValue(value: Double) {
         val userId = auth.requireUserId
 
-        FirebaseFirestore.getInstance().collection("users").document(userId)
-            .update("inventoryValue", value).awaitOrNull()
+        db.collection("users").document(userId).update("inventoryValue", value).awaitOrNull()
     }
 }
 
