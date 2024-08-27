@@ -6,4 +6,4 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 @Parcelize
-data object DeckCreationScreenDestination : Parcelable
+data class DeckCreationScreenDestination(val id: String?) : Parcelable

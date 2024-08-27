@@ -19,9 +19,52 @@ class DeckCreationViewModel @Inject constructor(
     private val cardsService: CardsService
 ) : ViewModel() {
     val inventoryCards = MutableStateFlow<List<MtgCard>>(emptyList())
+    val deckCards = MutableStateFlow<Map<String, Int>>(emptyMap())
+    val deckName = MutableStateFlow("")
 
     init {
         getInventoryCards()
+    }
+
+    fun getDeck(deckId : String) {
+        viewModelScope.launch {
+            val deck = decksService.getDeck(deckId)
+            deckCards.update { deck.cards }
+            deckName.update { deck.name }
+        }
+    }
+
+    fun updateDeckName(name: String) {
+        deckName.update { name }
+    }
+
+    fun addCardToDeck(cardId: String) {
+        val currentDeck = deckCards.value.toMutableMap()
+        currentDeck[cardId] = (currentDeck[cardId] ?: 0) + 1
+        deckCards.update { currentDeck }
+    }
+
+    fun removeCardFromDeck(cardId: String) {
+        val currentDeck = deckCards.value.toMutableMap()
+        currentDeck[cardId] = (currentDeck[cardId] ?: 0) - 1
+        if (currentDeck[cardId] == 0) {
+            currentDeck.remove(cardId)
+        }
+        deckCards.update { currentDeck }
+    }
+
+    fun updateDeck(deckId: String, deckName: String, displayCardId: String, deckList: Map<String, Int>) {
+        val deckHashMap = if (deckList.isEmpty()) {
+            hashMapOf()
+        } else {
+            HashMap(deckList)
+        }
+
+        val img = inventoryCards.value.find { it.id == displayCardId }?.imageUris?.borderCrop ?: ""
+
+        viewModelScope.launch {
+            decksService.updateDeck(deckId, deckName, img, deckHashMap)
+        }
     }
 
     fun createDeck(deckName: String, displayCardId: String, deckList: Map<String, Int>) {

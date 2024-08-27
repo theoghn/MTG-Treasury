@@ -6,6 +6,7 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.mready.mtgtreasury.utility.awaitOrNull
+import com.mready.mtgtreasury.utility.requireUserId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,19 +46,20 @@ class UserService @Inject constructor() {
 
     suspend fun createAccount(email: String, password: String, username: String): FirebaseUser {
         val user = auth.createUserWithEmailAndPassword(email, password).awaitOrNull()?.user
-        val userId = user?.uid
+        val userId = auth.requireUserId
 
         val userData = hashMapOf(
             "username" to username,
             "inventory" to hashMapOf<String, Int>(),
-            "wishlist" to listOf<String>()
+            "wishlist" to listOf<String>(),
+            "inventoryValue" to 0.0
         )
 
-        val x = FirebaseFirestore.getInstance().collection("users").document(userId!!)
+        FirebaseFirestore.getInstance().collection("users").document(userId)
             .set(userData).awaitOrNull()
 
-        Log.d("UserApi", "createAccount: $x")
-        return user
+//        Log.d("UserApi", "createAccount: $x")
+        return user!!
     }
 
     suspend fun signIn(email: String, password: String): FirebaseUser? {
@@ -66,6 +68,13 @@ class UserService @Inject constructor() {
 
     fun signOut() {
         auth.signOut()
+    }
+
+    suspend fun updateInventoryValue(value: Double) {
+        val userId = auth.requireUserId
+
+        FirebaseFirestore.getInstance().collection("users").document(userId)
+            .update("inventoryValue", value).awaitOrNull()
     }
 }
 

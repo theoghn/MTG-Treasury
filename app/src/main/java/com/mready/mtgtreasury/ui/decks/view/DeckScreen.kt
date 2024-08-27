@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,6 +18,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -38,13 +40,15 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.mready.mtgtreasury.R
 import com.mready.mtgtreasury.models.card.MtgCard
+import com.mready.mtgtreasury.ui.components.PrimaryButton
 import com.mready.mtgtreasury.ui.theme.BoxColor
 
 @Composable
 fun DeckScreen(
     viewModel: DeckViewModel = hiltViewModel(),
     id: String,
-    onBack: () -> Boolean
+    onBack: () -> Boolean,
+    navigateToDeckCreation: (String) -> Unit
 ) {
     LaunchedEffect(id) {
         viewModel.getCards(id)
@@ -63,15 +67,14 @@ fun DeckScreen(
             modifier = Modifier
                 .padding(it)
                 .fillMaxWidth(),
-            contentAlignment = Alignment.Center
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxSize()
                     .padding(horizontal = 12.dp)
+                    .padding(bottom = 12.dp)
                     .clip(RoundedCornerShape(16.dp))
                     .background(BoxColor),
-//                verticalArrangement = Arrangement.spacedBy(12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
@@ -93,6 +96,32 @@ fun DeckScreen(
                             qty = deck?.cards?.get(card.id) ?: 0
                         )
                     }
+                }
+            }
+
+            PrimaryButton(
+                modifier = Modifier
+                    .padding(24.dp)
+                    .clip(RoundedCornerShape(100))
+                    .align(Alignment.BottomEnd),
+                onClick = { navigateToDeckCreation(id) }
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Create,
+                        contentDescription = null,
+                        tint = Color.White
+                    )
+
+                    Text(
+                        text = "Edit",
+                        fontSize = 16.sp,
+                        color = Color.White
+                    )
                 }
             }
         }

@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
@@ -31,6 +33,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
@@ -86,7 +89,10 @@ fun SignInScreen(
                 placeholderText = stringResource(R.string.email),
                 onValueChange = {
                     email = it
-                }
+                },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email
+                )
             )
 
             PasswordField(
@@ -138,6 +144,7 @@ fun BaseTextField(
     modifier: Modifier = Modifier,
     fieldValue: String,
     placeholderText: String,
+    keyboardOptions: KeyboardOptions,
     onValueChange: (String) -> Unit,
 ) {
     BasicTextField(
@@ -148,7 +155,9 @@ fun BaseTextField(
             .padding(vertical = 8.dp),
         value = fieldValue,
         onValueChange = {
-            onValueChange(it)
+            if (it.length <= 30){
+                onValueChange(it)
+            }
         },
         singleLine = true,
         textStyle = LocalTextStyle.current.copy(
@@ -195,8 +204,13 @@ fun PasswordField(
             .padding(vertical = 8.dp),
         value = fieldValue,
         onValueChange = {
-            onValueChange(it)
+            if (it.length <= 30){
+                onValueChange(it)
+            }
         },
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Password
+        ),
         visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
         singleLine = true,
         textStyle = LocalTextStyle.current.copy(

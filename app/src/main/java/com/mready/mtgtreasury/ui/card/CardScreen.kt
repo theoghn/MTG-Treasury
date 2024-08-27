@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
@@ -46,6 +47,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.Placeholder
@@ -86,6 +89,7 @@ fun CardScreen(
 
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
+    val insets = WindowInsets.statusBars
 
     LaunchedEffect(key1 = id) {
         viewModel.getCard(id)
@@ -108,7 +112,9 @@ fun CardScreen(
                 val qty = currentState.qtyInInventory
 
                 BottomSheetScaffold(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                    ,
                     sheetPeekHeight = screenHeight * 2 / 5,
                     scaffoldState = scaffoldState,
                     sheetContent = {
@@ -120,7 +126,7 @@ fun CardScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .windowInsetsPadding(WindowInsets.statusBars)
+                            .statusBarsPadding()
                             .background(BoxColor)
                     ) {
                         Row(
@@ -142,35 +148,6 @@ fun CardScreen(
                             }
 
                             Spacer(modifier = Modifier.weight(1f))
-
-//                            PrimaryButton(
-//                                modifier = Modifier
-//                                    .size(40.dp)
-//                                    .clip(CircleShape),
-//                                onClick = {
-//                                    if (isInInventory) {
-//                                        viewModel.removeCardFromInventory(card.id, qty)
-//                                    } else {
-//                                        viewModel.addCardToInventory(card.id)
-//                                    }
-//                                },
-//                            ) {
-//                                Crossfade(targetState = isInInventory, label = "") {
-//                                    Icon(
-//                                        imageVector = if (it) {
-//                                            Icons.Default.Done
-//                                        } else {
-//                                            Icons.Default.Add
-//                                        },
-//                                        contentDescription = null,
-//                                        tint = if (it) {
-//                                            Color.White
-//                                        } else {
-//                                            Color.White
-//                                        }
-//                                    )
-//                                }
-//                            }
 
                             SecondaryButton(
                                 modifier = Modifier

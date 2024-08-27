@@ -109,7 +109,7 @@ fun RootApp(
                             },
                             navigateToDeckCreation = {
                                 mainNavController.navigate(
-                                    DeckCreationScreenDestination
+                                    DeckCreationScreenDestination(null)
                                 )
                             },
                             navigateToDeck = { id: String ->
@@ -129,15 +129,22 @@ fun RootApp(
                     }
 
                     composable<DeckScreenDestination> { backStackEntry ->
-                        val destination: CardScreenDestination = backStackEntry.toRoute()
+                        val destination: DeckScreenDestination = backStackEntry.toRoute()
                         DeckScreen(
                             id = destination.id,
-                            onBack = { mainNavController.popBackStack() }
+                            onBack = { mainNavController.popBackStack() },
+                            navigateToDeckCreation = { id: String ->
+                                mainNavController.navigate(
+                                    DeckCreationScreenDestination(id)
+                                )
+                            }
                         )
                     }
 
-                    composable<DeckCreationScreenDestination> {
+                    composable<DeckCreationScreenDestination> { backStackEntry ->
+                        val destination: DeckCreationScreenDestination = backStackEntry.toRoute()
                         DeckCreationScreen(
+                            deckId = destination.id,
                             onBack = { mainNavController.popBackStack() }
                         )
                     }

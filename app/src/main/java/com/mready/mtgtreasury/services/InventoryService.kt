@@ -21,7 +21,9 @@ import javax.inject.Singleton
 
 
 @Singleton
-class InventoryService @Inject constructor() {
+class InventoryService @Inject constructor(
+    private val cardsService: CardsService
+) {
     private val auth = Firebase.auth
     private val db = Firebase.firestore
 
@@ -71,5 +73,19 @@ class InventoryService @Inject constructor() {
         val userId = auth.requireUserId
 
         return db.collection("users").document(userId).get().await().toObject<AppUser>()!!.inventory
+    }
+
+    suspend fun calculateInventoryValue(inventory: HashMap<String, Int>): Double {
+        var totalValue = 0.0
+        val chunkedList = inventory.keys.chunked(60)
+
+        chunkedList.forEach {
+            val cards = cardsService.getCardsByIds(it)
+            for (card in cards) {
+                totalValue += card.prices.eur.toFloat() * inventory[card.id]!!
+            }
+        }
+
+        return totalValue
     }
 }

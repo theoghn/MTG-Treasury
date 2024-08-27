@@ -3,10 +3,8 @@ package com.mready.mtgtreasury.ui.home
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,13 +35,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -81,6 +75,7 @@ fun HomeScreen(
             val card = currentState.mtgCard
             val mostValuableCards = currentState.mostValuableCards
             val newestSets = currentState.newestSets
+            val inventoryValue = currentState.inventoryValue
 
             Column(
                 modifier = modifier
@@ -90,7 +85,7 @@ fun HomeScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
 
-                CollectionValue()
+                CollectionValue(inventoryValue = inventoryValue)
 
                 CardOfTheDay(card, onCardClick)
 
@@ -274,7 +269,7 @@ private fun ValuableCardItem(
     }
 }
 
-                @Composable
+@Composable
 private fun ColumnScope.CardOfTheDay(
     card: MtgCard,
     onCardClick: (String) -> Unit
@@ -416,7 +411,7 @@ private fun ColumnScope.CardOfTheDay(
 }
 
 @Composable
-private fun CollectionValue() {
+private fun CollectionValue(inventoryValue: Double) {
     Column(
         modifier = Modifier.padding(top = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -427,7 +422,7 @@ private fun CollectionValue() {
             color = Color.White,
         )
         Text(
-            text = "$38.46", //TODO get actual value
+            text = stringResource(id = R.string.euro, String.format("%.2f", inventoryValue)),
             fontSize = 40.sp,
             color = Color.White,
         )

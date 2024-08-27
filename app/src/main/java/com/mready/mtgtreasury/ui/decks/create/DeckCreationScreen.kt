@@ -33,6 +33,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -64,15 +65,22 @@ import java.util.HashMap
 @Composable
 fun DeckCreationScreen(
     viewModel: DeckCreationViewModel = hiltViewModel(),
+    deckId: String?,
     onBack: () -> Boolean
 ) {
-    var deckName by rememberSaveable { mutableStateOf("") }
-    var deckCards by rememberSaveable { mutableStateOf(emptyMap<String, Int>()) }
+    val deckName by viewModel.deckName.collectAsState()
+    val deckCards by viewModel.deckCards.collectAsState()
     var openAlertDialog by rememberSaveable { mutableStateOf(false) }
 
     var dialogMessage by rememberSaveable { mutableStateOf("") }
 
     val inventoryCards by viewModel.inventoryCards.collectAsState()
+
+    LaunchedEffect(deckId) {
+        if (deckId != null) {
+            viewModel.getDeck(deckId)
+        }
+    }
 
     Scaffold(
         modifier = Modifier
@@ -95,7 +103,7 @@ fun DeckCreationScreen(
                 value = deckName,
                 onValueChange = {
                     if (it.length <= 30) {
-                        deckName = it
+                        viewModel.updateDeckName(it)
                     }
                 },
                 singleLine = true,
@@ -123,27 +131,30 @@ fun DeckCreationScreen(
                         qty = deckCards[card.id] ?: 0,
                         onAdd = {
                             if (deckCards.values.sum() < 60) {
-                                deckCards = deckCards.toMutableMap().apply {
-                                    if (containsKey(card.id)) {
-                                        this[card.id] = this[card.id]!! + 1
-                                    } else {
-                                        this[card.id] = 1
-                                    }
-                                }
+                                viewModel.addCardToDeck(card.id)
+
+//                                deckCards = deckCards.toMutableMap().apply {
+//                                    if (containsKey(card.id)) {
+//                                        this[card.id] = this[card.id]!! + 1
+//                                    } else {
+//                                        this[card.id] = 1
+//                                    }
+//                                }
                             } else {
                                 dialogMessage = "You can't have more than 60 cards in a deck"
                                 openAlertDialog = true
                             }
                         },
                         onRemove = {
-                            deckCards = deckCards.toMutableMap().apply {
-                                if (containsKey(card.id)) {
-                                    this[card.id] = this[card.id]!! - 1
-                                    if (this[card.id] == 0) {
-                                        this.remove(card.id)
-                                    }
-                                }
-                            }
+                            viewModel.removeCardFromDeck(card.id)
+//                            deckCards = deckCards.toMutableMap().apply {
+//                                if (containsKey(card.id)) {
+//                                    this[card.id] = this[card.id]!! - 1
+//                                    if (this[card.id] == 0) {
+//                                        this.remove(card.id)
+//                                    }
+//                                }
+//                            }
                         }
                     )
                 }
@@ -159,7 +170,12 @@ fun DeckCreationScreen(
                         openAlertDialog = true
                         return@PrimaryButton
                     }
-                    viewModel.createDeck(deckName, deckCards.keys.randomOrNull() ?: "", deckCards)
+
+                    if (deckId != null) {
+                        viewModel.updateDeck(deckId, deckName, deckCards.keys.randomOrNull() ?: "", deckCards)
+                    } else {
+                        viewModel.createDeck(deckName, deckCards.keys.randomOrNull() ?: "", deckCards)
+                    }
                     onBack()
                 }
             ) {

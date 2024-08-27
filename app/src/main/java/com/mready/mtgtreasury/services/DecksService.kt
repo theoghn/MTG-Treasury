@@ -38,6 +38,14 @@ class DecksService @Inject constructor() {
         db.collection("decks").document().set(deck).awaitOrNull()
     }
 
+    suspend fun updateDeck(deckId: String, deckName: String, deckImage: String, deckList: HashMap<String, Int>) {
+        val userId = auth.requireUserId
+
+        val deck = Deck(uid = userId, deckImage = deckImage, name = deckName, cards = deckList)
+
+        db.collection("decks").document(deckId).set(deck).awaitOrNull()
+    }
+
     suspend fun getDecks(): Flow<List<Deck>> {
         val userId = auth.requireUserId
 

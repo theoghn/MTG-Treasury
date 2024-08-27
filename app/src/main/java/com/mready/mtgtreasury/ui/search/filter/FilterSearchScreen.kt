@@ -888,7 +888,6 @@ fun MtgCardItem(
 
     Card(
         modifier = modifier
-            .height(300.dp)
             .shadow(
                 elevation = 2.dp,
                 shape = RoundedCornerShape(4.dp),
@@ -905,7 +904,7 @@ fun MtgCardItem(
         Box(modifier = Modifier.fillMaxSize()) {
             Box(
                 modifier = Modifier
-                    .padding(12.dp)
+                    .padding(8.dp)
                     .size(14.dp)
                     .clip(CircleShape)
                     .border(1.dp, Color.White, CircleShape)
@@ -924,7 +923,7 @@ fun MtgCardItem(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 8.dp, vertical = 12.dp)
+                    .padding(horizontal = 8.dp, vertical = 8.dp)
             ) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
@@ -932,7 +931,8 @@ fun MtgCardItem(
                         .crossfade(true)
                         .build(),
                     modifier = Modifier
-                        .padding(bottom = 8.dp)
+                        .padding(horizontal = 16.dp)
+                        .padding(bottom = 12.dp)
                         .height(160.dp)
                         .clip(RoundedCornerShape(4.dp))
                         .background(Color.Transparent)
@@ -963,7 +963,7 @@ fun MtgCardItem(
                     color = Color.White
                 )
 
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
