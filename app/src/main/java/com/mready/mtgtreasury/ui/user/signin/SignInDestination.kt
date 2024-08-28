@@ -1,4 +1,4 @@
-package com.mready.mtgtreasury.ui.auth.signin
+package com.mready.mtgtreasury.ui.user.signin
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize

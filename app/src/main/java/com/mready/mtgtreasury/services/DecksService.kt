@@ -6,17 +6,13 @@ import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
-import com.mready.mtgtreasury.models.AppUser
 import com.mready.mtgtreasury.models.Deck
 import com.mready.mtgtreasury.utility.await
 import com.mready.mtgtreasury.utility.awaitOrNull
 import com.mready.mtgtreasury.utility.requireUserId
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
@@ -46,7 +42,7 @@ class DecksService @Inject constructor() {
         db.collection("decks").document(deckId).set(deck).awaitOrNull()
     }
 
-    suspend fun getDecks(): Flow<List<Deck>> {
+    suspend fun getDecksFlow(): Flow<List<Deck>> {
         val userId = auth.requireUserId
 
         return callbackFlow {

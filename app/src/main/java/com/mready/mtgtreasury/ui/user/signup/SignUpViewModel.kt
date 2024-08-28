@@ -1,4 +1,4 @@
-package com.mready.mtgtreasury.ui.auth.signup
+package com.mready.mtgtreasury.ui.user.signup
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

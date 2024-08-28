@@ -23,7 +23,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,14 +43,15 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.mready.mtgtreasury.R
-import com.mready.mtgtreasury.models.card.MtgCard
 import com.mready.mtgtreasury.ui.theme.AccentColor
 import com.mready.mtgtreasury.ui.theme.BoxColor
 
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
-    onNavigateToCard: (String) -> Unit
+    onNavigateToCard: (String) -> Unit,
+    navigateToInventory: () -> Unit,
+    navigateToWishlist: () -> Unit
 ) {
     val scrollState = rememberScrollState()
     val uiState = viewModel.uiState.collectAsState()
@@ -62,60 +65,42 @@ fun ProfileScreen(
             val user = state.user
             val inventoryCards = state.inventoryCards
             val wishlistCards = state.wishlistCards
+            val decks = state.decks
 
             Column(
                 modifier = Modifier
-                    .padding(top = 32.dp)
+                    .padding(top = 16.dp)
                     .padding(horizontal = 16.dp)
                     .fillMaxSize()
                     .verticalScroll(scrollState),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-//                Image(
-//                    modifier = Modifier
-//                        .size(100.dp)
-//                        .aspectRatio(1f)
-//                        .clip(CircleShape),
-//                    painter = painterResource(id = R.drawable.awoken_demon_innistrad_midnight_hunt_mtg_art),
-//                    contentScale = ContentScale.Crop,
-//                    contentDescription = null
-//                )
-//
-//                Text(
-//                    text = user.username,
-//                    fontSize = 24.sp,
-//                    fontWeight = FontWeight.SemiBold,
-//                    color = Color.White
-//                )
-//
-//                Row(
-//                    modifier = Modifier,
-//                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-////                    verticalAlignment = Alignment.CenterVertically
-//                ) {
-//                    ProfileStat(
-//                        title = "Total Value",
-//                        value = stringResource(
-//                            id = R.string.euro,
-//                            String.format("%.2f", user.inventoryValue)
-//                        )
-//                    )
-//
-//                    ProfileStat(
-//                        title = "Owned",
-//                        value = user.inventory.size.toString()
-//                    )
-//
-//                    ProfileStat(
-//                        title = "Wishlisted",
-//                        value = user.wishlist.size.toString()
-//                    )
-//                }
+                Row(
+                    modifier = Modifier.padding().fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = user.username,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White
+                    )
+
+                    Icon(
+                        modifier = Modifier.size(32.dp),
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = null,
+                        tint = Color.White
+                    )
+                }
 
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier = Modifier
+                        .padding(top = 24.dp)
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Image(
                         modifier = Modifier
@@ -127,58 +112,77 @@ fun ProfileScreen(
                         contentDescription = null
                     )
 
-                    Column(
-                        modifier = Modifier.padding(horizontal = 12.dp).fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
+                    Spacer(modifier = Modifier.weight(1f))
 
-                        Text(
-                            text = user.username,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color.White
+                    Column(
+                        modifier = Modifier,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        ProfileStat(
+                            title = "Total Value",
+                            value = stringResource(
+                                id = R.string.euro,
+                                String.format("%.2f", user.inventoryValue)
+                            )
                         )
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            ProfileStat(
-                                title = "Total Value",
-                                value = stringResource(
-                                    id = R.string.euro,
-                                    String.format("%.2f", user.inventoryValue)
-                                )
-                            )
-
-                            ProfileStat(
-                                title = "Owned",
-                                value = user.inventory.size.toString()
-                            )
-
-                            ProfileStat(
-                                title = "Wishlisted",
-                                value = user.wishlist.size.toString()
-                            )
-                        }
-
+                        ProfileStat(
+                            title = "Owned",
+                            value = user.inventory.values.sum().toString()
+                        )
                     }
+
+                    Spacer(modifier = Modifier.width(42.dp))
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        ProfileStat(
+                            title = "Wishlisted",
+                            value = user.wishlist.size.toString()
+                        )
+
+                        ProfileStat(
+                            title = "Decks",
+                            value = decks.size.toString()
+                        )
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
                 }
 
+                HorizontalDivider(
+                    modifier = Modifier
+                        .padding(horizontal = 12.dp)
+                        .fillMaxWidth(),
+                    color = Color.DarkGray,
+                    thickness = 3.dp
+                )
+
                 CardsSection(
-                    cards = inventoryCards,
+                    modifier = Modifier.padding(top = 16.dp).clickable { navigateToInventory() },
+                    imageUris = inventoryCards.map { it.imageUris.smallSize },
                     title = "My Inventory",
                     onCardClick = { onNavigateToCard(it) }
                 )
 
+
                 CardsSection(
-                    cards = wishlistCards,
+                    modifier = Modifier.padding(top = 16.dp).clickable { navigateToWishlist() },
+                    imageUris = wishlistCards.map { it.imageUris.smallSize },
                     title = "My Wishlist",
                     onCardClick = { onNavigateToCard(it) }
                 )
 
-                Spacer(modifier = Modifier.weight(1f))
+//                CardsSection(
+//                    modifier = Modifier.padding(top = 16.dp),
+//                    imageUris = decks.map { it.deckImage },
+//                    title = "My Decks",
+//                    onCardClick = { onNavigateToCard(it) }
+//                )
+
+//                Spacer(modifier = Modifier.weight(1f))
 
 
                 Button(
@@ -194,7 +198,6 @@ fun ProfileScreen(
 
 @Composable
 fun ProfileStat(
-    modifier: Modifier = Modifier,
     title: String,
     value: String
 ) {
@@ -203,16 +206,17 @@ fun ProfileStat(
     ) {
         Text(
             text = title,
-            fontSize = 12.sp,
+            fontSize = 14.sp,
             color = Color.White,
-            lineHeight = 13.sp
+            lineHeight = 15.sp
         )
 
         Text(
             text = value,
-            fontSize = 12.sp,
+            fontSize = 15.sp,
             color = AccentColor,
-            lineHeight = 13.sp
+            fontWeight = FontWeight.SemiBold,
+            lineHeight = 16.sp
         )
     }
 }
@@ -222,11 +226,11 @@ fun ProfileStat(
 fun CardsSection(
     modifier: Modifier = Modifier,
     title: String,
-    cards: List<MtgCard>,
+    imageUris: List<String>,
     onCardClick: (String) -> Unit
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
@@ -244,22 +248,23 @@ fun CardsSection(
 
 
     LazyRow(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
             .border(1.dp, Color.DarkGray, RoundedCornerShape(12.dp))
             .background(BoxColor),
         contentPadding = PaddingValues(8.dp)
     ) {
-        items(cards) { card ->
+        items(imageUris) { uri ->
             AsyncImage(
-                model = card.imageUris.smallSize,
+                model = uri,
                 modifier = Modifier
                     .padding(4.dp)
                     .width(60.dp)
                     .clip(shape = RoundedCornerShape(6.dp))
                     .background(Color.Transparent)
-                    .clickable { onCardClick(card.id) },
+//                    .clickable { onCardClick(card.id) }
+                ,
                 contentScale = ContentScale.FillWidth,
                 contentDescription = null,
                 placeholder = painterResource(id = R.drawable.card_back),

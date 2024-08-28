@@ -37,4 +37,18 @@
     <string name="forgot_password">Forgot Password?</string>
     <string name="x_max_set">%1$s / 14</string>
     <string name="ok">OK</string>
+    <string name="in_inventory">In Inventory</string>
+    <string name="max_deck_cards_warning">You can\'t have more than 60 cards in a deck</string>
+    <string name="create_new_deck">Create a new deck</string>
+    <string name="deck_name">Deck name</string>
+    <string name="deck_cards">Deck Cards</string>
+    <string name="edit">Edit</string>
+    <string name="warning">Warning</string>
+    <string name="delete_warning">Are you sure you want to delete?</string>
+    <string name="delete">Delete</string>
+    <string name="delete_card">Delete Card</string>
+    <string name="in_deck">In Deck</string>
+    <string name="qty">Qty: %1$s</string>
+    <string name="inventory">Inventory</string>
+    <string name="wishlist">Wishlist</string>
 </resources>

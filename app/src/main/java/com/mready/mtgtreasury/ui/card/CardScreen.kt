@@ -1,5 +1,6 @@
 package com.mready.mtgtreasury.ui.card
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -95,6 +96,8 @@ fun CardScreen(
         viewModel.getCard(id)
     }
 
+
+
     Box(modifier = modifier.fillMaxSize()) {
         when (val currentState = uiState) {
             is CardScreenUiState.Loading -> {
@@ -111,10 +114,14 @@ fun CardScreen(
                 val isInInventory = currentState.qtyInInventory != 0
                 val qty = currentState.qtyInInventory
 
+                BackHandler {
+                    viewModel.updateCardQuantity(card.id, qty)
+                    onBack()
+                }
+
                 BottomSheetScaffold(
                     modifier = Modifier
-                        .fillMaxWidth()
-                    ,
+                        .fillMaxWidth(),
                     sheetPeekHeight = screenHeight * 2 / 5,
                     scaffoldState = scaffoldState,
                     sheetContent = {
@@ -137,7 +144,10 @@ fun CardScreen(
                                 modifier = Modifier
                                     .padding(horizontal = 16.dp)
                                     .size(40.dp),
-                                onClick = { onBack() },
+                                onClick = {
+                                    viewModel.updateCardQuantity(card.id, qty)
+                                    onBack()
+                                },
                                 shape = CircleShape
                             ) {
                                 Icon(
@@ -199,10 +209,9 @@ fun CardScreen(
                 }
 
                 InventoryManager(
-                    card = card,
                     qty = qty,
                     addCardToInventory = { viewModel.addCardToInventory(card.id) },
-                    removeCardFromInventory = { viewModel.removeCardFromInventory(card.id, qty) }
+                    removeCardFromInventory = { viewModel.removeCardFromInventory(card.id) }
                 )
             }
         }
@@ -211,7 +220,6 @@ fun CardScreen(
 
 @Composable
 private fun BoxScope.InventoryManager(
-    card: MtgCard,
     qty: Int,
     addCardToInventory: () -> Unit,
     removeCardFromInventory: () -> Unit,
@@ -228,7 +236,7 @@ private fun BoxScope.InventoryManager(
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
-            text = "In Inventory",
+            text = stringResource(R.string.in_inventory),
             color = Color.White,
         )
 

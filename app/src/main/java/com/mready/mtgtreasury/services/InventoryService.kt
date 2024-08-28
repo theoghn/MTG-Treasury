@@ -27,6 +27,12 @@ class InventoryService @Inject constructor(
     private val auth = Firebase.auth
     private val db = Firebase.firestore
 
+    suspend fun updateCardQuantity(cardId: String, quantity: Int) {
+        val userId = auth.requireUserId
+
+        val userDoc = db.collection("users").document(userId)
+        userDoc.update("inventory.$cardId", quantity).awaitOrNull()
+    }
 
     suspend fun addCardToInventory(cardId: String) {
         val userId = auth.requireUserId

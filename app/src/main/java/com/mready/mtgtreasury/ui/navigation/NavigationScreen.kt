@@ -46,7 +46,9 @@ fun NavigationScreen(
     modifier: Modifier = Modifier,
     navigateToCard: (String) -> Unit,
     navigateToDeckCreation: () -> Unit,
-    navigateToDeck: (String) -> Unit
+    navigateToDeck: (String) -> Unit,
+    navigateToInventory: () -> Unit,
+    navigateToWishlist: () -> Unit
 ) {
     val navigationSections = listOf(
         HomeScreenDestination,
@@ -86,7 +88,7 @@ fun NavigationScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    navigationSections.forEachIndexed {  index, section ->
+                    navigationSections.forEachIndexed { index, section ->
                         val isSelected = section::class.qualifiedName == currentDestination
                         NavBarItem(
                             isSelected = isSelected,
@@ -139,8 +141,11 @@ fun NavigationScreen(
                 FilterSearchScreen(
                     searchQuery = destination.searchName,
                     onNavigateToSearch = {
-                        val isPopSuccessful = navController.popBackStack(route = SearchScreenDestination, inclusive = false)
-                        if(!isPopSuccessful){
+                        val isPopSuccessful = navController.popBackStack(
+                            route = SearchScreenDestination,
+                            inclusive = false
+                        )
+                        if (!isPopSuccessful) {
                             navController.navigate(SearchScreenDestination)
                         }
                     },
@@ -171,7 +176,9 @@ fun NavigationScreen(
                         navigateToCard(
                             id
                         )
-                    }
+                    },
+                    navigateToInventory = { navigateToInventory() },
+                    navigateToWishlist = { navigateToWishlist() }
                 )
             }
         }

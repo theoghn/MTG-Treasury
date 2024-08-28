@@ -59,7 +59,6 @@ import com.mready.mtgtreasury.ui.components.PrimaryButton
 import com.mready.mtgtreasury.ui.theme.AccentColor
 import com.mready.mtgtreasury.ui.theme.BottomBarColor
 import com.mready.mtgtreasury.ui.theme.BoxColor
-import java.util.HashMap
 
 
 @Composable
@@ -70,7 +69,7 @@ fun DeckCreationScreen(
 ) {
     val deckName by viewModel.deckName.collectAsState()
     val deckCards by viewModel.deckCards.collectAsState()
-    var openAlertDialog by rememberSaveable { mutableStateOf(false) }
+    var isAlertDialogVisible by rememberSaveable { mutableStateOf(false) }
 
     var dialogMessage by rememberSaveable { mutableStateOf("") }
 
@@ -107,7 +106,7 @@ fun DeckCreationScreen(
                     }
                 },
                 singleLine = true,
-                label = { Text("Deck name") },
+                label = { Text(stringResource(R.string.deck_name)) },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = AccentColor,
                     unfocusedBorderColor = Color.DarkGray,
@@ -126,35 +125,22 @@ fun DeckCreationScreen(
                 contentPadding = PaddingValues(bottom = 8.dp)
             ) {
                 items(inventoryCards) { card ->
+                    val warningMessage = stringResource(id = R.string.max_deck_cards_warning)
+
                     CardItem(
                         mtgCard = card,
                         qty = deckCards[card.id] ?: 0,
                         onAdd = {
                             if (deckCards.values.sum() < 60) {
                                 viewModel.addCardToDeck(card.id)
-
-//                                deckCards = deckCards.toMutableMap().apply {
-//                                    if (containsKey(card.id)) {
-//                                        this[card.id] = this[card.id]!! + 1
-//                                    } else {
-//                                        this[card.id] = 1
-//                                    }
-//                                }
+                                return@CardItem
                             } else {
-                                dialogMessage = "You can't have more than 60 cards in a deck"
-                                openAlertDialog = true
+                                dialogMessage = warningMessage
+                                isAlertDialogVisible = true
                             }
                         },
                         onRemove = {
                             viewModel.removeCardFromDeck(card.id)
-//                            deckCards = deckCards.toMutableMap().apply {
-//                                if (containsKey(card.id)) {
-//                                    this[card.id] = this[card.id]!! - 1
-//                                    if (this[card.id] == 0) {
-//                                        this.remove(card.id)
-//                                    }
-//                                }
-//                            }
                         }
                     )
                 }
@@ -167,7 +153,7 @@ fun DeckCreationScreen(
                 onClick = {
                     if (deckName.isEmpty()) {
                         dialogMessage = "Deck name can't be empty"
-                        openAlertDialog = true
+                        isAlertDialogVisible = true
                         return@PrimaryButton
                     }
 
@@ -189,9 +175,9 @@ fun DeckCreationScreen(
         }
     }
 
-    if (openAlertDialog) {
+    if (isAlertDialogVisible) {
         MaxCardsAlert(
-            onDismissRequest = { openAlertDialog = false },
+            onDismissRequest = { isAlertDialogVisible = false },
             dialogMessage = dialogMessage
         )
     }
@@ -259,7 +245,7 @@ private fun DeckCreationTopBar(
 
         Text(
             modifier = Modifier.align(Alignment.Center),
-            text = "Create a new deck",
+            text = stringResource(R.string.create_new_deck),
             fontWeight = FontWeight.Bold,
             fontSize = 24.sp,
             color = Color.White

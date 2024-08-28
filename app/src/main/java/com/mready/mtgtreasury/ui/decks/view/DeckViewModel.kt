@@ -11,6 +11,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.HashMap
 import javax.inject.Inject
 
 @HiltViewModel
@@ -25,10 +26,13 @@ class DeckViewModel @Inject constructor(
 
     fun getCards(deckId: String) {
         viewModelScope.launch {
-            deck.update { decksService.getDeck(deckId) }
             val inventory = inventoryService.getInventory()
+
+            deck.update { decksService.getDeck(deckId) }
             if (deck.value != null) {
-                missingCardsIds.update { deck.value!!.cards.keys.toList().filter { !inventory.contains(it) } }
+                missingCardsIds.update {
+                    deck.value!!.cards.keys.toList().filter { !inventory.contains(it) }
+                }
             }
 
             cardsService.getCardsByIds(deck.value?.cards?.keys?.toList() ?: emptyList())
@@ -44,6 +48,28 @@ class DeckViewModel @Inject constructor(
                     }
                     cards.update { newCards }
                 }
+        }
+    }
+
+    fun removeCardFromDeck(cardId: String, deleted: Boolean = false) {
+        val currentDeck = deck.value?.cards?.toMutableMap() ?: mutableMapOf()
+        currentDeck[cardId] = (currentDeck[cardId] ?: 0) - 1
+        if (currentDeck[cardId]!! <= 0 || deleted) {
+            currentDeck.remove(cardId)
+            cards.update { cards.value.filter { it.id != cardId } }
+        }
+        deck.update { deck.value?.copy(cards = HashMap(currentDeck)) }
+    }
+
+    fun addCardToDeck(cardId: String) {
+        val currentDeck = deck.value?.cards?.toMutableMap() ?: mutableMapOf()
+        currentDeck[cardId] = (currentDeck[cardId] ?: 0) + 1
+        deck.update { deck.value?.copy(cards = HashMap(currentDeck)) }
+    }
+
+    fun updateDeck() {
+        viewModelScope.launch {
+            deck.value?.let { decksService.updateDeck(it.id, it.name, it.deckImage, it.cards) }
         }
     }
 }

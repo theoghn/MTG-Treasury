@@ -16,7 +16,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FilterSearchViewModel @Inject constructor(
-    private val api: CardsService,
+    private val cardsService: CardsService,
     private val inventoryService: InventoryService
 ) : ViewModel() {
     val manaCosts = MutableStateFlow<Map<String, String>>(emptyMap())
@@ -42,7 +42,7 @@ class FilterSearchViewModel @Inject constructor(
             uiState.update { FilterSearchScreenUiState.Loading }
 
             inventoryService.getInventoryFlow().collect { inventory ->
-                var cards = api.getCardsByFilters(
+                var cards = cardsService.getCardsByFilters(
                     name = name,
                     manaCost = manaCost,
                     colors = colors,

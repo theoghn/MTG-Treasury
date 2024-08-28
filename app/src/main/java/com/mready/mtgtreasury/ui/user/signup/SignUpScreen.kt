@@ -1,4 +1,4 @@
-package com.mready.mtgtreasury.ui.auth.signup
+package com.mready.mtgtreasury.ui.user.signup
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,8 +27,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.mready.mtgtreasury.ui.auth.signin.BaseTextField
-import com.mready.mtgtreasury.ui.auth.signin.PasswordField
+import com.mready.mtgtreasury.ui.user.signin.BaseTextField
+import com.mready.mtgtreasury.ui.user.signin.PasswordField
 import com.mready.mtgtreasury.ui.components.PrimaryButton
 import com.mready.mtgtreasury.ui.components.TwoColorText
 

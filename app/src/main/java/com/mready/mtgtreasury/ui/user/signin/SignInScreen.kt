@@ -1,4 +1,4 @@
-package com.mready.mtgtreasury.ui.auth.signin
+package com.mready.mtgtreasury.ui.user.signin
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -36,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -144,21 +144,25 @@ fun BaseTextField(
     modifier: Modifier = Modifier,
     fieldValue: String,
     placeholderText: String,
-    keyboardOptions: KeyboardOptions,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    showBorder: Boolean = true,
+    color: Color = MainBackgroundColor,
     onValueChange: (String) -> Unit,
 ) {
     BasicTextField(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
-            .background(MainBackgroundColor, RoundedCornerShape(12.dp))
-            .border(1.dp, Color.LightGray, RoundedCornerShape(12.dp))
-            .padding(vertical = 8.dp),
+            .background(color, RoundedCornerShape(12.dp))
+            .then(if (showBorder) Modifier.border(1.dp, Color.LightGray, RoundedCornerShape(12.dp)) else Modifier)
+            .padding(vertical = 8.dp)
+        ,
         value = fieldValue,
         onValueChange = {
-            if (it.length <= 30){
+            if (it.length <= 30) {
                 onValueChange(it)
             }
         },
+        keyboardOptions = keyboardOptions,
         singleLine = true,
         textStyle = LocalTextStyle.current.copy(
             fontSize = 14.sp,
@@ -204,7 +208,7 @@ fun PasswordField(
             .padding(vertical = 8.dp),
         value = fieldValue,
         onValueChange = {
-            if (it.length <= 30){
+            if (it.length <= 30) {
                 onValueChange(it)
             }
         },

@@ -226,7 +226,7 @@ fun FilterSearchScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         items(cards) { mtgCard ->
-                            MtgCardItem(
+                            FilterMtgCard(
                                 mtgCard = mtgCard,
                                 onClick = {
                                     onNavigateToCard(mtgCard.id)
@@ -862,7 +862,7 @@ fun TypeBottomSheet(
 
 
 @Composable
-fun MtgCardItem(
+private fun FilterMtgCard(
     modifier: Modifier = Modifier,
     mtgCard: MtgCard,
     isInInventory: Boolean,
@@ -958,14 +958,26 @@ fun MtgCardItem(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = stringResource(R.string.euro, mtgCard.prices.eur),
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        fontSize = 16.sp,
-                        lineHeight = 16.sp,
-                        color = Color.White
-                    )
+                    Column {
+                        Text(
+                            text = stringResource(R.string.euro, mtgCard.prices.eur),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            fontSize = 16.sp,
+                            lineHeight = 16.sp,
+                            color = Color.White
+                        )
+
+                        Text(
+                            text = stringResource(R.string.qty, mtgCard.qty),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            fontSize = 13.sp,
+                            lineHeight = 13.sp,
+                            color = Color.White
+                        )
+                    }
+
 
                     Crossfade(targetState = loading, label = "") {
                         if (it) {
@@ -1007,7 +1019,6 @@ fun MtgCardItem(
                 }
             }
         }
-
     }
 }
 

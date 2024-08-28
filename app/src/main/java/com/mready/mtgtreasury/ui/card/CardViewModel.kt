@@ -49,15 +49,34 @@ class CardViewModel @Inject constructor(
         }
     }
 
+
     fun addCardToInventory(cardId: String) {
-        viewModelScope.launch {
-            inventoryService.addCardToInventory(cardId)
+        uiState.update {
+            when (it) {
+                is CardScreenUiState.CardUi -> {
+                    it.copy(qtyInInventory = it.qtyInInventory + 1)
+                }
+
+                else -> it
+            }
         }
     }
 
-    fun removeCardFromInventory(cardId: String, currentQuantity: Int) {
+    fun removeCardFromInventory(cardId: String) {
+        uiState.update {
+            when (it) {
+                is CardScreenUiState.CardUi -> {
+                    it.copy(qtyInInventory = it.qtyInInventory - 1)
+                }
+
+                else -> it
+            }
+        }
+    }
+
+    fun updateCardQuantity(cardId: String, quantity: Int) {
         viewModelScope.launch {
-            inventoryService.removeCardFromInventory(cardId = cardId, currentQuantity = currentQuantity)
+            inventoryService.updateCardQuantity(cardId, quantity)
         }
     }
 

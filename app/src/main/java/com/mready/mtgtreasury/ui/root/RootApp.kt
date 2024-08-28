@@ -15,12 +15,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.mready.mtgtreasury.ui.auth.signin.SignInDestination
-import com.mready.mtgtreasury.ui.auth.signin.SignInScreen
-import com.mready.mtgtreasury.ui.auth.signup.SignUpDestination
-import com.mready.mtgtreasury.ui.auth.signup.SingUpScreen
+import com.mready.mtgtreasury.ui.user.signin.SignInDestination
+import com.mready.mtgtreasury.ui.user.signin.SignInScreen
+import com.mready.mtgtreasury.ui.user.signup.SignUpDestination
+import com.mready.mtgtreasury.ui.user.signup.SingUpScreen
 import com.mready.mtgtreasury.ui.card.CardScreen
 import com.mready.mtgtreasury.ui.card.CardScreenDestination
+import com.mready.mtgtreasury.ui.cardslist.InventoryScreen
+import com.mready.mtgtreasury.ui.cardslist.InventoryScreenDestination
+import com.mready.mtgtreasury.ui.cardslist.wishlist.WishlistScreen
+import com.mready.mtgtreasury.ui.cardslist.wishlist.WishlistScreenDestination
 import com.mready.mtgtreasury.ui.decks.create.DeckCreationScreen
 import com.mready.mtgtreasury.ui.decks.create.DeckCreationScreenDestination
 import com.mready.mtgtreasury.ui.decks.view.DeckScreen
@@ -116,6 +120,16 @@ fun RootApp(
                                 mainNavController.navigate(
                                     DeckScreenDestination(id)
                                 )
+                            },
+                            navigateToInventory = {
+                                mainNavController.navigate(
+                                    InventoryScreenDestination
+                                )
+                            },
+                            navigateToWishlist = {
+                                mainNavController.navigate(
+                                    WishlistScreenDestination
+                                )
                             }
                         )
                     }
@@ -145,6 +159,29 @@ fun RootApp(
                         val destination: DeckCreationScreenDestination = backStackEntry.toRoute()
                         DeckCreationScreen(
                             deckId = destination.id,
+                            onBack = { mainNavController.popBackStack() }
+                        )
+                    }
+
+                    composable<InventoryScreenDestination> {
+                        InventoryScreen(
+                            onNavigateToCard = { id ->
+                                mainNavController.navigate(
+                                    CardScreenDestination(id)
+                                )
+                            },
+                            onBack = { mainNavController.popBackStack() }
+                        )
+                    }
+
+
+                    composable<WishlistScreenDestination> {
+                        WishlistScreen(
+                            onNavigateToCard = { id ->
+                                mainNavController.navigate(
+                                    CardScreenDestination(id)
+                                )
+                            },
                             onBack = { mainNavController.popBackStack() }
                         )
                     }
