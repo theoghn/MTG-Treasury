@@ -1,6 +1,5 @@
 package com.mready.mtgtreasury.ui.card
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -19,7 +18,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -42,14 +40,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.Placeholder
@@ -110,14 +109,10 @@ fun CardScreen(
 
             is CardScreenUiState.CardUi -> {
                 val card = currentState.mtgCard
-                val isFavorite = currentState.isFavorite
-                val isInInventory = currentState.qtyInInventory != 0
-                val qty = currentState.qtyInInventory
-
-                BackHandler {
-                    viewModel.updateCardQuantity(card.id, qty)
-                    onBack()
+                var isFavorite by rememberSaveable {
+                    mutableStateOf(currentState.isWishlisted)
                 }
+                val qty = currentState.qtyInInventory
 
                 BottomSheetScaffold(
                     modifier = Modifier
@@ -138,7 +133,6 @@ fun CardScreen(
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-//                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             SecondaryButton(
                                 modifier = Modifier
@@ -165,10 +159,11 @@ fun CardScreen(
                                     .size(40.dp),
                                 onClick = {
                                     if (isFavorite) {
-                                        viewModel.removeCardFromWishlist(card.id)
+                                        isFavorite = false
                                     } else {
-                                        viewModel.addCardToWishlist(card.id)
+                                        isFavorite = true
                                     }
+                                    viewModel.updateWishlist(card.id, isFavorite)
                                 },
                                 shape = CircleShape
                             ) {

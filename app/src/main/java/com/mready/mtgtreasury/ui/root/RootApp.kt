@@ -81,7 +81,7 @@ fun RootApp(
                     enterTransition = {
                         slideIntoContainer(
                             AnimatedContentTransitionScope.SlideDirection.Start,
-                            tween(700)
+                            tween(400)
                         )
                     },
                     exitTransition = {

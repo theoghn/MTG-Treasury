@@ -1,5 +1,6 @@
 package com.mready.mtgtreasury.ui.decks.view
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mready.mtgtreasury.models.Deck
@@ -68,6 +69,7 @@ class DeckViewModel @Inject constructor(
     }
 
     fun updateDeck() {
+        Log.d("DeckViewModel", "updateDeck")
         viewModelScope.launch {
             deck.value?.let { decksService.updateDeck(it.id, it.name, it.deckImage, it.cards) }
         }

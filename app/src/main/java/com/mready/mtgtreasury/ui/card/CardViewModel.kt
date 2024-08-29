@@ -7,6 +7,8 @@ import com.mready.mtgtreasury.services.CardsService
 import com.mready.mtgtreasury.services.InventoryService
 import com.mready.mtgtreasury.services.WishlistService
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
@@ -21,12 +23,13 @@ class CardViewModel @Inject constructor(
     private val inventoryService: InventoryService
 ) : ViewModel() {
     val uiState = MutableStateFlow<CardScreenUiState>(CardScreenUiState.Loading)
+    var updateCardQtyJob: Job? = null
+    var updateWishlistJob : Job? = null
 
     fun getCard(id: String) {
-
         viewModelScope.launch {
             val card = cardsService.getCard(id)
-            val combinedFlow = wishlistService.getWishlist()
+            val combinedFlow = wishlistService.getWishlistFlow()
                 .combine(inventoryService.getInventoryFlow()) { wishlist, inventory ->
                     Pair(wishlist, inventory)
                 }
@@ -39,11 +42,17 @@ class CardViewModel @Inject constructor(
                 }
 
                 uiState.update {
-                    CardScreenUiState.CardUi(
-                        mtgCard = card,
-                        isFavorite = favoriteState,
-                        qtyInInventory = inventoryState
-                    )
+                    when (it) {
+                        is CardScreenUiState.Loading -> CardScreenUiState.CardUi(
+                            mtgCard = card,
+                            isWishlisted = favoriteState,
+                            qtyInInventory = inventoryState
+                        )
+                        is CardScreenUiState.CardUi ->
+                            it.copy(
+                                isWishlisted = favoriteState,
+                            )
+                    }
                 }
             }
         }
@@ -56,9 +65,12 @@ class CardViewModel @Inject constructor(
                 is CardScreenUiState.CardUi -> {
                     it.copy(qtyInInventory = it.qtyInInventory + 1)
                 }
-
                 else -> it
             }
+        }
+
+        if(uiState.value is CardScreenUiState.CardUi){
+            updateCardQuantity(cardId, (uiState.value as CardScreenUiState.CardUi).qtyInInventory)
         }
     }
 
@@ -72,23 +84,29 @@ class CardViewModel @Inject constructor(
                 else -> it
             }
         }
+
+        if(uiState.value is CardScreenUiState.CardUi){
+            updateCardQuantity(cardId, (uiState.value as CardScreenUiState.CardUi).qtyInInventory)
+        }
     }
 
     fun updateCardQuantity(cardId: String, quantity: Int) {
-        viewModelScope.launch {
+        updateCardQtyJob?.cancel()
+        updateCardQtyJob =  viewModelScope.launch {
+            delay(500)
             inventoryService.updateCardQuantity(cardId, quantity)
         }
     }
 
-    fun addCardToWishlist(cardId: String) {
-        viewModelScope.launch {
-            wishlistService.addCardToWishlist(cardId)
-        }
-    }
-
-    fun removeCardFromWishlist(cardId: String) {
-        viewModelScope.launch {
-            wishlistService.removeCardFromWishlist(cardId)
+    fun updateWishlist(cardId: String, isWishlisted: Boolean) {
+        updateWishlistJob?.cancel()
+        updateWishlistJob = viewModelScope.launch {
+            delay(500)
+            if (isWishlisted) {
+                wishlistService.addCardToWishlist(cardId)
+            } else {
+                wishlistService.removeCardFromWishlist(cardId)
+            }
         }
     }
 }
@@ -96,7 +114,7 @@ class CardViewModel @Inject constructor(
 sealed class CardScreenUiState {
     data class CardUi(
         val mtgCard: MtgCard,
-        val isFavorite: Boolean = false,
+        val isWishlisted: Boolean = false,
         val qtyInInventory: Int = 0
     ) : CardScreenUiState()
 

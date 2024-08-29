@@ -31,8 +31,8 @@ import com.mready.mtgtreasury.ui.decks.DecksScreen
 import com.mready.mtgtreasury.ui.decks.DecksScreenDestination
 import com.mready.mtgtreasury.ui.home.HomeScreen
 import com.mready.mtgtreasury.ui.home.HomeScreenDestination
-import com.mready.mtgtreasury.ui.profile.ProfileScreen
-import com.mready.mtgtreasury.ui.profile.ProfileScreenDestination
+import com.mready.mtgtreasury.ui.user.profile.ProfileScreen
+import com.mready.mtgtreasury.ui.user.profile.ProfileScreenDestination
 import com.mready.mtgtreasury.ui.search.SearchScreen
 import com.mready.mtgtreasury.ui.search.SearchScreenDestination
 import com.mready.mtgtreasury.ui.search.filter.FilterSearchScreen

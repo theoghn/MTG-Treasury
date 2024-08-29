@@ -29,9 +29,14 @@ class InventoryService @Inject constructor(
 
     suspend fun updateCardQuantity(cardId: String, quantity: Int) {
         val userId = auth.requireUserId
-
         val userDoc = db.collection("users").document(userId)
-        userDoc.update("inventory.$cardId", quantity).awaitOrNull()
+
+        if (quantity > 0) {
+            userDoc.update("inventory.$cardId", quantity).awaitOrNull()
+        }
+        else{
+            userDoc.update("inventory.$cardId", FieldValue.delete()).awaitOrNull()
+        }
     }
 
     suspend fun addCardToInventory(cardId: String) {

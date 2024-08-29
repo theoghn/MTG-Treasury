@@ -1,4 +1,4 @@
-package com.mready.mtgtreasury.ui.profile
+package com.mready.mtgtreasury.ui.user.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

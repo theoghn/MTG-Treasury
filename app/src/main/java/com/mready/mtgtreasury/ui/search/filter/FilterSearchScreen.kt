@@ -64,6 +64,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -125,7 +126,7 @@ fun FilterSearchScreen(
     var selectedCardTypes by rememberSaveable { mutableStateOf(listOf<String>()) }
     var selectedCardSuperTypes by rememberSaveable { mutableStateOf(listOf<String>()) }
 
-    if(!init) {
+    if (!init) {
         viewModel.searchCards(
             name = searchQuery ?: "",
             manaCost = selectedCardManaCosts,
@@ -136,11 +137,11 @@ fun FilterSearchScreen(
         )
     }
 
-    LaunchedEffect(selectedFilter) {
-        if (selectedFilter == SheetFilters.MANA) {
-            viewModel.getCosts()
-        }
-    }
+//    LaunchedEffect(selectedFilter) {
+//        if (selectedFilter == SheetFilters.MANA) {
+//            viewModel.getCosts()
+//        }
+//    }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -183,8 +184,7 @@ fun FilterSearchScreen(
                         tint = Color.White
                     )
                 }
-
-                Icon(
+                BadgedBox(
                     modifier = Modifier
                         .fillMaxHeight()
                         .clip(RoundedCornerShape(12.dp))
@@ -193,10 +193,29 @@ fun FilterSearchScreen(
                         }
                         .background(BoxColor)
                         .padding(12.dp),
-                    painter = painterResource(id = R.drawable.filter_multiple),
-                    contentDescription = null,
-                    tint = AccentColor
-                )
+                    badge = {
+                        if (selectedCardColors.isNotEmpty() ||
+                            selectedCardManaCosts.isNotEmpty() ||
+                            selectedCardRarities.isNotEmpty() ||
+                            selectedCardTypes.isNotEmpty() ||
+                            selectedCardSuperTypes.isNotEmpty()
+                        ) {
+                            Badge(
+                                containerColor = AccentColor
+                            )
+                        }
+                    }
+                ) {
+                    Icon(
+
+                        painter = painterResource(id = R.drawable.filter_multiple),
+                        contentDescription = null,
+                        tint = AccentColor
+                    )
+
+                }
+
+
             }
         },
         containerColor = MainBackgroundColor
@@ -305,7 +324,8 @@ fun FilterSearchScreen(
             },
             windowInsets = WindowInsets.statusBars,
             containerColor = BoxColor,
-            dragHandle = {}
+            dragHandle = {},
+            shape = RoundedCornerShape(12.dp)
         ) {
             when (selectedFilter) {
                 SheetFilters.TYPE -> {
@@ -475,7 +495,7 @@ fun AdvancedSearchModalBottomSheet(
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
-                            text = stringResource(R.string.cancel),
+                            text = stringResource(R.string.clear_all),
                             fontSize = 16.sp,
                             color = AccentColor,
                             fontWeight = FontWeight.SemiBold,
@@ -707,11 +727,12 @@ fun ManaBottomSheet(
                             AsyncSvg(
                                 modifier = Modifier
                                     .clickable {
-                                        temporaryCardManaCosts = if (manaCost in temporaryCardManaCosts) {
-                                            temporaryCardManaCosts - manaCost
-                                        } else {
-                                            temporaryCardManaCosts + manaCost
-                                        }
+                                        temporaryCardManaCosts =
+                                            if (manaCost in temporaryCardManaCosts) {
+                                                temporaryCardManaCosts - manaCost
+                                            } else {
+                                                temporaryCardManaCosts + manaCost
+                                            }
 
                                     },
                                 uri = "https://svgs.scryfall.io/card-symbols/${Constants.SearchFilterValues.MANA_COST[manaCost]}.svg"
@@ -813,7 +834,7 @@ fun TypeBottomSheet(
             modifier = Modifier
                 .padding(16.dp)
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(10.dp))
                 .background(Color(0xFF474554))
                 .verticalScroll(rememberScrollState())
                 .weight(weight = 1f, fill = false)
@@ -823,7 +844,6 @@ fun TypeBottomSheet(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(8.dp)
                             .clickable {
                                 temporaryCardTypes = if (type in temporaryCardTypes) {
                                     temporaryCardTypes - type
@@ -831,14 +851,14 @@ fun TypeBottomSheet(
                                     temporaryCardTypes + type
                                 }
                             }
-                            .padding(8.dp),
+                            .padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
                             text = type,
                             fontSize = 16.sp,
-                            color = Color.White,
+                            color = Color.White
                         )
                         if (type in temporaryCardTypes) {
                             Icon(
@@ -915,7 +935,7 @@ private fun FilterMtgCard(
             ) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
-                        .data(mtgCard.imageUris.borderCrop)
+                        .data(mtgCard.imageUris.smallSize)
                         .crossfade(true)
                         .build(),
                     modifier = Modifier
@@ -928,7 +948,8 @@ private fun FilterMtgCard(
                     contentScale = ContentScale.FillHeight,
                     placeholder = painterResource(id = R.drawable.card_back),
                     error = painterResource(id = R.drawable.card_back),
-                    contentDescription = null
+                    contentDescription = null,
+//                    filterQuality = FilterQuality.High
                 )
 
                 Text(

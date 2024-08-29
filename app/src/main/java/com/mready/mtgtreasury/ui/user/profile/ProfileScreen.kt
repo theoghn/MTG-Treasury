@@ -1,4 +1,4 @@
-package com.mready.mtgtreasury.ui.profile
+package com.mready.mtgtreasury.ui.user.profile
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

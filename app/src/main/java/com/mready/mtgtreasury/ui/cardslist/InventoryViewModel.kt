@@ -50,34 +50,37 @@ class InventoryViewModel @Inject constructor(
                     uiState.update { InventoryScreenUiState.InventoryUi(inventoryCards) }
                 }
 
-                searchQuery.asStateFlow().debounce(300).collect {
-                    val filteredCards = initialCards.value.filter {
-                        it.name.contains(
-                            searchQuery.value,
-                            ignoreCase = true
-                        )
-                    }
-                    if (filteredCards.isEmpty()) {
-                        uiState.update { InventoryScreenUiState.Empty }
-                    } else {
-                        uiState.update { InventoryScreenUiState.InventoryUi(filteredCards) }
-                    }
-                }
+//                searchQuery.asStateFlow().debounce(300).collect {
+//                    val filteredCards = initialCards.value.filter {
+//                        it.name.contains(
+//                            searchQuery.value,
+//                            ignoreCase = true
+//                        )
+//                    }
+//                    if (filteredCards.isEmpty()) {
+//                        uiState.update { InventoryScreenUiState.Empty }
+//                    } else {
+//                        uiState.update { InventoryScreenUiState.InventoryUi(filteredCards) }
+//                    }
+//                }
             }
         }
     }
 
     fun onSearchQueryChange(newQuery: String) {
         searchQuery.update { newQuery }
+        filterCardsByQuery()
     }
 
-//    fun filterCardsByQuery() {
-//        if (uiState.value is InventoryScreenUiState.InventoryUi) {
-//            val cards = (uiState.value as InventoryScreenUiState.InventoryUi).cards
-//            val filteredCards = cards.filter { it.name.contains(searchQuery.value, ignoreCase = true) }
-//            uiState.update { InventoryScreenUiState.InventoryUi(filteredCards) }
-//        }
-//    }
+    fun filterCardsByQuery() {
+        val filteredCards =
+            initialCards.value.filter { it.name.contains(searchQuery.value, ignoreCase = true) }
+        if (filteredCards.isEmpty()) {
+            uiState.update { InventoryScreenUiState.Empty }
+        } else {
+            uiState.update { InventoryScreenUiState.InventoryUi(filteredCards) }
+        }
+    }
 
 }
 

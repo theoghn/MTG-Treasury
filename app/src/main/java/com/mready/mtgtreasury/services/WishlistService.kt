@@ -42,7 +42,7 @@ class WishlistService @Inject constructor() {
         userDoc.update("wishlist", FieldValue.arrayRemove(cardId)).awaitOrNull()
     }
 
-    suspend fun getWishlist(): Flow<List<String>> {
+    suspend fun getWishlistFlow(): Flow<List<String>> {
         val userId = auth.requireUserId
 
         return callbackFlow {

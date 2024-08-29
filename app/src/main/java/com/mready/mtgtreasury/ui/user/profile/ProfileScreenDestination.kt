@@ -1,4 +1,4 @@
-package com.mready.mtgtreasury.ui.profile
+package com.mready.mtgtreasury.ui.user.profile
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize

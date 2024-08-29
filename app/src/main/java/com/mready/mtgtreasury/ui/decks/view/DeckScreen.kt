@@ -88,10 +88,10 @@ fun DeckScreen(
         viewModel.getCards(id)
     }
 
-    BackHandler {
-        viewModel.updateDeck()
-        onBack()
-    }
+//    BackHandler {
+//        viewModel.updateDeck()
+//        onBack()
+//    }
 
     Scaffold(
         modifier = Modifier
@@ -101,7 +101,7 @@ fun DeckScreen(
             DeckScreenTopBar(
                 deckName = deck?.name ?: "",
                 onBack = {
-                    viewModel.updateDeck()
+//                    viewModel.updateDeck()
                     onBack()
                 }
             )
@@ -123,7 +123,9 @@ fun DeckScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    modifier = Modifier.padding(12.dp).align(Alignment.Start),
+                    modifier = Modifier
+                        .padding(12.dp)
+                        .align(Alignment.Start),
                     text = stringResource(R.string.deck_cards),
                     fontSize = 18.sp,
                     color = Color.White,
@@ -154,7 +156,10 @@ fun DeckScreen(
                     .padding(24.dp)
                     .clip(RoundedCornerShape(100))
                     .align(Alignment.BottomEnd),
-                onClick = { navigateToDeckCreation(id) }
+                onClick = {
+                    viewModel.updateDeck()
+                    navigateToDeckCreation(id)
+                }
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 12.dp),
@@ -198,7 +203,10 @@ fun DeckScreen(
                     }
                 },
                 showRemoveDialog = { isRemoveDialogVisible = true },
-                hideBottomSheet = { isBottomSheetVisible = false }
+                hideBottomSheet = {
+                    viewModel.updateDeck()
+                    isBottomSheetVisible = false
+                }
             )
         }
     }
@@ -206,7 +214,10 @@ fun DeckScreen(
     if (isRemoveDialogVisible) {
         RemoveAlert(
             hideAlert = { isRemoveDialogVisible = false },
-            hideBottomSheet = { isBottomSheetVisible = false },
+            hideBottomSheet = {
+                viewModel.updateDeck()
+                isBottomSheetVisible = false
+            },
             onRemove = { viewModel.removeCardFromDeck(selectedCardId, deleted = true) }
         )
     }

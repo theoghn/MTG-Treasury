@@ -29,7 +29,7 @@ class WishlistViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            wishlistService.getWishlist().collect { wishlist ->
+            wishlistService.getWishlistFlow().collect { wishlist ->
                 val wishlistCards = cardsService.getCardsByIds(wishlist)
 
                 delay(100)
