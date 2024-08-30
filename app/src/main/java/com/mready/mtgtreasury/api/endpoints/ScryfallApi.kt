@@ -193,5 +193,6 @@ private fun Json.toSet() = MtgSet(
     name = this["name"].string,
     releaseDate = this["released_at"].string,
     iconUri = this["icon_svg_uri"].string,
-    cardCount = this["card_count"].int
+    cardCount = this["card_count"].int,
+    scryfall_uri = this["scryfall_uri"].stringOrNull ?: ""
 )

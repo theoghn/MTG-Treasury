@@ -2,7 +2,6 @@ package com.mready.mtgtreasury.ui.search
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -19,33 +18,24 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SearchBarColors
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -57,7 +47,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.mready.mtgtreasury.R
-import com.mready.mtgtreasury.ui.theme.AccentColor
 import com.mready.mtgtreasury.ui.theme.BoxColor
 import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
 
@@ -66,7 +55,8 @@ import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
 fun SearchScreen(
     modifier: Modifier = Modifier,
     viewModel: SearchScreenViewModel = hiltViewModel(),
-    onNavigateToFilterSearch: (String) -> Unit
+    onNavigateToFilterSearch: (String) -> Unit,
+    onBack: () -> Boolean
 ) {
     val searchResults by viewModel.searchResults.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
@@ -84,9 +74,10 @@ fun SearchScreen(
             SearchScreenTopBar(
                 searchQuery = searchQuery,
                 onSearchQueryChange = { viewModel.onSearchQueryChange(it) },
-                onNavigateToFilterSearch = { onNavigateToFilterSearch(it)},
+                onNavigateToFilterSearch = { onNavigateToFilterSearch(it) },
                 focusRequester = focusRequester,
                 keyboardController = keyboardController,
+                onBack = { onBack() }
             )
         },
         containerColor = MainBackgroundColor
@@ -147,6 +138,7 @@ private fun SearchScreenTopBar(
     keyboardController: SoftwareKeyboardController?,
     onSearchQueryChange: (TextFieldValue) -> Unit,
     onNavigateToFilterSearch: (String) -> Unit,
+    onBack: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -192,7 +184,10 @@ private fun SearchScreenTopBar(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.magnify),
+                        modifier = Modifier.clickable {
+                            onBack()
+                        },
+                        imageVector = Icons.AutoMirrored.Default.ArrowBack,
                         contentDescription = null,
                         tint = Color.White
                     )

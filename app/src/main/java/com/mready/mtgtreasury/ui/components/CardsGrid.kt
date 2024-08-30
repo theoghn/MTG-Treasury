@@ -41,20 +41,18 @@ import coil.request.ImageRequest
 import com.mready.mtgtreasury.R
 import com.mready.mtgtreasury.models.card.MtgCard
 import com.mready.mtgtreasury.ui.theme.BoxColor
+import com.mready.mtgtreasury.utility.formatPrice
 
 
 @Composable
 fun CardsGrid(
-    modifier: Modifier = Modifier,
     cards: List<MtgCard>,
-    isInventoryView: Boolean,
-    onNavigateToCard: (String) -> Unit,
-
-    ) {
+    onNavigateToCard: (String) -> Unit
+) {
     LazyVerticalGrid(
         modifier = Modifier.padding(horizontal = 12.dp),
         columns = GridCells.Fixed(2),
-        contentPadding = PaddingValues(bottom = 32.dp),
+        contentPadding = PaddingValues(bottom = 32.dp,top = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -77,13 +75,9 @@ fun MtgCardItem(
     isInInventory: Boolean,
     onClick: () -> Unit
 ) {
-    var loading by rememberSaveable {
-        mutableStateOf(false)
-    }
-    val scope = rememberCoroutineScope()
-
     Card(
         modifier = modifier
+            .height(280.dp)
             .border(
                 width = 1.dp,
                 color = Color.DarkGray,
@@ -139,7 +133,7 @@ fun MtgCardItem(
                 color = Color.White
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.weight(1f))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -158,7 +152,7 @@ fun MtgCardItem(
                 }
 
                 Text(
-                    text = stringResource(R.string.euro, mtgCard.prices.eur),
+                    text = formatPrice(mtgCard.prices.eur.toDouble()),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     fontSize = 16.sp,

@@ -30,6 +30,7 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -74,142 +75,159 @@ fun DeckScreen(
     onBack: () -> Boolean,
     navigateToDeckCreation: (String) -> Unit
 ) {
-    val deck by viewModel.deck.collectAsState()
-    val cards by viewModel.cards.collectAsState()
-    val missingCardsIds by viewModel.missingCardsIds.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
 
     var isBottomSheetVisible by rememberSaveable { mutableStateOf(false) }
     var isRemoveDialogVisible by rememberSaveable { mutableStateOf(false) }
     var isMaxCardsDialogVisible by rememberSaveable { mutableStateOf(false) }
     var selectedCardId by rememberSaveable { mutableStateOf("") }
 
+//    var deckName by rememberSaveable { mutableStateOf<String>(null) }
+//    var cards by rememberSaveable { mutableStateOf<List<MtgCard>>(emptyList()) }
 
     LaunchedEffect(id) {
         viewModel.getCards(id)
     }
 
-//    BackHandler {
-//        viewModel.updateDeck()
-//        onBack()
-//    }
+    when (val currentState = uiState) {
+        is DeckScreenUiState.DeckUi -> {
+            val deck = currentState.deck
+            val missingCardsIds = currentState.missingCardsIds
+            val cards = currentState.cards
 
-    Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .statusBarsPadding(),
-        topBar = {
-            DeckScreenTopBar(
-                deckName = deck?.name ?: "",
-                onBack = {
-//                    viewModel.updateDeck()
-                    onBack()
-                }
-            )
-        },
-        containerColor = Color.Transparent
-    ) {
-        Box(
-            modifier = Modifier
-                .padding(it)
-                .fillMaxWidth(),
-        ) {
-            Column(
+            Scaffold(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 12.dp)
-                    .padding(bottom = 12.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(BoxColor),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .statusBarsPadding(),
+                topBar = {
+                    DeckScreenTopBar(
+                        deckName = deck?.name ?: "",
+                        onBack = {
+                            onBack()
+                        }
+                    )
+                },
+                containerColor = Color.Transparent
             ) {
-                Text(
+                Box(
                     modifier = Modifier
-                        .padding(12.dp)
-                        .align(Alignment.Start),
-                    text = stringResource(R.string.deck_cards),
-                    fontSize = 18.sp,
-                    color = Color.White,
-                )
-
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(3),
-                    contentPadding = PaddingValues(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                        .padding(it)
+                        .fillMaxWidth(),
                 ) {
-                    items(cards) { card ->
-                        DeckCardItem(
-                            card = card,
-                            isInInventory = !missingCardsIds.contains(card.id),
-                            qty = deck?.cards?.get(card.id) ?: 0,
-                            onClick = {
-                                selectedCardId = card.id
-                                isBottomSheetVisible = true
-                            }
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 12.dp)
+                            .padding(bottom = 12.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(BoxColor),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            modifier = Modifier
+                                .padding(12.dp)
+                                .align(Alignment.Start),
+                            text = stringResource(R.string.deck_cards),
+                            fontSize = 18.sp,
+                            color = Color.White,
                         )
+
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(3),
+                            contentPadding = PaddingValues(12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            items(cards) { card ->
+                                DeckCardItem(
+                                    card = card,
+                                    isInInventory = !missingCardsIds.contains(card.id),
+                                    qty = deck?.cards?.get(card.id) ?: 0,
+                                    onClick = {
+                                        selectedCardId = card.id
+                                        isBottomSheetVisible = true
+                                    }
+                                )
+                            }
+                        }
+
+                        if (isBottomSheetVisible) {
+                            deck?.let {
+                                CardEditBottomSheet(
+                                    deck = it,
+                                    cardName = cards.find { card -> card.id == selectedCardId }?.name
+                                        ?: "",
+                                    selectedCardId = selectedCardId,
+                                    removeCard = {
+                                        if (deck?.cards?.get(selectedCardId) == 1) {
+                                            isRemoveDialogVisible = true
+                                        } else {
+                                            viewModel.removeCardFromDeck(selectedCardId)
+                                        }
+                                    },
+                                    addCard = {
+                                        if (it.cards.values.sum() < 60) {
+                                            viewModel.addCardToDeck(selectedCardId)
+                                        } else {
+                                            isMaxCardsDialogVisible = true
+                                        }
+                                    },
+                                    showRemoveDialog = { isRemoveDialogVisible = true },
+                                    hideBottomSheet = {
+                                        viewModel.updateDeck()
+                                        isBottomSheetVisible = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                    PrimaryButton(
+                        modifier = Modifier
+                            .padding(24.dp)
+                            .clip(RoundedCornerShape(100))
+                            .align(Alignment.BottomEnd),
+                        onClick = {
+                            viewModel.updateDeck()
+                            navigateToDeckCreation(id)
+                        }
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Create,
+                                contentDescription = null,
+                                tint = Color.White
+                            )
+
+                            Text(
+                                text = stringResource(R.string.edit),
+                                fontSize = 16.sp,
+                                color = Color.White
+                            )
+                        }
                     }
                 }
             }
+        }
 
-            PrimaryButton(
-                modifier = Modifier
-                    .padding(24.dp)
-                    .clip(RoundedCornerShape(100))
-                    .align(Alignment.BottomEnd),
-                onClick = {
-                    viewModel.updateDeck()
-                    navigateToDeckCreation(id)
-                }
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Create,
-                        contentDescription = null,
-                        tint = Color.White
-                    )
+        DeckScreenUiState.Empty -> {
+            Text(text = "Add cards to your deck")
+        }
 
-                    Text(
-                        text = stringResource(R.string.edit),
-                        fontSize = 16.sp,
-                        color = Color.White
-                    )
-                }
+        DeckScreenUiState.Loading -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
+                CircularProgressIndicator()
             }
         }
     }
 
-    if (isBottomSheetVisible) {
-        deck?.let {
-            CardEditBottomSheet(
-                deck = it,
-                cardName = cards.find { card -> card.id == selectedCardId }?.name ?: "",
-                selectedCardId = selectedCardId,
-                removeCard = {
-                    if (deck?.cards?.get(selectedCardId) == 1) {
-                        isRemoveDialogVisible = true
-                    } else {
-                        viewModel.removeCardFromDeck(selectedCardId)
-                    }
-                },
-                addCard = {
-                    if (it.cards.values.sum() < 60) {
-                        viewModel.addCardToDeck(selectedCardId)
-                    } else {
-                        isMaxCardsDialogVisible = true
-                    }
-                },
-                showRemoveDialog = { isRemoveDialogVisible = true },
-                hideBottomSheet = {
-                    viewModel.updateDeck()
-                    isBottomSheetVisible = false
-                }
-            )
-        }
-    }
+
+
+
 
     if (isRemoveDialogVisible) {
         RemoveAlert(

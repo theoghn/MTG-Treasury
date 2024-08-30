@@ -1,22 +1,20 @@
 package com.mready.mtgtreasury.ui.user.signin
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -28,14 +26,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -52,6 +48,9 @@ fun SignInScreen(
 ) {
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
+
+    var showPasswordError by rememberSaveable { mutableStateOf(false) }
+    var showEmailError by rememberSaveable { mutableStateOf(false) }
 
     val loading by viewModel.loading.collectAsState()
     val exception by viewModel.exception.collectAsState()
@@ -89,10 +88,16 @@ fun SignInScreen(
                 placeholderText = stringResource(R.string.email),
                 onValueChange = {
                     email = it
+                    if (showEmailError)
+                    {
+                        showEmailError = false
+                    }
                 },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email
-                )
+                ),
+                isError = if (showEmailError) email.isEmpty() else false,
+                errorMessage = "Email is required"
             )
 
             PasswordField(
@@ -100,7 +105,13 @@ fun SignInScreen(
                 placeholderText = stringResource(R.string.password),
                 onValueChange = {
                     password = it
-                }
+                    if (showPasswordError)
+                    {
+                        showPasswordError = false
+                    }
+                },
+                isError = if (showPasswordError) password.isEmpty() else false,
+                errorMessage = "Password is required"
             )
 
 
@@ -112,6 +123,8 @@ fun SignInScreen(
                     .clip(RoundedCornerShape(12.dp)),
                 onClick = {
                     viewModel.signIn(email, password)
+                    showEmailError = true
+                    showPasswordError = true
                 }
             ) {
                 Text(
@@ -146,48 +159,51 @@ fun BaseTextField(
     placeholderText: String,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     showBorder: Boolean = true,
+    isError: Boolean = false,
     color: Color = MainBackgroundColor,
     onValueChange: (String) -> Unit,
+    errorMessage: String,
 ) {
-    BasicTextField(
+    OutlinedTextField(
         modifier = Modifier
-            .fillMaxWidth()
-            .background(color, RoundedCornerShape(12.dp))
-            .then(if (showBorder) Modifier.border(1.dp, Color.LightGray, RoundedCornerShape(12.dp)) else Modifier)
-            .padding(vertical = 8.dp)
-        ,
+            .fillMaxWidth(),
         value = fieldValue,
         onValueChange = {
             if (it.length <= 30) {
                 onValueChange(it)
             }
         },
+        shape = RoundedCornerShape(12.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            unfocusedBorderColor = Color.LightGray,
+            focusedBorderColor = Color.LightGray,
+            errorBorderColor = Color.Red,
+            cursorColor = AccentColor
+        ),
         keyboardOptions = keyboardOptions,
+        isError = isError,
         singleLine = true,
         textStyle = LocalTextStyle.current.copy(
             fontSize = 14.sp,
             color = Color.White
         ),
-        decorationBox = { innerTextField ->
-            Row(
-                modifier = Modifier
-                    .padding(horizontal = 12.dp, vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(modifier = Modifier.weight(1f)) {
-                    if (fieldValue.isEmpty()) {
-                        Text(
-                            text = placeholderText,
-                            fontSize = 14.sp,
-                            color = Color.LightGray,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                    innerTextField()
-                }
-            }
+        placeholder = {
+            Text(
+                text = placeholderText,
+                fontSize = 14.sp,
+                color = Color.LightGray,
+                fontWeight = FontWeight.SemiBold
+            )
         },
-        cursorBrush = SolidColor(AccentColor)
+        supportingText = {
+            if (isError) {
+                Text(
+                    text = errorMessage,
+                    color = Color.Red,
+                    fontSize = 12.sp
+                )
+            }
+        }
     )
 }
 
@@ -195,65 +211,73 @@ fun BaseTextField(
 fun PasswordField(
     modifier: Modifier = Modifier,
     fieldValue: String,
+    isError: Boolean = false,
     placeholderText: String,
+    errorMessage: String,
     onValueChange: (String) -> Unit,
 ) {
     var passwordVisibility by rememberSaveable { mutableStateOf(false) }
 
-    BasicTextField(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(MainBackgroundColor, RoundedCornerShape(12.dp))
-            .border(1.dp, Color.LightGray, RoundedCornerShape(12.dp))
-            .padding(vertical = 8.dp),
+    OutlinedTextField(
+        modifier = Modifier
+            .fillMaxWidth(),
         value = fieldValue,
         onValueChange = {
             if (it.length <= 30) {
                 onValueChange(it)
             }
         },
+        shape = RoundedCornerShape(12.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            unfocusedBorderColor = Color.LightGray,
+            focusedBorderColor = Color.LightGray,
+            errorBorderColor = Color.Red,
+            cursorColor = AccentColor
+        ),
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Password
         ),
         visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
+        isError = isError,
         singleLine = true,
         textStyle = LocalTextStyle.current.copy(
             fontSize = 14.sp,
             color = Color.White
         ),
-        decorationBox = { innerTextField ->
-            Row(
-                modifier = Modifier
-                    .padding(horizontal = 12.dp, vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(modifier = Modifier.weight(1f)) {
-                    if (fieldValue.isEmpty()) {
-                        Text(
-                            text = placeholderText,
-                            fontSize = 14.sp,
-                            color = Color.LightGray,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                    innerTextField()
-                }
-                if (fieldValue.isNotEmpty()) {
-                    Icon(
-                        modifier = Modifier.clickable {
-                            passwordVisibility = !passwordVisibility
-                        },
-                        painter = if (passwordVisibility) {
-                            painterResource(id = R.drawable.eye_outline)
-                        } else {
-                            painterResource(id = R.drawable.eye_off_outline)
-                        },
-                        contentDescription = null,
-                        tint = Color.White
-                    )
-                }
+        placeholder = {
+            Text(
+                text = placeholderText,
+                fontSize = 14.sp,
+                color = Color.LightGray,
+                fontWeight = FontWeight.SemiBold
+            )
+        },
+        trailingIcon = {
+            if (fieldValue.isNotEmpty()) {
+                Icon(
+                    modifier = Modifier.clickable {
+                        passwordVisibility = !passwordVisibility
+                    },
+                    painter = if (passwordVisibility) {
+                        painterResource(id = R.drawable.eye_outline)
+                    } else {
+                        painterResource(id = R.drawable.eye_off_outline)
+                    },
+                    contentDescription = null,
+                    tint = Color.White
+                )
             }
         },
-        cursorBrush = SolidColor(AccentColor)
+        supportingText = {
+            if (isError) {
+                Text(
+                    text = errorMessage,
+                    color = Color.Red,
+                    fontSize = 12.sp
+                )
+            }
+        }
     )
+
+
 }

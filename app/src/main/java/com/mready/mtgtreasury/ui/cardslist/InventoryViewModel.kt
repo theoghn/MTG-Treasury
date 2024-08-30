@@ -28,6 +28,8 @@ class InventoryViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            delay(400)
+
             inventoryService.getInventoryFlow().collect { inventory ->
                 var inventoryCards = cardsService.getCardsByIds(inventory.keys.toList())
 
@@ -41,7 +43,6 @@ class InventoryViewModel @Inject constructor(
                     )
                 }
 
-                delay(100)
                 initialCards.update { inventoryCards }
 
                 if (inventoryCards.isEmpty()) {
@@ -49,20 +50,6 @@ class InventoryViewModel @Inject constructor(
                 } else {
                     uiState.update { InventoryScreenUiState.InventoryUi(inventoryCards) }
                 }
-
-//                searchQuery.asStateFlow().debounce(300).collect {
-//                    val filteredCards = initialCards.value.filter {
-//                        it.name.contains(
-//                            searchQuery.value,
-//                            ignoreCase = true
-//                        )
-//                    }
-//                    if (filteredCards.isEmpty()) {
-//                        uiState.update { InventoryScreenUiState.Empty }
-//                    } else {
-//                        uiState.update { InventoryScreenUiState.InventoryUi(filteredCards) }
-//                    }
-//                }
             }
         }
     }
@@ -87,7 +74,6 @@ class InventoryViewModel @Inject constructor(
 sealed class InventoryScreenUiState {
     data class InventoryUi(
         val cards: List<MtgCard>,
-//        val inventory: Map<String, Int>,
     ) : InventoryScreenUiState()
 
     object Loading : InventoryScreenUiState()

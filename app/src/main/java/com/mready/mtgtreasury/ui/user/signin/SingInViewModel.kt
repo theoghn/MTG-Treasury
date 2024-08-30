@@ -13,7 +13,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SignInViewModel @Inject constructor(private val service: UserService) : ViewModel() {
     val exception = MutableStateFlow<String>("")
-    val loading  = MutableStateFlow(false)
+    val loading = MutableStateFlow(false)
 
 
     fun signIn(email: String, password: String) {
@@ -21,15 +21,19 @@ class SignInViewModel @Inject constructor(private val service: UserService) : Vi
         exception.update { "" }
 
         if (email.isEmpty() || password.isEmpty()) {
-            exception.update { "Email and password cannot be empty" }
             loading.update { false }
+            return
         }
 
         viewModelScope.launch {
             try {
                 service.signIn(email, password)
             } catch (e: Exception) {
-                exception.update { e.message.toString() }
+                if (e.message?.contains("server") == true) {
+                    exception.update { "No internet connection." }
+                } else {
+                    exception.update { "Email and password do not match." }
+                }
             }
             loading.update { false }
         }

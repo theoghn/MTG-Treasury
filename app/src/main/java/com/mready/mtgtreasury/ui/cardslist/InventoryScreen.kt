@@ -3,15 +3,20 @@ package com.mready.mtgtreasury.ui.cardslist
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -32,6 +37,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -48,6 +54,8 @@ import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
 import com.mready.mtgtreasury.ui.user.signin.BaseTextField
 import com.mready.mtgtreasury.R
 import com.mready.mtgtreasury.ui.components.CardsGrid
+import com.mready.mtgtreasury.ui.components.ShimmerBox
+import com.mready.mtgtreasury.ui.search.filter.FilterSearchShimmerScreen
 import com.mready.mtgtreasury.ui.theme.AccentColor
 import com.mready.mtgtreasury.ui.theme.BoxColor
 
@@ -69,7 +77,7 @@ fun InventoryScreen(
         topBar = {
             Column {
                 Box(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                 ) {
                     IconButton(
                         modifier = Modifier.align(Alignment.CenterStart),
@@ -92,7 +100,7 @@ fun InventoryScreen(
                 }
 
                 SearchTextField(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 2.dp),
                     fieldValue = searchQuery,
                     showBorder = false,
                     color = BoxColor,
@@ -108,7 +116,7 @@ fun InventoryScreen(
             }
 
         },
-        containerColor = MainBackgroundColor
+        containerColor = Color.Transparent
     ) {
         Box(modifier = Modifier
             .fillMaxSize()
@@ -118,13 +126,15 @@ fun InventoryScreen(
                     val cards = currentState.cards
                     CardsGrid(
                         cards = cards,
-                        isInventoryView = true,
                         onNavigateToCard = { id -> onNavigateToCard(id) }
                     )
                 }
 
                 is InventoryScreenUiState.Loading -> {
-
+                    FilterSearchShimmerScreen(
+                        modifier = Modifier
+                            .padding(top = 18.dp)
+                    )
                 }
 
                 is InventoryScreenUiState.Empty -> {

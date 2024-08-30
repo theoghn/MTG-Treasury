@@ -73,6 +73,7 @@ import com.mready.mtgtreasury.ui.theme.BoxColor
 import com.mready.mtgtreasury.ui.theme.LegalChipColor
 import com.mready.mtgtreasury.ui.theme.NotLegalChipColor
 import com.mready.mtgtreasury.utility.Constants
+import com.mready.mtgtreasury.utility.formatPrice
 import kotlin.reflect.full.memberProperties
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -327,7 +328,7 @@ fun SheetContent(
 
         Text(
             modifier = Modifier.padding(bottom = 8.dp),
-            text = stringResource(id = R.string.euro, card.prices.eur),
+            text = formatPrice(card.prices.eur.toDouble()),
             fontSize = 30.sp,
             fontWeight = FontWeight.SemiBold,
             color = AccentColor,

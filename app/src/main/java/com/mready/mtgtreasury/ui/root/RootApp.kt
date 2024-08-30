@@ -32,6 +32,8 @@ import com.mready.mtgtreasury.ui.decks.view.DeckScreenDestination
 import com.mready.mtgtreasury.ui.navigation.NavigationScreen
 import com.mready.mtgtreasury.ui.navigation.NavigationScreenDestination
 import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
+import com.mready.mtgtreasury.ui.webview.WebViewScreen
+import com.mready.mtgtreasury.ui.webview.WebViewScreenDestination
 
 @Composable
 fun RootApp(
@@ -56,7 +58,9 @@ fun RootApp(
                     composable<SignInDestination> {
                         SignInScreen(
                             onNavigateToSingUp = {
-                                authenticationController.navigate(SignUpDestination)
+                                if(!authenticationController.popBackStack(SignUpDestination, inclusive = false)){
+                                    authenticationController.navigate(SignUpDestination)
+                                }
                             }
                         )
                     }
@@ -64,7 +68,9 @@ fun RootApp(
                     composable<SignUpDestination> {
                         SingUpScreen(
                             onNavigateToSingIn = {
-                                authenticationController.navigate(SignInDestination)
+                                if(!authenticationController.popBackStack(SignInDestination, inclusive = false)){
+                                    authenticationController.navigate(SignInDestination)
+                                }
                             }
                         )
                     }
@@ -81,7 +87,7 @@ fun RootApp(
                     enterTransition = {
                         slideIntoContainer(
                             AnimatedContentTransitionScope.SlideDirection.Start,
-                            tween(400)
+                            tween(700)
                         )
                     },
                     exitTransition = {
@@ -129,6 +135,11 @@ fun RootApp(
                             navigateToWishlist = {
                                 mainNavController.navigate(
                                     WishlistScreenDestination
+                                )
+                            },
+                            navigateToWebView = { url ->
+                                mainNavController.navigate(
+                                    WebViewScreenDestination(url)
                                 )
                             }
                         )
@@ -184,6 +195,12 @@ fun RootApp(
                             },
                             onBack = { mainNavController.popBackStack() }
                         )
+                    }
+
+                    composable<WebViewScreenDestination> {backStackEntry ->
+                        val destination: WebViewScreenDestination = backStackEntry.toRoute()
+
+                        WebViewScreen(url = destination.url)
                     }
                 }
             }

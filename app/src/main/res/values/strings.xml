@@ -52,4 +52,6 @@
     <string name="inventory">Inventory</string>
     <string name="wishlist">Wishlist</string>
     <string name="clear_all">Clear All</string>
+    <string name="apply_filter">Apply Filter</string>
+    <string name="reset_filter">Reset Filter</string>
 </resources>

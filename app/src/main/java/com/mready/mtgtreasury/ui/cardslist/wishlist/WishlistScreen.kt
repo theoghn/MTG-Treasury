@@ -31,6 +31,7 @@ import com.mready.mtgtreasury.ui.cardslist.InventoryScreenUiState
 import com.mready.mtgtreasury.ui.cardslist.InventoryViewModel
 import com.mready.mtgtreasury.ui.cardslist.SearchTextField
 import com.mready.mtgtreasury.ui.components.CardsGrid
+import com.mready.mtgtreasury.ui.search.filter.FilterSearchShimmerScreen
 import com.mready.mtgtreasury.ui.theme.BoxColor
 import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
 
@@ -76,7 +77,7 @@ fun WishlistScreen(
                 }
 
                 SearchTextField(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 2.dp),
                     fieldValue = searchQuery,
                     showBorder = false,
                     color = BoxColor,
@@ -92,7 +93,7 @@ fun WishlistScreen(
             }
 
         },
-        containerColor = MainBackgroundColor
+        containerColor = Color.Transparent
     ) {
         Box(modifier = Modifier
             .fillMaxSize()
@@ -102,13 +103,15 @@ fun WishlistScreen(
                     val cards = currentState.cards
                     CardsGrid(
                         cards = cards,
-                        isInventoryView = false,
                         onNavigateToCard = { id -> onNavigateToCard(id) }
                     )
                 }
 
                 is WishlistScreenUiState.Loading -> {
-
+                    FilterSearchShimmerScreen(
+                        modifier = Modifier
+                            .padding(top = 18.dp)
+                    )
                 }
 
                 is WishlistScreenUiState.Empty -> {

@@ -21,57 +21,70 @@ class DeckViewModel @Inject constructor(
     private val cardsService: CardsService,
     private val inventoryService: InventoryService
 ) : ViewModel() {
-    val cards = MutableStateFlow(emptyList<MtgCard>())
-    val missingCardsIds = MutableStateFlow(emptyList<String>())
-    val deck = MutableStateFlow<Deck?>(null)
+    //    val cards = MutableStateFlow(emptyList<MtgCard>())
+//    val missingCardsIds = MutableStateFlow(emptyList<String>())
+//    val deck = MutableStateFlow<Deck?>(null)
+    val uiState = MutableStateFlow<DeckScreenUiState>(DeckScreenUiState.Loading)
 
     fun getCards(deckId: String) {
         viewModelScope.launch {
             val inventory = inventoryService.getInventory()
 
-            deck.update { decksService.getDeck(deckId) }
-            if (deck.value != null) {
-                missingCardsIds.update {
-                    deck.value!!.cards.keys.toList().filter { !inventory.contains(it) }
-                }
-            }
+            val deck = decksService.getDeck(deckId)
+            val missingCardsIds = deck.cards.keys.toList().filter { !inventory.contains(it) }
 
-            cardsService.getCardsByIds(deck.value?.cards?.keys?.toList() ?: emptyList())
+            cardsService.getCardsByIds(deck.cards.keys.toList())
                 .let { incomingCards ->
                     val newCards = incomingCards.map {
                         it.copy(
-                            qty = if (deck.value?.cards?.contains(it.id) == true) {
-                                deck.value!!.cards[it.id]!!
+                            qty = if (deck.cards.contains(it.id)) {
+                                deck.cards[it.id]!!
                             } else {
                                 0
                             }
                         )
                     }
-                    cards.update { newCards }
+                    if(newCards.isEmpty()){
+                        uiState.update { DeckScreenUiState.Empty }
+                    }
+                    else{
+                        uiState.update { DeckScreenUiState.DeckUi(newCards, missingCardsIds, deck) }
+                    }
                 }
         }
     }
 
     fun removeCardFromDeck(cardId: String, deleted: Boolean = false) {
-        val currentDeck = deck.value?.cards?.toMutableMap() ?: mutableMapOf()
-        currentDeck[cardId] = (currentDeck[cardId] ?: 0) - 1
-        if (currentDeck[cardId]!! <= 0 || deleted) {
-            currentDeck.remove(cardId)
-            cards.update { cards.value.filter { it.id != cardId } }
-        }
-        deck.update { deck.value?.copy(cards = HashMap(currentDeck)) }
+//        val currentDeck = deck.value?.cards?.toMutableMap() ?: mutableMapOf()
+//        currentDeck[cardId] = (currentDeck[cardId] ?: 0) - 1
+//        if (currentDeck[cardId]!! <= 0 || deleted) {
+//            currentDeck.remove(cardId)
+//            cards.update { cards.value.filter { it.id != cardId } }
+//        }
+//        deck.update { deck.value?.copy(cards = HashMap(currentDeck)) }
     }
 
     fun addCardToDeck(cardId: String) {
-        val currentDeck = deck.value?.cards?.toMutableMap() ?: mutableMapOf()
-        currentDeck[cardId] = (currentDeck[cardId] ?: 0) + 1
-        deck.update { deck.value?.copy(cards = HashMap(currentDeck)) }
+//        val currentDeck = deck.value?.cards?.toMutableMap() ?: mutableMapOf()
+//        currentDeck[cardId] = (currentDeck[cardId] ?: 0) + 1
+//        deck.update { deck.value?.copy(cards = HashMap(currentDeck)) }
     }
 
     fun updateDeck() {
-        Log.d("DeckViewModel", "updateDeck")
-        viewModelScope.launch {
-            deck.value?.let { decksService.updateDeck(it.id, it.name, it.deckImage, it.cards) }
-        }
+        Log.d("update","update deck")
+//        viewModelScope.launch {
+//            deck.value?.let { decksService.updateDeck(it.id, it.name, it.deckImage, it.cards) }
+//        }
     }
+}
+
+sealed class DeckScreenUiState {
+    data class DeckUi(
+        val cards: List<MtgCard>,
+        val missingCardsIds: List<String>,
+        val deck: Deck
+    ) : DeckScreenUiState()
+
+    object Loading : DeckScreenUiState()
+    object Empty : DeckScreenUiState()
 }

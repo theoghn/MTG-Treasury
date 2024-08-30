@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.mready.mtgtreasury.models.card.MtgCard
 import com.mready.mtgtreasury.services.CardsService
 import com.mready.mtgtreasury.services.WishlistService
+import com.mready.mtgtreasury.ui.cardslist.InventoryScreenUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
@@ -40,26 +41,23 @@ class WishlistViewModel @Inject constructor(
                 } else {
                     uiState.update { WishlistScreenUiState.WishlistUi(wishlistCards) }
                 }
-
-                searchQuery.asStateFlow().debounce(300).collect {
-                    val filteredCards = initialCards.value.filter {
-                        it.name.contains(
-                            searchQuery.value,
-                            ignoreCase = true
-                        )
-                    }
-                    if (filteredCards.isEmpty()) {
-                        uiState.update { WishlistScreenUiState.Empty }
-                    } else {
-                        uiState.update { WishlistScreenUiState.WishlistUi(filteredCards) }
-                    }
-                }
             }
         }
     }
 
     fun onSearchQueryChange(newQuery: String) {
         searchQuery.update { newQuery }
+        filterCardsByQuery()
+    }
+
+    fun filterCardsByQuery() {
+        val filteredCards =
+            initialCards.value.filter { it.name.contains(searchQuery.value, ignoreCase = true) }
+        if (filteredCards.isEmpty()) {
+            uiState.update { WishlistScreenUiState.Empty }
+        } else {
+            uiState.update { WishlistScreenUiState.WishlistUi(filteredCards) }
+        }
     }
 }
 

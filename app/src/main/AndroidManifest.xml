@@ -20,6 +20,7 @@
             android:name=".ui.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
+            android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.MTGTreasury"
             android:screenOrientation="portrait"
             tools:ignore="DiscouragedApi">

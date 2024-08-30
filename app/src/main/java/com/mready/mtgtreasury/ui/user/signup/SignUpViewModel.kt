@@ -13,7 +13,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SignUpViewModel @Inject constructor(private val service: UserService) : ViewModel() {
     val exception = MutableStateFlow("")
-    val loading  = MutableStateFlow(false)
+    val loading = MutableStateFlow(false)
 
     fun createAccount(
         email: String,
@@ -24,14 +24,17 @@ class SignUpViewModel @Inject constructor(private val service: UserService) : Vi
         loading.update { true }
         exception.update { "" }
 
-        if (passwordConfirmation != password) {
-            exception.update { "Passwords must match!" }
+        if (passwordConfirmation != password || password.length < 6) {
             loading.update { false }
             return
         }
 
-        if (email.isEmpty() || password.isEmpty() || username.isEmpty()) {
-            exception.update { "Email, password and username cannot be empty!" }
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            loading.update { false }
+            return
+        }
+
+        if (email.isEmpty() || username.length < 5) {
             loading.update { false }
             return
         }
@@ -40,9 +43,14 @@ class SignUpViewModel @Inject constructor(private val service: UserService) : Vi
             try {
                 service.createAccount(email, password, username)
             } catch (e: Exception) {
-                exception.update { e.message.toString() }
+                if (e.message?.contains("server") == true) {
+                    exception.update { "No internet connection." }
+                } else {
+                    exception.update { e.message.toString() }
+                }
             }
             loading.update { false }
         }
+
     }
 }

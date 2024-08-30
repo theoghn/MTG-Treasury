@@ -51,7 +51,6 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -64,7 +63,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -87,6 +85,7 @@ import com.mready.mtgtreasury.ui.theme.BoxColor
 import com.mready.mtgtreasury.ui.theme.LegalChipColor
 import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
 import com.mready.mtgtreasury.utility.Constants
+import com.mready.mtgtreasury.utility.formatPrice
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -136,12 +135,6 @@ fun FilterSearchScreen(
             superType = selectedCardSuperTypes
         )
     }
-
-//    LaunchedEffect(selectedFilter) {
-//        if (selectedFilter == SheetFilters.MANA) {
-//            viewModel.getCosts()
-//        }
-//    }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -310,7 +303,14 @@ fun FilterSearchScreen(
                     viewModel.getCosts()
                 }
             },
-            showFilterSheet = { isFilterBottomSheetVisible = true }
+            showFilterSheet = { isFilterBottomSheetVisible = true },
+            resetFilters = {
+                selectedCardTypes = emptyList()
+                selectedCardRarities = emptyList()
+                selectedCardColors = emptyList()
+                selectedCardSuperTypes = emptyList()
+                selectedCardManaCosts = emptyList()
+            }
         )
     }
 
@@ -386,7 +386,8 @@ fun AdvancedSearchModalBottomSheet(
     onDismissRequest: () -> Unit,
     updateSelectedFilter: (SheetFilters) -> Unit,
     showFilterSheet: () -> Unit,
-    onApplyFilters: () -> Unit
+    onApplyFilters: () -> Unit,
+    resetFilters: () -> Unit
 ) {
     ModalBottomSheet(
         sheetState = bottomSheetState,
@@ -489,7 +490,11 @@ fun AdvancedSearchModalBottomSheet(
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                     border = BorderStroke(1.dp, AccentColor.copy(alpha = 0.5f)),
                     contentPadding = PaddingValues(),
-                    onClick = onDismissRequest,
+                    onClick = {
+                        resetFilters()
+                        onApplyFilters()
+                        onDismissRequest()
+                    },
                 ) {
                     Box(
                         contentAlignment = Alignment.Center,
@@ -534,6 +539,7 @@ fun FilterBottomSheet(
     title: String,
     hideFilter: () -> Unit,
     saveChanges: () -> Unit,
+    resetFilter: () -> Unit,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Box(
@@ -592,13 +598,13 @@ fun FilterBottomSheet(
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                 border = BorderStroke(1.dp, AccentColor.copy(alpha = 0.5f)),
                 contentPadding = PaddingValues(),
-                onClick = { hideFilter() },
+                onClick = { resetFilter() },
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        text = stringResource(id = R.string.cancel),
+                        text = stringResource(R.string.reset_filter),
                         fontSize = 16.sp,
                         color = AccentColor,
                         fontWeight = FontWeight.SemiBold,
@@ -619,7 +625,7 @@ fun FilterBottomSheet(
                 }
             ) {
                 Text(
-                    text = stringResource(R.string.apply_filters),
+                    text = stringResource(R.string.apply_filter),
                     fontSize = 16.sp,
                     color = Color.White,
                     fontWeight = FontWeight.SemiBold,
@@ -681,7 +687,8 @@ fun ManaBottomSheet(
         modifier = Modifier.fillMaxHeight(0.7f),
         title = stringResource(R.string.mana_cost),
         hideFilter = { hideFilter() },
-        saveChanges = { saveChanges(temporaryCardManaCosts) }
+        saveChanges = { saveChanges(temporaryCardManaCosts) },
+        resetFilter = { temporaryCardManaCosts = emptyList() }
     ) {
         Column(
             modifier = Modifier
@@ -756,7 +763,8 @@ fun ColorBottomSheet(
     FilterBottomSheet(
         title = stringResource(R.string.color),
         hideFilter = { hideFilter() },
-        saveChanges = { saveChanges(temporaryCardColors) }
+        saveChanges = { saveChanges(temporaryCardColors) },
+        resetFilter = { temporaryCardColors = emptyList() }
     ) {
         Column(modifier = Modifier.fillMaxWidth())
         {
@@ -828,7 +836,8 @@ fun TypeBottomSheet(
         modifier = Modifier.fillMaxHeight(0.7f),
         title = title,
         hideFilter = { hideFilter() },
-        saveChanges = { saveChanges(temporaryCardTypes) }
+        saveChanges = { saveChanges(temporaryCardTypes) },
+        resetFilter = { temporaryCardTypes = emptyList() }
     ) {
         Column(
             modifier = Modifier
@@ -896,6 +905,7 @@ private fun FilterMtgCard(
 
     Card(
         modifier = modifier
+            .height(290.dp)
             .shadow(
                 elevation = 2.dp,
                 shape = RoundedCornerShape(4.dp),
@@ -949,7 +959,6 @@ private fun FilterMtgCard(
                     placeholder = painterResource(id = R.drawable.card_back),
                     error = painterResource(id = R.drawable.card_back),
                     contentDescription = null,
-//                    filterQuality = FilterQuality.High
                 )
 
                 Text(
@@ -972,7 +981,7 @@ private fun FilterMtgCard(
                     color = Color.White
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.weight(1f))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -981,7 +990,7 @@ private fun FilterMtgCard(
                 ) {
                     Column {
                         Text(
-                            text = stringResource(R.string.euro, mtgCard.prices.eur),
+                            text = formatPrice(mtgCard.prices.eur.toDouble()),
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis,
                             fontSize = 16.sp,
@@ -1055,11 +1064,12 @@ fun FilterSearchShimmerScreen(modifier: Modifier = Modifier) {
             contentPadding = PaddingValues(bottom = 32.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
+            userScrollEnabled = false
         ) {
             items(6) {
                 ShimmerBox(
                     modifier = Modifier
-                        .height(300.dp)
+                        .height(290.dp)
                         .clip(RoundedCornerShape(4.dp))
                 )
             }

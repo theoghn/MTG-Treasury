@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -25,6 +27,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -36,7 +39,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -45,6 +47,7 @@ import coil.compose.AsyncImage
 import com.mready.mtgtreasury.R
 import com.mready.mtgtreasury.ui.theme.AccentColor
 import com.mready.mtgtreasury.ui.theme.BoxColor
+import com.mready.mtgtreasury.utility.formatPrice
 
 @Composable
 fun ProfileScreen(
@@ -58,7 +61,12 @@ fun ProfileScreen(
 
     when (val state = uiState.value) {
         is ProfileScreenUiState.Loading -> {
-            // Loading
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ){
+                CircularProgressIndicator()
+            }
         }
 
         is ProfileScreenUiState.ProfileUi -> {
@@ -77,7 +85,9 @@ fun ProfileScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Row(
-                    modifier = Modifier.padding().fillMaxWidth(),
+                    modifier = Modifier
+                        .padding()
+                        .fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -121,10 +131,7 @@ fun ProfileScreen(
                     ) {
                         ProfileStat(
                             title = "Total Value",
-                            value = stringResource(
-                                id = R.string.euro,
-                                String.format("%.2f", user.inventoryValue)
-                            )
+                            value = formatPrice(user.inventoryValue.toDouble())
                         )
 
                         ProfileStat(
@@ -160,19 +167,25 @@ fun ProfileScreen(
                     thickness = 3.dp
                 )
 
+
+
                 CardsSection(
-                    modifier = Modifier.padding(top = 16.dp).clickable { navigateToInventory() },
+                    modifier = Modifier
+                        .padding(top = 16.dp),
                     imageUris = inventoryCards.map { it.imageUris.smallSize },
-                    title = "My Inventory",
-                    onCardClick = { onNavigateToCard(it) }
+                    title = "Inventory",
+                    onClick = { navigateToInventory() }
                 )
 
 
+
+
                 CardsSection(
-                    modifier = Modifier.padding(top = 16.dp).clickable { navigateToWishlist() },
+                    modifier = Modifier
+                        .padding(top = 16.dp),
                     imageUris = wishlistCards.map { it.imageUris.smallSize },
-                    title = "My Wishlist",
-                    onCardClick = { onNavigateToCard(it) }
+                    title = "Wishlist",
+                    onClick = { navigateToWishlist() }
                 )
 
 //                CardsSection(
@@ -227,49 +240,69 @@ fun CardsSection(
     modifier: Modifier = Modifier,
     title: String,
     imageUris: List<String>,
-    onCardClick: (String) -> Unit
+    onClick: () -> Unit
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            text = title,
+            text = "My $title",
             fontSize = 18.sp,
             color = Color.White
         )
 
         Icon(
+            modifier = Modifier.clickable { onClick() },
             imageVector = Icons.AutoMirrored.Default.ArrowForward,
             contentDescription = null,
             tint = Color.White
         )
     }
 
-
-    LazyRow(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .border(1.dp, Color.DarkGray, RoundedCornerShape(12.dp))
-            .background(BoxColor),
-        contentPadding = PaddingValues(8.dp)
-    ) {
-        items(imageUris) { uri ->
-            AsyncImage(
-                model = uri,
-                modifier = Modifier
-                    .padding(4.dp)
-                    .width(60.dp)
-                    .clip(shape = RoundedCornerShape(6.dp))
-                    .background(Color.Transparent)
-//                    .clickable { onCardClick(card.id) }
-                ,
-                contentScale = ContentScale.FillWidth,
-                contentDescription = null,
-                placeholder = painterResource(id = R.drawable.card_back),
-                error = painterResource(id = R.drawable.card_back)
+    if (imageUris.isNotEmpty()) {
+        LazyRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .clickable { onClick() }
+                .border(1.dp, Color.DarkGray, RoundedCornerShape(12.dp))
+                .background(BoxColor),
+            contentPadding = PaddingValues(8.dp)
+        ) {
+            items(imageUris) { uri ->
+                AsyncImage(
+                    model = uri,
+                    modifier = Modifier
+                        .padding(4.dp)
+                        .width(60.dp)
+                        .clip(shape = RoundedCornerShape(6.dp))
+                        .background(Color.Transparent),
+                    contentScale = ContentScale.FillWidth,
+                    contentDescription = null,
+                    placeholder = painterResource(id = R.drawable.card_back),
+                    error = painterResource(id = R.drawable.card_back)
+                )
+            }
+        }
+    } else {
+        Box(
+            modifier = Modifier
+                .height(100.dp)
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .border(1.dp, Color.DarkGray, RoundedCornerShape(12.dp))
+                .background(BoxColor),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                modifier = Modifier.padding(8.dp),
+                text = "Add cards to your $title",
+                fontSize = 18.sp,
+                color = Color.White,
+                fontWeight = FontWeight.SemiBold,
             )
         }
     }
+
 }

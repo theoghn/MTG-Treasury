@@ -1,21 +1,31 @@
 package com.mready.mtgtreasury.ui.user.signup
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -42,16 +52,40 @@ fun SingUpScreen(
     var username by rememberSaveable { mutableStateOf("") }
     var passwordConfirmation by rememberSaveable { mutableStateOf("") }
 
+    var showUsernameError by rememberSaveable { mutableStateOf(false) }
+    var showPasswordError by rememberSaveable { mutableStateOf(false) }
+    var showConfirmPasswordError by rememberSaveable { mutableStateOf(false) }
+    var showEmailError by rememberSaveable { mutableStateOf(false) }
+
+
     val exception by viewModel.exception.collectAsState()
     val loading by viewModel.loading.collectAsState()
 
+    val interactionSource = remember { MutableInteractionSource() }
+
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.statusBarsPadding().fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
+        Icon(
+            modifier = Modifier
+                .padding(16.dp)
+                .size(32.dp)
+                .align(Alignment.TopStart)
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null
+                ) { onNavigateToSingIn() },
+            imageVector = Icons.AutoMirrored.Default.ArrowBack,
+            contentDescription = null,
+            tint = Color.White,
+        )
+
         Column(
             modifier = Modifier
+                .imePadding()
                 .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -76,23 +110,39 @@ fun SingUpScreen(
             BaseTextField(
                 fieldValue = username,
                 placeholderText = "Username",
-                onValueChange = {
-                    username = it
-                },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text
-                )
+                ),
+                onValueChange = {
+                    username = it
+                    if (showUsernameError) {
+                        showUsernameError = false
+                    }
+                },
+                isError = if (showUsernameError) username.length < 5 else false,
+                errorMessage = "Username must be at least 5 characters!"
             )
 
             BaseTextField(
                 fieldValue = email,
                 placeholderText = "Email",
-                onValueChange = {
-                    email = it
-                },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email
-                )
+                ),
+                onValueChange = {
+                    email = it
+                    if (showEmailError) {
+                        showEmailError = false
+                    }
+                },
+                isError = if (showEmailError) email.isEmpty() || !android.util.Patterns.EMAIL_ADDRESS.matcher(
+                    email
+                ).matches() else false,
+                errorMessage = if (email.isEmpty()) {
+                    "Email is required!"
+                } else {
+                    "Email is invalid!"
+                }
             )
 
             PasswordField(
@@ -100,6 +150,15 @@ fun SingUpScreen(
                 placeholderText = "Password",
                 onValueChange = {
                     password = it
+                    if (showPasswordError) {
+                        showPasswordError = false
+                    }
+                },
+                isError = if (showPasswordError) password != passwordConfirmation || password.length < 6 else false,
+                errorMessage = if (passwordConfirmation != password) {
+                    "Passwords must match!"
+                } else {
+                    "Password must be at least 6 characters!"
                 }
             )
 
@@ -108,7 +167,16 @@ fun SingUpScreen(
                 placeholderText = "Confirm password",
                 onValueChange = {
                     passwordConfirmation = it
+                    if (showConfirmPasswordError) {
+                        showConfirmPasswordError = false
+                    }
                 },
+                isError = if (showConfirmPasswordError) password != passwordConfirmation || passwordConfirmation.length < 6 else false,
+                errorMessage = if (passwordConfirmation != password) {
+                    "Passwords must match!"
+                } else {
+                    "Password must be at least 6 characters!"
+                }
             )
 
 
@@ -120,6 +188,10 @@ fun SingUpScreen(
                     .clip(RoundedCornerShape(12.dp)),
                 onClick = {
                     viewModel.createAccount(email, password, passwordConfirmation, username)
+                    showEmailError = true
+                    showPasswordError = true
+                    showUsernameError = true
+                    showConfirmPasswordError = true
                 }
             ) {
                 Text(

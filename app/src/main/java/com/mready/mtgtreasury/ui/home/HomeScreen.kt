@@ -1,5 +1,6 @@
 package com.mready.mtgtreasury.ui.home
 
+import android.icu.text.NumberFormat
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -56,12 +57,15 @@ import com.mready.mtgtreasury.ui.theme.AccentColor
 import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
 import com.mready.mtgtreasury.ui.theme.BoxColor
 import com.mready.mtgtreasury.ui.theme.ShimmerColor
+import com.mready.mtgtreasury.utility.formatPrice
+import java.util.Locale
 
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeScreenViewModel = hiltViewModel(),
-    onCardClick: (String) -> Unit
+    onCardClick: (String) -> Unit,
+    navigateToWebView: (String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val scrollState = rememberScrollState()
@@ -91,14 +95,20 @@ fun HomeScreen(
 
                 MostValuableCards(mostValuableCards, onCardClick)
 
-                NewestSets(newestSets)
+                NewestSets(
+                    newestSets = newestSets,
+                    navigateToWebView = navigateToWebView
+                )
             }
         }
     }
 }
 
 @Composable
-private fun NewestSets(newestSets: List<MtgSet>) {
+private fun NewestSets(
+    newestSets: List<MtgSet>,
+    navigateToWebView: (String) -> Unit
+) {
     Box(
         modifier = Modifier.fillMaxWidth(),
         contentAlignment = Alignment.TopStart
@@ -118,6 +128,7 @@ private fun NewestSets(newestSets: List<MtgSet>) {
                 modifier = Modifier
                     .padding(start = 12.dp)
                     .clip(shape = RoundedCornerShape(12.dp))
+                    .clickable { navigateToWebView(set.scryfall_uri) }
                     .background(BoxColor)
                     .padding(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -260,7 +271,7 @@ private fun ValuableCardItem(
 
             Text(
                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp),
-                text = stringResource(id = R.string.euro, mtgCard.prices.eur),
+                text = formatPrice(mtgCard.prices.eur.toDouble()),
                 fontSize = 24.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = AccentColor,
@@ -298,7 +309,11 @@ private fun ColumnScope.CardOfTheDay(
                 .padding(12.dp)
                 .width(169.dp)
                 .clip(RoundedCornerShape(4.dp))
-                .background(Color.Transparent),
+                .background(Color.Transparent)
+                .clickable {
+                    onCardClick(card.id)
+                }
+            ,
             contentScale = ContentScale.FillWidth,
             contentDescription = null,
             placeholder = painterResource(id = R.drawable.card_back),
@@ -339,7 +354,7 @@ private fun ColumnScope.CardOfTheDay(
 
                 Text(
                     modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp),
-                    text = stringResource(R.string.euro, card.prices.eur),
+                    text = formatPrice(card.prices.eur.toDouble()),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Color.White,
@@ -410,6 +425,7 @@ private fun ColumnScope.CardOfTheDay(
     }
 }
 
+
 @Composable
 private fun CollectionValue(inventoryValue: Double) {
     Column(
@@ -422,9 +438,10 @@ private fun CollectionValue(inventoryValue: Double) {
             color = Color.White,
         )
         Text(
-            text = stringResource(id = R.string.euro, String.format("%.2f", inventoryValue)),
+            text = NumberFormat.getCurrencyInstance(Locale.GERMANY).format(inventoryValue),
             fontSize = 40.sp,
             color = Color.White,
+            fontWeight = FontWeight.Bold,
         )
     }
 }

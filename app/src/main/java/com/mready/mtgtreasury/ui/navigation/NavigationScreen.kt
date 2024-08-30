@@ -48,7 +48,8 @@ fun NavigationScreen(
     navigateToDeckCreation: () -> Unit,
     navigateToDeck: (String) -> Unit,
     navigateToInventory: () -> Unit,
-    navigateToWishlist: () -> Unit
+    navigateToWishlist: () -> Unit,
+    navigateToWebView: (String) -> Unit
 ) {
     val navigationSections = listOf(
         HomeScreenDestination,
@@ -89,7 +90,12 @@ fun NavigationScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     navigationSections.forEachIndexed { index, section ->
-                        val isSelected = section::class.qualifiedName == currentDestination
+                        val isSelected = if (section == FilterSearchScreenDestination("")) {
+                            currentDestination == SearchScreenDestination::class.qualifiedName ||
+                                    currentDestination == FilterSearchScreenDestination::class.qualifiedName
+                        } else {
+                            section::class.qualifiedName == currentDestination
+                        }
                         NavBarItem(
                             isSelected = isSelected,
                             iconId = if (isSelected) {
@@ -123,7 +129,10 @@ fun NavigationScreen(
             startDestination = HomeScreenDestination,
         ) {
             composable<HomeScreenDestination> {
-                HomeScreen(onCardClick = { id -> navigateToCard(id) })
+                HomeScreen(
+                    onCardClick = { id -> navigateToCard(id) },
+                    navigateToWebView = { url -> navigateToWebView(url) }
+                )
             }
 
             composable<SearchScreenDestination> {
@@ -132,7 +141,10 @@ fun NavigationScreen(
                         navController.navigate(FilterSearchScreenDestination(searchName)) {
                             restoreState = true
                         }
-                    }
+                    },
+                    onBack = {
+                        navController.popBackStack()
+                    },
                 )
             }
 
