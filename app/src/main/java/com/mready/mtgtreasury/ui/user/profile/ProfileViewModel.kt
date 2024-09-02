@@ -48,12 +48,6 @@ class ProfileViewModel @Inject constructor(
             }
         }
     }
-
-    fun signOut() {
-        viewModelScope.launch {
-            userService.signOut()
-        }
-    }
 }
 
 sealed class ProfileScreenUiState {

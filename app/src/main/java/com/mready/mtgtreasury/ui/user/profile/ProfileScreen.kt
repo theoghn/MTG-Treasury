@@ -26,7 +26,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -39,6 +38,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -52,9 +52,9 @@ import com.mready.mtgtreasury.utility.formatPrice
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
-    onNavigateToCard: (String) -> Unit,
     navigateToInventory: () -> Unit,
-    navigateToWishlist: () -> Unit
+    navigateToWishlist: () -> Unit,
+    navigateToSettings: () -> Unit
 ) {
     val scrollState = rememberScrollState()
     val uiState = viewModel.uiState.collectAsState()
@@ -64,8 +64,11 @@ fun ProfileScreen(
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
-            ){
-                CircularProgressIndicator()
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(50.dp),
+                    color = AccentColor
+                )
             }
         }
 
@@ -82,7 +85,7 @@ fun ProfileScreen(
                     .fillMaxSize()
                     .verticalScroll(scrollState),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Row(
                     modifier = Modifier
@@ -99,7 +102,9 @@ fun ProfileScreen(
                     )
 
                     Icon(
-                        modifier = Modifier.size(32.dp),
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clickable { navigateToSettings() },
                         imageVector = Icons.Default.Settings,
                         contentDescription = null,
                         tint = Color.White
@@ -159,6 +164,17 @@ fun ProfileScreen(
                     Spacer(modifier = Modifier.weight(1f))
                 }
 
+                if (user.bio.isNotEmpty()) {
+                    Text(
+                        modifier = Modifier
+                            .padding(horizontal = 12.dp)
+                            .align(Alignment.Start),
+                        text = user.bio,
+                        fontSize = 14.sp,
+                        color = Color.White,
+                    )
+                }
+
                 HorizontalDivider(
                     modifier = Modifier
                         .padding(horizontal = 12.dp)
@@ -166,8 +182,6 @@ fun ProfileScreen(
                     color = Color.DarkGray,
                     thickness = 3.dp
                 )
-
-
 
                 CardsSection(
                     modifier = Modifier
@@ -177,9 +191,6 @@ fun ProfileScreen(
                     onClick = { navigateToInventory() }
                 )
 
-
-
-
                 CardsSection(
                     modifier = Modifier
                         .padding(top = 16.dp),
@@ -187,23 +198,6 @@ fun ProfileScreen(
                     title = "Wishlist",
                     onClick = { navigateToWishlist() }
                 )
-
-//                CardsSection(
-//                    modifier = Modifier.padding(top = 16.dp),
-//                    imageUris = decks.map { it.deckImage },
-//                    title = "My Decks",
-//                    onCardClick = { onNavigateToCard(it) }
-//                )
-
-//                Spacer(modifier = Modifier.weight(1f))
-
-
-                Button(
-                    modifier = Modifier.padding(bottom = 32.dp),
-                    onClick = { viewModel.signOut() }
-                ) {
-                    Text(text = "Sign out")
-                }
             }
         }
     }
@@ -297,7 +291,7 @@ fun CardsSection(
         ) {
             Text(
                 modifier = Modifier.padding(8.dp),
-                text = "Add cards to your $title",
+                text = stringResource(R.string.add_cards_to_your_X, title),
                 fontSize = 18.sp,
                 color = Color.White,
                 fontWeight = FontWeight.SemiBold,

@@ -54,8 +54,8 @@ import com.mready.mtgtreasury.ui.components.PrimaryButton
 import com.mready.mtgtreasury.ui.components.ShimmerBox
 import com.mready.mtgtreasury.ui.components.TwoColorText
 import com.mready.mtgtreasury.ui.theme.AccentColor
-import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
 import com.mready.mtgtreasury.ui.theme.BoxColor
+import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
 import com.mready.mtgtreasury.ui.theme.ShimmerColor
 import com.mready.mtgtreasury.utility.formatPrice
 import java.util.Locale
@@ -127,6 +127,7 @@ private fun NewestSets(
             Row(
                 modifier = Modifier
                     .padding(start = 12.dp)
+                    .width(250.dp)
                     .clip(shape = RoundedCornerShape(12.dp))
                     .clickable { navigateToWebView(set.scryfall_uri) }
                     .background(BoxColor)
@@ -395,7 +396,7 @@ private fun ColumnScope.CardOfTheDay(
                     firstPart = stringResource(R.string.text_legal),
                     secondPart = stringResource(
                         R.string.x_max_set,
-                        card.getNumberOfLegalFormats() ?: 99
+                        card.getNumberOfLegalFormats()
                     )
                 )
 
@@ -403,7 +404,6 @@ private fun ColumnScope.CardOfTheDay(
                     modifier = Modifier.padding(horizontal = 4.dp),
                     firstPart = stringResource(R.string.text_release),
                     secondPart = card.releaseDate.formatReleaseDate()
-                        ?: stringResource(R.string.text_unknown)
                 )
             }
 

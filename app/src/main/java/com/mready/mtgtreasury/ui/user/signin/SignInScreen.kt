@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
@@ -67,15 +68,11 @@ fun SignInScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Sign in.",
+                text = stringResource(R.string.sign_in_title),
                 fontSize = 28.sp,
                 color = Color.White,
                 fontWeight = FontWeight.Bold
             )
-
-            if (loading) {
-                CircularProgressIndicator()
-            }
 
             Text(
                 modifier = Modifier.align(Alignment.Start),
@@ -97,7 +94,7 @@ fun SignInScreen(
                     keyboardType = KeyboardType.Email
                 ),
                 isError = if (showEmailError) email.isEmpty() else false,
-                errorMessage = "Email is required"
+                errorMessage = stringResource(R.string.email_is_required)
             )
 
             PasswordField(
@@ -111,28 +108,37 @@ fun SignInScreen(
                     }
                 },
                 isError = if (showPasswordError) password.isEmpty() else false,
-                errorMessage = "Password is required"
+                errorMessage = stringResource(R.string.password_is_required)
             )
 
-
-            PrimaryButton(
-                modifier = Modifier
-                    .padding(vertical = 16.dp)
-                    .fillMaxWidth()
-                    .height(50.dp)
-                    .clip(RoundedCornerShape(12.dp)),
-                onClick = {
-                    viewModel.signIn(email, password)
-                    showEmailError = true
-                    showPasswordError = true
-                }
-            ) {
-                Text(
-                    text = stringResource(R.string.sign_in),
-                    fontSize = 16.sp,
-                    color = Color.White,
-                    fontWeight = FontWeight.SemiBold,
+            if (loading) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .padding(vertical = 16.dp)
+                        .size(36.dp),
+                    color = AccentColor
                 )
+            }
+            else{
+                PrimaryButton(
+                    modifier = Modifier
+                        .padding(vertical = 16.dp)
+                        .fillMaxWidth()
+                        .height(50.dp)
+                        .clip(RoundedCornerShape(12.dp)),
+                    onClick = {
+                        viewModel.signIn(email, password)
+                        showEmailError = true
+                        showPasswordError = true
+                    }
+                ) {
+                    Text(
+                        text = stringResource(R.string.sign_in),
+                        fontSize = 16.sp,
+                        color = Color.White,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
             }
 
             TwoColorText(
@@ -142,25 +148,26 @@ fun SignInScreen(
                 fontSize = 14.sp
             )
 
-            Text(
-                text = stringResource(R.string.forgot_password),
-                fontSize = 14.sp,
-                color = Color.White,
-                fontWeight = FontWeight.SemiBold,
-            )
+//            Text(
+//                text = stringResource(R.string.forgot_password),
+//                fontSize = 14.sp,
+//                color = Color.White,
+//                fontWeight = FontWeight.SemiBold,
+//            )
         }
     }
 }
 
 @Composable
 fun BaseTextField(
-    modifier: Modifier = Modifier,
     fieldValue: String,
     placeholderText: String,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    showBorder: Boolean = true,
     isError: Boolean = false,
-    color: Color = MainBackgroundColor,
+    singleLine : Boolean = true,
+    minLines: Int = 1,
+    maxLines: Int = 1,
+    maxLength:Int = 30,
     onValueChange: (String) -> Unit,
     errorMessage: String,
 ) {
@@ -169,7 +176,7 @@ fun BaseTextField(
             .fillMaxWidth(),
         value = fieldValue,
         onValueChange = {
-            if (it.length <= 30) {
+            if (it.length <= maxLength) {
                 onValueChange(it)
             }
         },
@@ -182,7 +189,9 @@ fun BaseTextField(
         ),
         keyboardOptions = keyboardOptions,
         isError = isError,
-        singleLine = true,
+        minLines = minLines,
+        maxLines = maxLines,
+        singleLine = singleLine,
         textStyle = LocalTextStyle.current.copy(
             fontSize = 14.sp,
             color = Color.White
@@ -209,7 +218,6 @@ fun BaseTextField(
 
 @Composable
 fun PasswordField(
-    modifier: Modifier = Modifier,
     fieldValue: String,
     isError: Boolean = false,
     placeholderText: String,

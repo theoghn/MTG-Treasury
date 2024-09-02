@@ -32,15 +32,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.mready.mtgtreasury.R
 import com.mready.mtgtreasury.ui.user.signin.BaseTextField
 import com.mready.mtgtreasury.ui.user.signin.PasswordField
 import com.mready.mtgtreasury.ui.components.PrimaryButton
 import com.mready.mtgtreasury.ui.components.TwoColorText
+import com.mready.mtgtreasury.ui.theme.AccentColor
 
 @Composable
 fun SingUpScreen(
@@ -64,7 +67,9 @@ fun SingUpScreen(
     val interactionSource = remember { MutableInteractionSource() }
 
     Box(
-        modifier = Modifier.statusBarsPadding().fillMaxSize(),
+        modifier = Modifier
+            .statusBarsPadding()
+            .fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         Icon(
@@ -97,9 +102,7 @@ fun SingUpScreen(
                 fontWeight = FontWeight.Bold
             )
 
-            if (loading) {
-                CircularProgressIndicator()
-            }
+
 
             Text(
                 modifier = Modifier.align(Alignment.Start),
@@ -109,28 +112,29 @@ fun SingUpScreen(
 
             BaseTextField(
                 fieldValue = username,
-                placeholderText = "Username",
+                placeholderText = stringResource(R.string.username),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text
                 ),
                 onValueChange = {
-                    username = it
+                    username = it.replace("\n", "")
                     if (showUsernameError) {
                         showUsernameError = false
                     }
                 },
+                maxLength = 20,
                 isError = if (showUsernameError) username.length < 5 else false,
-                errorMessage = "Username must be at least 5 characters!"
+                errorMessage = stringResource(R.string.username_min_length_warning)
             )
 
             BaseTextField(
                 fieldValue = email,
-                placeholderText = "Email",
+                placeholderText = stringResource(id = R.string.email),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email
                 ),
                 onValueChange = {
-                    email = it
+                    email = it.replace("\n", "")
                     if (showEmailError) {
                         showEmailError = false
                     }
@@ -139,73 +143,82 @@ fun SingUpScreen(
                     email
                 ).matches() else false,
                 errorMessage = if (email.isEmpty()) {
-                    "Email is required!"
+                    stringResource(id = R.string.email_is_required)
                 } else {
-                    "Email is invalid!"
+                    stringResource(R.string.email_is_invalid)
                 }
             )
 
             PasswordField(
                 fieldValue = password,
-                placeholderText = "Password",
+                placeholderText = stringResource(id = R.string.password),
                 onValueChange = {
-                    password = it
+                    password = it.replace("\n", "")
                     if (showPasswordError) {
                         showPasswordError = false
                     }
                 },
                 isError = if (showPasswordError) password != passwordConfirmation || password.length < 6 else false,
                 errorMessage = if (passwordConfirmation != password) {
-                    "Passwords must match!"
+                    stringResource(R.string.passwords_must_match)
                 } else {
-                    "Password must be at least 6 characters!"
+                    stringResource(R.string.password_min_length_warning)
                 }
             )
 
             PasswordField(
                 fieldValue = passwordConfirmation,
-                placeholderText = "Confirm password",
+                placeholderText = stringResource(R.string.confirm_password),
                 onValueChange = {
-                    passwordConfirmation = it
+                    passwordConfirmation = it.replace("\n", "")
                     if (showConfirmPasswordError) {
                         showConfirmPasswordError = false
                     }
                 },
                 isError = if (showConfirmPasswordError) password != passwordConfirmation || passwordConfirmation.length < 6 else false,
                 errorMessage = if (passwordConfirmation != password) {
-                    "Passwords must match!"
+                    stringResource(R.string.passwords_must_match)
                 } else {
-                    "Password must be at least 6 characters!"
+                    stringResource(R.string.password_min_length_warning)
                 }
             )
 
 
-            PrimaryButton(
-                modifier = Modifier
-                    .padding(vertical = 16.dp)
-                    .fillMaxWidth()
-                    .height(50.dp)
-                    .clip(RoundedCornerShape(12.dp)),
-                onClick = {
-                    viewModel.createAccount(email, password, passwordConfirmation, username)
-                    showEmailError = true
-                    showPasswordError = true
-                    showUsernameError = true
-                    showConfirmPasswordError = true
-                }
-            ) {
-                Text(
-                    text = "Sign up",
-                    fontSize = 16.sp,
-                    color = Color.White,
-                    fontWeight = FontWeight.SemiBold,
+            if (loading) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .padding(vertical = 16.dp)
+                        .size(36.dp),
+                    color = AccentColor
                 )
+            } else {
+                PrimaryButton(
+                    modifier = Modifier
+                        .padding(vertical = 16.dp)
+                        .fillMaxWidth()
+                        .height(50.dp)
+                        .clip(RoundedCornerShape(12.dp)),
+                    onClick = {
+                        viewModel.createAccount(email, password, passwordConfirmation, username)
+                        showEmailError = true
+                        showPasswordError = true
+                        showUsernameError = true
+                        showConfirmPasswordError = true
+                    }
+                ) {
+                    Text(
+                        text = stringResource(R.string.sign_up),
+                        fontSize = 16.sp,
+                        color = Color.White,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
             }
 
             TwoColorText(
                 modifier = Modifier.clickable { onNavigateToSingIn() },
-                firstPart = "Already have an account?",
-                secondPart = "Login",
+                firstPart = stringResource(R.string.already_have_an_account),
+                secondPart = stringResource(R.string.login),
                 fontSize = 14.sp
             )
         }

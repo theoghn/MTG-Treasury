@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -69,6 +70,8 @@ fun DeckCreationScreen(
 ) {
     val deckName by viewModel.deckName.collectAsState()
     val deckCards by viewModel.deckCards.collectAsState()
+    val initialized by viewModel.initialized.collectAsState()
+
     var isAlertDialogVisible by rememberSaveable { mutableStateOf(false) }
 
     var dialogMessage by rememberSaveable { mutableStateOf("") }
@@ -77,7 +80,9 @@ fun DeckCreationScreen(
 
     LaunchedEffect(deckId) {
         if (deckId != null) {
-            viewModel.getDeck(deckId)
+            viewModel.initialize(deckId)
+        } else {
+            viewModel.getInventoryCards()
         }
     }
 
@@ -85,71 +90,108 @@ fun DeckCreationScreen(
         modifier = Modifier
             .fillMaxSize()
             .statusBarsPadding(),
-        topBar = { DeckCreationTopBar(onBack = onBack) },
+        topBar = {
+            DeckCreationTopBar(
+                title = if (deckId != null) stringResource(R.string.edit_deck) else stringResource(R.string.create_new_deck),
+                onBack = onBack
+            )
+        },
         containerColor = Color.Transparent
     ) {
-        Column(
-            modifier = Modifier
-                .padding(top = 24.dp)
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            OutlinedTextField(
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
                 modifier = Modifier
                     .padding(it)
-                    .padding(horizontal = 16.dp)
-                    .fillMaxWidth(),
-                value = deckName,
-                onValueChange = {
-                    if (it.length <= 30) {
-                        viewModel.updateDeckName(it)
-                    }
-                },
-                singleLine = true,
-                label = { Text(stringResource(R.string.deck_name)) },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = AccentColor,
-                    unfocusedBorderColor = Color.DarkGray,
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White,
-                    cursorColor = AccentColor,
-                    unfocusedLabelColor = Color.DarkGray,
-                    focusedLabelColor = AccentColor
-                )
-            )
-
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxHeight(0.88f)
-                    .padding(bottom = 16.dp),
-                contentPadding = PaddingValues(bottom = 8.dp)
+                    .padding(top = 12.dp)
+                    .fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                items(inventoryCards) { card ->
-                    val warningMessage = stringResource(id = R.string.max_deck_cards_warning)
-
-                    CardItem(
-                        mtgCard = card,
-                        qty = deckCards[card.id] ?: 0,
-                        onAdd = {
-                            if (deckCards.values.sum() < 60) {
-                                viewModel.addCardToDeck(card.id)
-                                return@CardItem
-                            } else {
-                                dialogMessage = warningMessage
-                                isAlertDialogVisible = true
-                            }
-                        },
-                        onRemove = {
-                            viewModel.removeCardFromDeck(card.id)
+                OutlinedTextField(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 2.dp)
+                        .fillMaxWidth(),
+                    enabled = initialized,
+                    value = deckName,
+                    onValueChange = {
+                        if (it.length <= 30) {
+                            viewModel.updateDeckName(it)
                         }
+                    },
+                    singleLine = true,
+                    label = { Text(stringResource(R.string.deck_name)) },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = AccentColor,
+                        unfocusedBorderColor = Color.DarkGray,
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        cursorColor = AccentColor,
+                        unfocusedLabelColor = Color.DarkGray,
+                        focusedLabelColor = AccentColor
                     )
+                )
+
+                if (!initialized) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(40.dp),
+                            color = AccentColor
+                        )
+                    }
+
+                } else {
+                    if (inventoryCards.isEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = stringResource(
+                                    id = R.string.add_cards_to_your_X,
+                                    "Inventory"
+                                ),
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp
+                            )
+                        }
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxHeight(),
+                            contentPadding = PaddingValues(bottom = 8.dp)
+                        ) {
+                            items(inventoryCards) { card ->
+                                val warningMessage =
+                                    stringResource(id = R.string.max_deck_cards_warning)
+
+                                CardItem(
+                                    mtgCard = card,
+                                    qty = deckCards[card.id] ?: 0,
+                                    onAdd = {
+                                        if (deckCards.values.sum() < 60) {
+                                            viewModel.addCardToDeck(card.id)
+                                            return@CardItem
+                                        } else {
+                                            dialogMessage = warningMessage
+                                            isAlertDialogVisible = true
+                                        }
+                                    },
+                                    onRemove = {
+                                        viewModel.removeCardFromDeck(card.id)
+                                    }
+                                )
+                            }
+                        }
+                    }
                 }
             }
 
             PrimaryButton(
                 modifier = Modifier
+                    .padding(bottom = 24.dp)
                     .size(50.dp)
-                    .clip(CircleShape),
+                    .clip(CircleShape)
+                    .align(Alignment.BottomCenter),
                 onClick = {
                     if (deckName.isEmpty()) {
                         dialogMessage = "Deck name can't be empty"
@@ -158,9 +200,18 @@ fun DeckCreationScreen(
                     }
 
                     if (deckId != null) {
-                        viewModel.updateDeck(deckId, deckName, deckCards.keys.randomOrNull() ?: "", deckCards)
+                        viewModel.updateDeck(
+                            deckId,
+                            deckName,
+                            deckCards.keys.randomOrNull() ?: "",
+                            deckCards
+                        )
                     } else {
-                        viewModel.createDeck(deckName, deckCards.keys.randomOrNull() ?: "", deckCards)
+                        viewModel.createDeck(
+                            deckName,
+                            deckCards.keys.randomOrNull() ?: "",
+                            deckCards
+                        )
                     }
                     onBack()
                 }
@@ -171,7 +222,6 @@ fun DeckCreationScreen(
                     tint = Color.White
                 )
             }
-
         }
     }
 
@@ -227,6 +277,7 @@ fun MaxCardsAlert(
 
 @Composable
 private fun DeckCreationTopBar(
+    title: String,
     onBack: () -> Boolean
 ) {
     Box(
@@ -245,7 +296,7 @@ private fun DeckCreationTopBar(
 
         Text(
             modifier = Modifier.align(Alignment.Center),
-            text = stringResource(R.string.create_new_deck),
+            text = title,
             fontWeight = FontWeight.Bold,
             fontSize = 24.sp,
             color = Color.White

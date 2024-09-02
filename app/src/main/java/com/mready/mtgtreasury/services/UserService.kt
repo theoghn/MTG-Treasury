@@ -4,11 +4,9 @@ import android.util.Log
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import com.mready.mtgtreasury.models.AppUser
-import com.mready.mtgtreasury.utility.await
 import com.mready.mtgtreasury.utility.awaitOrNull
 import com.mready.mtgtreasury.utility.requireUser
 import com.mready.mtgtreasury.utility.requireUserId
@@ -54,15 +52,16 @@ class UserService @Inject constructor() {
         return Firebase.auth.currentUser != null
     }
 
-    suspend fun getUserFlow() : Flow<AppUser?> {
+    suspend fun getUserFlow(): Flow<AppUser?> {
         return callbackFlow {
             val listener =
-                db.collection("users").document(auth.requireUserId).addSnapshotListener { value, error ->
-                    if (error != null) {
-                        close(error)
+                db.collection("users").document(auth.requireUserId)
+                    .addSnapshotListener { value, error ->
+                        if (error != null) {
+                            close(error)
+                        }
+                        trySendBlocking((value!!.toObject<AppUser>()))
                     }
-                    trySendBlocking((value!!.toObject<AppUser>()))
-                }
 
             awaitClose {
                 listener.remove()
@@ -74,12 +73,7 @@ class UserService @Inject constructor() {
         val user = auth.createUserWithEmailAndPassword(email, password).awaitOrNull()?.user
         val userId = auth.requireUserId
 
-        val userData = hashMapOf(
-            "username" to username,
-            "inventory" to hashMapOf<String, Int>(),
-            "wishlist" to listOf<String>(),
-            "inventoryValue" to 0.0
-        )
+        val userData = AppUser(id = userId, username = username)
 
         db.collection("users").document(userId).set(userData).awaitOrNull()
 
@@ -94,10 +88,35 @@ class UserService @Inject constructor() {
         auth.signOut()
     }
 
+    fun deleteUser() {
+        auth.currentUser?.delete()
+    }
+
+    suspend fun getUser(): Pair<AppUser?, String?> {
+        val userId = auth.requireUserId
+
+        Log.d("UserService", "getUser: ${auth.requireUser.email}")
+        return Pair(
+            db.collection("users").document(userId).get().awaitOrNull()?.toObject<AppUser>(), auth.requireUser.email
+        )
+    }
+
     suspend fun updateInventoryValue(value: Double) {
         val userId = auth.requireUserId
 
         db.collection("users").document(userId).update("inventoryValue", value).awaitOrNull()
+    }
+
+    fun updateUsername(username: String) {
+        val userId = auth.requireUserId
+
+        db.collection("users").document(userId).update("username", username)
+    }
+
+    fun updateBio(bio: String) {
+        val userId = auth.requireUserId
+
+        db.collection("users").document(userId).update("bio", bio)
     }
 }
 

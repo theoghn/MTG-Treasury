@@ -41,6 +41,7 @@ class WishlistViewModel @Inject constructor(
                 } else {
                     uiState.update { WishlistScreenUiState.WishlistUi(wishlistCards) }
                 }
+                filterCardsByQuery()
             }
         }
     }

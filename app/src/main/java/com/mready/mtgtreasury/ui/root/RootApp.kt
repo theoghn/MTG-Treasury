@@ -15,10 +15,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.mready.mtgtreasury.ui.user.signin.SignInDestination
-import com.mready.mtgtreasury.ui.user.signin.SignInScreen
-import com.mready.mtgtreasury.ui.user.signup.SignUpDestination
-import com.mready.mtgtreasury.ui.user.signup.SingUpScreen
 import com.mready.mtgtreasury.ui.card.CardScreen
 import com.mready.mtgtreasury.ui.card.CardScreenDestination
 import com.mready.mtgtreasury.ui.cardslist.InventoryScreen
@@ -32,6 +28,10 @@ import com.mready.mtgtreasury.ui.decks.view.DeckScreenDestination
 import com.mready.mtgtreasury.ui.navigation.NavigationScreen
 import com.mready.mtgtreasury.ui.navigation.NavigationScreenDestination
 import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
+import com.mready.mtgtreasury.ui.user.signin.SignInDestination
+import com.mready.mtgtreasury.ui.user.signin.SignInScreen
+import com.mready.mtgtreasury.ui.user.signup.SignUpDestination
+import com.mready.mtgtreasury.ui.user.signup.SingUpScreen
 import com.mready.mtgtreasury.ui.webview.WebViewScreen
 import com.mready.mtgtreasury.ui.webview.WebViewScreenDestination
 

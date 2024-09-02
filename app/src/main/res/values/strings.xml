@@ -44,7 +44,7 @@
     <string name="deck_cards">Deck Cards</string>
     <string name="edit">Edit</string>
     <string name="warning">Warning</string>
-    <string name="delete_warning">Are you sure you want to delete?</string>
+    <string name="delete_card_warning">Are you sure you want to delete this card?</string>
     <string name="delete">Delete</string>
     <string name="delete_card">Delete Card</string>
     <string name="in_deck">In Deck</string>
@@ -54,4 +54,27 @@
     <string name="clear_all">Clear All</string>
     <string name="apply_filter">Apply Filter</string>
     <string name="reset_filter">Reset Filter</string>
+    <string name="edit_deck">Edit Deck</string>
+    <string name="add_cards_to_your_X">Add cards to your %1$s</string>
+    <string name="password_is_required">Password is required</string>
+    <string name="email_is_required">Email is required</string>
+    <string name="sign_in_title">Sign in.</string>
+    <string name="sign_up">Sign up</string>
+    <string name="already_have_an_account">Already have an account?</string>
+    <string name="login">Login</string>
+    <string name="password_min_length_warning">Password must be at least 6 characters!</string>
+    <string name="passwords_must_match">Passwords must match!</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="email_is_invalid">Email is invalid!</string>
+    <string name="username_min_length_warning">Username must be at least 5 characters!</string>
+    <string name="username">Username</string>
+    <string name="sign_out">Sign out</string>
+    <string name="this_card_is_not_in_your_inventory">This card is not in your inventory!</string>
+    <string name="add_cards_to_your_deck">Add cards to your deck</string>
+    <string name="account_settings">Account Settings</string>
+    <string name="are_you_sure_you_want_to_log_out">Are you sure you want to log out?</string>
+    <string name="are_you_sure_you_want_to_delete_your_account">Are you sure you want to delete your account?\n\n This change will be permanent!</string>
+    <string name="log_out">Log out</string>
+    <string name="bio">Bio</string>
+    <string name="delete_deck_warning">Are you sure you want to delete this deck?</string>
 </resources>

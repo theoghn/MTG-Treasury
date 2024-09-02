@@ -1,6 +1,5 @@
 package com.mready.mtgtreasury.ui.decks.view
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -63,11 +62,10 @@ import com.mready.mtgtreasury.models.Deck
 import com.mready.mtgtreasury.models.card.MtgCard
 import com.mready.mtgtreasury.ui.components.PrimaryButton
 import com.mready.mtgtreasury.ui.decks.create.MaxCardsAlert
-import com.mready.mtgtreasury.ui.theme.AccentColor
 import com.mready.mtgtreasury.ui.theme.BottomBarColor
 import com.mready.mtgtreasury.ui.theme.BoxColor
+import com.mready.mtgtreasury.utility.formatPrice
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeckScreen(
     viewModel: DeckViewModel = hiltViewModel(),
@@ -78,59 +76,82 @@ fun DeckScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     var isBottomSheetVisible by rememberSaveable { mutableStateOf(false) }
-    var isRemoveDialogVisible by rememberSaveable { mutableStateOf(false) }
+    var isDeleteCardDialogVisible by rememberSaveable { mutableStateOf(false) }
+    var isDeleteDeckDialogVisible by rememberSaveable { mutableStateOf(false) }
     var isMaxCardsDialogVisible by rememberSaveable { mutableStateOf(false) }
     var selectedCardId by rememberSaveable { mutableStateOf("") }
-
-//    var deckName by rememberSaveable { mutableStateOf<String>(null) }
-//    var cards by rememberSaveable { mutableStateOf<List<MtgCard>>(emptyList()) }
 
     LaunchedEffect(id) {
         viewModel.getCards(id)
     }
 
-    when (val currentState = uiState) {
-        is DeckScreenUiState.DeckUi -> {
-            val deck = currentState.deck
-            val missingCardsIds = currentState.missingCardsIds
-            val cards = currentState.cards
-
-            Scaffold(
+    Scaffold(
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding(),
+        topBar = {
+            DeckScreenTopBar(
+                deckName = stringResource(R.string.deck_cards),
+                onBack = {
+                    onBack()
+                },
+                showDeleteDeck = {
+                    isDeleteDeckDialogVisible = true
+                }
+            )
+        },
+        containerColor = Color.Transparent
+    ) {
+        Box(
+            modifier = Modifier
+                .padding(it)
+                .fillMaxWidth(),
+        ) {
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .statusBarsPadding(),
-                topBar = {
-                    DeckScreenTopBar(
-                        deckName = deck?.name ?: "",
-                        onBack = {
-                            onBack()
-                        }
-                    )
-                },
-                containerColor = Color.Transparent
+                    .padding(horizontal = 12.dp)
+                    .padding(bottom = 12.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(BoxColor),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Box(
-                    modifier = Modifier
-                        .padding(it)
-                        .fillMaxWidth(),
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 12.dp)
-                            .padding(bottom = 12.dp)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(BoxColor),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
+                when (val currentState = uiState) {
+                    is DeckScreenUiState.DeckUi -> {
+                        val deck = currentState.deck
+                        val missingCardsIds = currentState.missingCardsIds
+                        val cards = currentState.cards
+                        var totalValue = 0.0
+                        for (card in cards) {
+                            totalValue += card.prices.eur.toFloat() * deck.cards[card.id]!!
+                        }
+
+                        Row(
                             modifier = Modifier
                                 .padding(12.dp)
-                                .align(Alignment.Start),
-                            text = stringResource(R.string.deck_cards),
-                            fontSize = 18.sp,
-                            color = Color.White,
-                        )
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column {
+                                Text(
+                                    text = deck.name,
+                                    fontSize = 18.sp,
+                                    color = Color.White,
+                                )
+
+                                Text(
+                                    text = "${deck.cards.values.sum()} / 60 Cards",
+                                    fontSize = 12.sp,
+                                    color = Color.White
+                                )
+                            }
+
+                            Text(
+                                text = "Deck Cost ${formatPrice(totalValue)}",
+                                fontSize = 14.sp,
+                                color = Color.White,
+                            )
+                        }
 
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(3),
@@ -142,7 +163,7 @@ fun DeckScreen(
                                 DeckCardItem(
                                     card = card,
                                     isInInventory = !missingCardsIds.contains(card.id),
-                                    qty = deck?.cards?.get(card.id) ?: 0,
+                                    qty = deck.cards[card.id] ?: 0,
                                     onClick = {
                                         selectedCardId = card.id
                                         isBottomSheetVisible = true
@@ -152,91 +173,118 @@ fun DeckScreen(
                         }
 
                         if (isBottomSheetVisible) {
-                            deck?.let {
-                                CardEditBottomSheet(
-                                    deck = it,
-                                    cardName = cards.find { card -> card.id == selectedCardId }?.name
-                                        ?: "",
-                                    selectedCardId = selectedCardId,
-                                    removeCard = {
-                                        if (deck?.cards?.get(selectedCardId) == 1) {
-                                            isRemoveDialogVisible = true
-                                        } else {
-                                            viewModel.removeCardFromDeck(selectedCardId)
-                                        }
-                                    },
-                                    addCard = {
-                                        if (it.cards.values.sum() < 60) {
-                                            viewModel.addCardToDeck(selectedCardId)
-                                        } else {
-                                            isMaxCardsDialogVisible = true
-                                        }
-                                    },
-                                    showRemoveDialog = { isRemoveDialogVisible = true },
-                                    hideBottomSheet = {
-                                        viewModel.updateDeck()
-                                        isBottomSheetVisible = false
+                            CardEditBottomSheet(
+                                deck = deck,
+                                isInInventory = !missingCardsIds.contains(selectedCardId),
+                                cardName = cards.find { card -> card.id == selectedCardId }?.name
+                                    ?: "",
+                                selectedCardId = selectedCardId,
+                                removeCard = {
+                                    if (deck.cards[selectedCardId] == 1) {
+                                        isDeleteCardDialogVisible = true
+                                    } else {
+                                        viewModel.removeCardFromDeck(selectedCardId)
                                     }
-                                )
-                            }
+                                },
+                                addCard = {
+                                    if (deck.cards.values.sum() < 60) {
+                                        viewModel.addCardToDeck(selectedCardId)
+                                    } else {
+                                        isMaxCardsDialogVisible = true
+                                    }
+                                },
+                                showRemoveDialog = { isDeleteCardDialogVisible = true },
+                                hideBottomSheet = {
+                                    viewModel.updateDeck()
+                                    isBottomSheetVisible = false
+                                }
+                            )
                         }
                     }
 
-                    PrimaryButton(
-                        modifier = Modifier
-                            .padding(24.dp)
-                            .clip(RoundedCornerShape(100))
-                            .align(Alignment.BottomEnd),
-                        onClick = {
-                            viewModel.updateDeck()
-                            navigateToDeckCreation(id)
-                        }
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    DeckScreenUiState.Empty -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Create,
-                                contentDescription = null,
-                                tint = Color.White
-                            )
-
                             Text(
-                                text = stringResource(R.string.edit),
-                                fontSize = 16.sp,
-                                color = Color.White
+                                text = stringResource(R.string.add_cards_to_your_deck),
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White,
+                                fontSize = 20.sp
                             )
+                        }
+                    }
+
+                    DeckScreenUiState.Loading -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
                         }
                     }
                 }
             }
-        }
 
-        DeckScreenUiState.Empty -> {
-            Text(text = "Add cards to your deck")
-        }
+            PrimaryButton(
+                modifier = Modifier
+                    .padding(24.dp)
+                    .clip(RoundedCornerShape(100))
+                    .align(Alignment.BottomEnd),
+                onClick = {
+                    viewModel.updateDeck()
+                    navigateToDeckCreation(id)
+                }
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Create,
+                        contentDescription = null,
+                        tint = Color.White
+                    )
 
-        DeckScreenUiState.Loading -> {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
-                CircularProgressIndicator()
+                    Text(
+                        text = stringResource(R.string.edit),
+                        fontSize = 16.sp,
+                        color = Color.White
+                    )
+                }
             }
         }
     }
 
-
-
-
-
-    if (isRemoveDialogVisible) {
+    if (isDeleteDeckDialogVisible) {
         RemoveAlert(
-            hideAlert = { isRemoveDialogVisible = false },
+            title = stringResource(R.string.warning),
+            message = stringResource(R.string.delete_deck_warning),
+            hideAlert = { isDeleteDeckDialogVisible = false },
             hideBottomSheet = {
-                viewModel.updateDeck()
                 isBottomSheetVisible = false
             },
-            onRemove = { viewModel.removeCardFromDeck(selectedCardId, deleted = true) }
+            onConfirm = {
+                viewModel.deleteDeck()
+                onBack()
+            }
+        )
+    }
+
+    if (isDeleteCardDialogVisible) {
+        RemoveAlert(
+            title = stringResource(R.string.warning),
+            message = stringResource(R.string.delete_card_warning),
+            hideAlert = { isDeleteCardDialogVisible = false },
+            hideBottomSheet = {
+                isBottomSheetVisible = false
+            },
+            onConfirm = {
+                viewModel.updateDeck()
+                viewModel.removeCardFromDeck(selectedCardId, deleted = true)
+            }
         )
     }
 
@@ -258,6 +306,7 @@ fun CardEditBottomSheet(
     addCard: () -> Unit,
     showRemoveDialog: () -> Unit,
     hideBottomSheet: () -> Unit,
+    isInInventory: Boolean,
 ) {
     ModalBottomSheet(
         onDismissRequest = { hideBottomSheet() },
@@ -274,6 +323,18 @@ fun CardEditBottomSheet(
         )
 
         Spacer(modifier = Modifier.height(24.dp))
+
+        if (!isInInventory) {
+            Text(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .align(Alignment.CenterHorizontally),
+                text = stringResource(R.string.this_card_is_not_in_your_inventory),
+                color = Color.White,
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center
+            )
+        }
 
         Row(
             modifier = Modifier
@@ -366,18 +427,20 @@ fun CardEditBottomSheet(
 
 @Composable
 fun RemoveAlert(
+    title: String,
+    message: String,
+    confirmText: String = stringResource(R.string.delete),
     hideAlert: () -> Unit,
-    hideBottomSheet: () -> Unit,
-    onRemove: () -> Unit
-
+    hideBottomSheet: () -> Unit = {},
+    onConfirm: () -> Unit
 ) {
     AlertDialog(
         modifier = Modifier.fillMaxWidth(),
         onDismissRequest = { hideAlert() },
-        title = { Text(stringResource(R.string.warning), color = Color.White) },
+        title = { Text(text = title, color = Color.White) },
         text = {
             Text(
-                text = stringResource(R.string.delete_warning),
+                text = message,
                 color = Color.White,
                 fontSize = 16.sp
             )
@@ -385,7 +448,7 @@ fun RemoveAlert(
         confirmButton = {
             Button(
                 onClick = {
-                    onRemove()
+                    onConfirm()
                     hideAlert()
                     hideBottomSheet()
                 },
@@ -394,8 +457,8 @@ fun RemoveAlert(
                 contentPadding = PaddingValues(vertical = 4.dp, horizontal = 8.dp)
             ) {
                 Text(
-                    text = stringResource(R.string.delete).uppercase(),
-                    color = AccentColor,
+                    text = confirmText.uppercase(),
+                    color = Color.Red,
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -486,7 +549,8 @@ fun DeckCardItem(
 @Composable
 private fun DeckScreenTopBar(
     deckName: String,
-    onBack: () -> Boolean
+    onBack: () -> Boolean,
+    showDeleteDeck: () -> Unit
 ) {
     Box(
         modifier = Modifier.fillMaxWidth(),
@@ -509,5 +573,16 @@ private fun DeckScreenTopBar(
             fontSize = 24.sp,
             color = Color.White
         )
+
+        IconButton(
+            modifier = Modifier.align(Alignment.CenterEnd),
+            onClick = { showDeleteDeck() }
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Delete,
+                contentDescription = null,
+                tint = Color.Red
+            )
+        }
     }
 }

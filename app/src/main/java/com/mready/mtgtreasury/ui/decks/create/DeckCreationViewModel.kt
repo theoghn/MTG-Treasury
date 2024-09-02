@@ -7,6 +7,7 @@ import com.mready.mtgtreasury.services.CardsService
 import com.mready.mtgtreasury.services.DecksService
 import com.mready.mtgtreasury.services.InventoryService
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -21,17 +22,20 @@ class DeckCreationViewModel @Inject constructor(
     val inventoryCards = MutableStateFlow<List<MtgCard>>(emptyList())
     val deckCards = MutableStateFlow<Map<String, Int>>(emptyMap())
     val deckName = MutableStateFlow("")
+    val initialized = MutableStateFlow(false)
 
     init {
-        getInventoryCards()
+
     }
 
-    fun getDeck(deckId : String) {
+    fun initialize(deckId : String) {
         viewModelScope.launch {
             val deck = decksService.getDeck(deckId)
             deckCards.update { deck.cards }
             deckName.update { deck.name }
+
         }
+        getInventoryCards()
     }
 
     fun updateDeckName(name: String) {
@@ -81,7 +85,7 @@ class DeckCreationViewModel @Inject constructor(
         }
     }
 
-    private fun getInventoryCards() {
+    fun getInventoryCards() {
         viewModelScope.launch {
             val inventory = inventoryService.getInventory()
             var cards = cardsService.getCardsByIds(inventory.keys.toList())
@@ -96,6 +100,9 @@ class DeckCreationViewModel @Inject constructor(
                 )
             }
             inventoryCards.update { cards }
+
+            delay(400)
+            initialized.update { true }
         }
     }
 }

@@ -50,6 +50,7 @@ class InventoryViewModel @Inject constructor(
                 } else {
                     uiState.update { InventoryScreenUiState.InventoryUi(inventoryCards) }
                 }
+                filterCardsByQuery()
             }
         }
     }

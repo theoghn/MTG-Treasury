@@ -7,5 +7,6 @@ data class AppUser(
     val username: String = "",
     val inventoryValue : Float = 0.0F,
     val wishlist: List<String> = listOf(),
-    val inventory: HashMap<String,Int> = hashMapOf()
+    val inventory: HashMap<String,Int> = hashMapOf(),
+    val bio : String = "",
 )

@@ -21,9 +21,6 @@ class DeckViewModel @Inject constructor(
     private val cardsService: CardsService,
     private val inventoryService: InventoryService
 ) : ViewModel() {
-    //    val cards = MutableStateFlow(emptyList<MtgCard>())
-//    val missingCardsIds = MutableStateFlow(emptyList<String>())
-//    val deck = MutableStateFlow<Deck?>(null)
     val uiState = MutableStateFlow<DeckScreenUiState>(DeckScreenUiState.Loading)
 
     fun getCards(deckId: String) {
@@ -44,10 +41,9 @@ class DeckViewModel @Inject constructor(
                             }
                         )
                     }
-                    if(newCards.isEmpty()){
+                    if (newCards.isEmpty()) {
                         uiState.update { DeckScreenUiState.Empty }
-                    }
-                    else{
+                    } else {
                         uiState.update { DeckScreenUiState.DeckUi(newCards, missingCardsIds, deck) }
                     }
                 }
@@ -55,26 +51,58 @@ class DeckViewModel @Inject constructor(
     }
 
     fun removeCardFromDeck(cardId: String, deleted: Boolean = false) {
-//        val currentDeck = deck.value?.cards?.toMutableMap() ?: mutableMapOf()
-//        currentDeck[cardId] = (currentDeck[cardId] ?: 0) - 1
-//        if (currentDeck[cardId]!! <= 0 || deleted) {
-//            currentDeck.remove(cardId)
-//            cards.update { cards.value.filter { it.id != cardId } }
-//        }
-//        deck.update { deck.value?.copy(cards = HashMap(currentDeck)) }
+        if (uiState.value is DeckScreenUiState.DeckUi) {
+            val currentState = uiState.value as DeckScreenUiState.DeckUi
+            val deck = currentState.deck
+            val currentCards = currentState.cards
+            val currentDeck = deck.cards.toMutableMap()
+            currentDeck[cardId] = (currentDeck[cardId] ?: 0) - 1
+            if (currentDeck[cardId]!! <= 0 || deleted) {
+                currentDeck.remove(cardId)
+                currentCards.filter { card -> card.id != cardId }
+            }
+            uiState.update {
+                DeckScreenUiState.DeckUi(
+                    currentCards,
+                    currentState.missingCardsIds,
+                    deck.copy(cards = HashMap(currentDeck))
+                )
+            }
+        }
     }
 
     fun addCardToDeck(cardId: String) {
-//        val currentDeck = deck.value?.cards?.toMutableMap() ?: mutableMapOf()
-//        currentDeck[cardId] = (currentDeck[cardId] ?: 0) + 1
-//        deck.update { deck.value?.copy(cards = HashMap(currentDeck)) }
+        if (uiState.value is DeckScreenUiState.DeckUi) {
+            val deck = (uiState.value as DeckScreenUiState.DeckUi).deck
+            val currentDeck = deck.cards.toMutableMap()
+            currentDeck[cardId] = (currentDeck[cardId] ?: 0) + 1
+            uiState.update {
+                DeckScreenUiState.DeckUi(
+                    (it as DeckScreenUiState.DeckUi).cards,
+                    (it).missingCardsIds,
+                    deck.copy(cards = HashMap(currentDeck))
+                )
+            }
+        }
     }
 
     fun updateDeck() {
-        Log.d("update","update deck")
-//        viewModelScope.launch {
-//            deck.value?.let { decksService.updateDeck(it.id, it.name, it.deckImage, it.cards) }
-//        }
+        Log.d("update", "update deck")
+        viewModelScope.launch {
+            if (uiState.value is DeckScreenUiState.DeckUi) {
+                val deck = (uiState.value as DeckScreenUiState.DeckUi).deck
+                decksService.updateDeck(deck.id, deck.name, deck.deckImage, deck.cards)
+            }
+        }
+    }
+
+    fun deleteDeck() {
+        viewModelScope.launch {
+            if (uiState.value is DeckScreenUiState.DeckUi) {
+                val deck = (uiState.value as DeckScreenUiState.DeckUi).deck
+                decksService.deleteDeck(deck.id)
+            }
+        }
     }
 }
 
