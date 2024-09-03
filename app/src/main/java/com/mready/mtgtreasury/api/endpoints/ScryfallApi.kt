@@ -65,7 +65,7 @@ class ScryfallApi @Inject constructor(
     }
 
     suspend fun getCardsByIds(ids: List<String>): List<MtgCard> {
-        try {
+         runCatching {
             return apiClient.post(
                 endpoint = "cards/collection",
                 body = jsonObjectBody {
@@ -80,10 +80,9 @@ class ScryfallApi @Inject constructor(
             ) { json ->
                 json["data"].array.map { it.toCard() }
             }
-        } catch (e: Exception) {
-            return emptyList()
         }
 
+        return emptyList()
     }
 
     suspend fun getCardsByFilters(
