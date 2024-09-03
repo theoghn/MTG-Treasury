@@ -5,5 +5,5 @@ data class MtgSet(
     val iconUri: String,
     val cardCount: Int,
     val releaseDate: String,
-    val scryfall_uri: String
+    val infoUri: String
 )

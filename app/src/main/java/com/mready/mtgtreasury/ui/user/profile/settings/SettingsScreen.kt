@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
@@ -42,6 +44,8 @@ fun SettingsScreen(
 ) {
     val user by viewModel.user.collectAsState()
     val email by viewModel.email.collectAsState()
+
+    val scrollState = rememberScrollState()
 
     var isLogOutDialogVisible by rememberSaveable { mutableStateOf(false) }
     var isDeleteAccountDialogVisible by rememberSaveable { mutableStateOf(false) }
@@ -85,6 +89,7 @@ fun SettingsScreen(
             modifier = Modifier
                 .padding(it)
                 .padding(horizontal = 16.dp)
+                .verticalScroll(scrollState)
         ) {
             Column(
                 modifier = Modifier
@@ -153,6 +158,7 @@ fun SettingsScreen(
 
             Text(
                 modifier = Modifier
+                    .padding(bottom = 40.dp)
                     .clickable { isDeleteAccountDialogVisible = true },
                 text = "Delete Account",
                 fontSize = 16.sp,

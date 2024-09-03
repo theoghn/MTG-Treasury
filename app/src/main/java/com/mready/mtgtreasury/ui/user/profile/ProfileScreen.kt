@@ -80,7 +80,7 @@ fun ProfileScreen(
 
             Column(
                 modifier = Modifier
-                    .padding(top = 16.dp)
+                    .padding(top = 16.dp, bottom = 40.dp)
                     .padding(horizontal = 16.dp)
                     .fillMaxSize()
                     .verticalScroll(scrollState),
@@ -95,6 +95,7 @@ fun ProfileScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
+                        modifier = Modifier.fillMaxWidth(0.8f),
                         text = user.username,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.SemiBold,

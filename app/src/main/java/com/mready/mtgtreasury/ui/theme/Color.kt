@@ -41,3 +41,6 @@ val ShimmerColor = Color(0xFF424242)
 // general app
 val LegalChipColor = Color(0xFF6E9D3E)
 val NotLegalChipColor = Color(0xFFB0BEC5)
+
+//webview
+val WebViewHeaderColor = Color(0xff2B253A)

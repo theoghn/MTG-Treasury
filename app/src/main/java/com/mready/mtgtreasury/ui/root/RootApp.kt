@@ -200,7 +200,10 @@ fun RootApp(
                     composable<WebViewScreenDestination> {backStackEntry ->
                         val destination: WebViewScreenDestination = backStackEntry.toRoute()
 
-                        WebViewScreen(url = destination.url)
+                        WebViewScreen(
+                            url = destination.url,
+                            onBack = { mainNavController.popBackStack() }
+                        )
                     }
                 }
             }

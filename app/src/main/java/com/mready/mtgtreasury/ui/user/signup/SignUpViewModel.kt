@@ -43,10 +43,10 @@ class SignUpViewModel @Inject constructor(private val service: UserService) : Vi
             try {
                 service.createAccount(email, password, username)
             } catch (e: Exception) {
-                if (e.message?.contains("server") == true) {
+                if (e.message?.contains("network") == true) {
                     exception.update { "No internet connection." }
                 } else {
-                    exception.update { e.message.toString() }
+                    exception.update { "Something went wrong." }
                 }
             }
             loading.update { false }

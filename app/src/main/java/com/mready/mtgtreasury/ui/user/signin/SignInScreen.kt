@@ -18,6 +18,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -56,6 +57,14 @@ fun SignInScreen(
     val loading by viewModel.loading.collectAsState()
     val exception by viewModel.exception.collectAsState()
 
+    LaunchedEffect(Unit) {
+        viewModel.clearException()
+        email = ""
+        password = ""
+        showEmailError = false
+        showPasswordError = false
+    }
+
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -85,8 +94,7 @@ fun SignInScreen(
                 placeholderText = stringResource(R.string.email),
                 onValueChange = {
                     email = it
-                    if (showEmailError)
-                    {
+                    if (showEmailError) {
                         showEmailError = false
                     }
                 },
@@ -102,8 +110,7 @@ fun SignInScreen(
                 placeholderText = stringResource(R.string.password),
                 onValueChange = {
                     password = it
-                    if (showPasswordError)
-                    {
+                    if (showPasswordError) {
                         showPasswordError = false
                     }
                 },
@@ -111,27 +118,24 @@ fun SignInScreen(
                 errorMessage = stringResource(R.string.password_is_required)
             )
 
-            if (loading) {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .padding(vertical = 16.dp)
-                        .size(36.dp),
-                    color = AccentColor
-                )
-            }
-            else{
-                PrimaryButton(
-                    modifier = Modifier
-                        .padding(vertical = 16.dp)
-                        .fillMaxWidth()
-                        .height(50.dp)
-                        .clip(RoundedCornerShape(12.dp)),
-                    onClick = {
-                        viewModel.signIn(email, password)
-                        showEmailError = true
-                        showPasswordError = true
-                    }
-                ) {
+            PrimaryButton(
+                modifier = Modifier
+                    .padding(vertical = 16.dp)
+                    .fillMaxWidth()
+                    .height(50.dp)
+                    .clip(RoundedCornerShape(12.dp)),
+                onClick = {
+                    viewModel.signIn(email, password)
+                    showEmailError = true
+                    showPasswordError = true
+                }
+            ) {
+                if (loading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(28.dp),
+                        color = Color.White
+                    )
+                } else {
                     Text(
                         text = stringResource(R.string.sign_in),
                         fontSize = 16.sp,
@@ -140,6 +144,7 @@ fun SignInScreen(
                     )
                 }
             }
+
 
             TwoColorText(
                 modifier = Modifier.clickable { onNavigateToSingUp() },
@@ -164,10 +169,10 @@ fun BaseTextField(
     placeholderText: String,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     isError: Boolean = false,
-    singleLine : Boolean = true,
+    singleLine: Boolean = true,
     minLines: Int = 1,
     maxLines: Int = 1,
-    maxLength:Int = 30,
+    maxLength: Int = 30,
     onValueChange: (String) -> Unit,
     errorMessage: String,
 ) {

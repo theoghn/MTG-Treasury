@@ -122,8 +122,9 @@ fun DeckScreen(
                         val missingCardsIds = currentState.missingCardsIds
                         val cards = currentState.cards
                         var totalValue = 0.0
+
                         for (card in cards) {
-                            totalValue += card.prices.eur.toFloat() * deck.cards[card.id]!!
+                            totalValue += card.prices.eur.toFloat() * (deck.cards.get(card.id)?: 0)
                         }
 
                         Row(
@@ -134,6 +135,7 @@ fun DeckScreen(
                         ) {
                             Column {
                                 Text(
+                                    modifier = Modifier.fillMaxWidth(0.7f),
                                     text = deck.name,
                                     fontSize = 18.sp,
                                     color = Color.White,
@@ -150,6 +152,7 @@ fun DeckScreen(
                                 text = "Deck Cost ${formatPrice(totalValue)}",
                                 fontSize = 14.sp,
                                 color = Color.White,
+                                textAlign = TextAlign.End
                             )
                         }
 
@@ -282,8 +285,8 @@ fun DeckScreen(
                 isBottomSheetVisible = false
             },
             onConfirm = {
-                viewModel.updateDeck()
                 viewModel.removeCardFromDeck(selectedCardId, deleted = true)
+                viewModel.updateDeck()
             }
         )
     }

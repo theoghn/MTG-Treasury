@@ -163,6 +163,8 @@ fun FilterSearchScreen(
                     Text(
                         text = if (searchQuery.isNullOrBlank()) stringResource(R.string.search_cards) else searchQuery,
                         color = Color.LightGray,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold
                     )

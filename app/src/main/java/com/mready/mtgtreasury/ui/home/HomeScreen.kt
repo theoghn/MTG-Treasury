@@ -129,7 +129,7 @@ private fun NewestSets(
                     .padding(start = 12.dp)
                     .width(250.dp)
                     .clip(shape = RoundedCornerShape(12.dp))
-                    .clickable { navigateToWebView(set.scryfall_uri) }
+                    .clickable { navigateToWebView(set.infoUri) }
                     .background(BoxColor)
                     .padding(8.dp),
                 verticalAlignment = Alignment.CenterVertically,

@@ -184,28 +184,28 @@ fun SingUpScreen(
             )
 
 
-            if (loading) {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .padding(vertical = 16.dp)
-                        .size(36.dp),
-                    color = AccentColor
-                )
-            } else {
-                PrimaryButton(
-                    modifier = Modifier
-                        .padding(vertical = 16.dp)
-                        .fillMaxWidth()
-                        .height(50.dp)
-                        .clip(RoundedCornerShape(12.dp)),
-                    onClick = {
-                        viewModel.createAccount(email, password, passwordConfirmation, username)
-                        showEmailError = true
-                        showPasswordError = true
-                        showUsernameError = true
-                        showConfirmPasswordError = true
-                    }
-                ) {
+
+            PrimaryButton(
+                modifier = Modifier
+                    .padding(vertical = 16.dp)
+                    .fillMaxWidth()
+                    .height(50.dp)
+                    .clip(RoundedCornerShape(12.dp)),
+                onClick = {
+                    viewModel.createAccount(email, password, passwordConfirmation, username)
+                    showEmailError = true
+                    showPasswordError = true
+                    showUsernameError = true
+                    showConfirmPasswordError = true
+                }
+            ) {
+                if (loading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .size(28.dp),
+                        color = Color.White
+                    )
+                } else {
                     Text(
                         text = stringResource(R.string.sign_up),
                         fontSize = 16.sp,
@@ -214,6 +214,7 @@ fun SingUpScreen(
                     )
                 }
             }
+
 
             TwoColorText(
                 modifier = Modifier.clickable { onNavigateToSingIn() },

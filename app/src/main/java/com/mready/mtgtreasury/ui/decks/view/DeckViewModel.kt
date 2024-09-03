@@ -54,13 +54,15 @@ class DeckViewModel @Inject constructor(
         if (uiState.value is DeckScreenUiState.DeckUi) {
             val currentState = uiState.value as DeckScreenUiState.DeckUi
             val deck = currentState.deck
-            val currentCards = currentState.cards
+            var currentCards = currentState.cards
             val currentDeck = deck.cards.toMutableMap()
             currentDeck[cardId] = (currentDeck[cardId] ?: 0) - 1
+
             if (currentDeck[cardId]!! <= 0 || deleted) {
                 currentDeck.remove(cardId)
-                currentCards.filter { card -> card.id != cardId }
+                currentCards = currentCards.filter { card -> card.id != cardId }
             }
+
             uiState.update {
                 DeckScreenUiState.DeckUi(
                     currentCards,

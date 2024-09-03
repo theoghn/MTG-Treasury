@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mready.mtgtreasury.services.UserService
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -27,15 +28,21 @@ class SignInViewModel @Inject constructor(private val service: UserService) : Vi
 
         viewModelScope.launch {
             try {
+                delay(300)
                 service.signIn(email, password)
             } catch (e: Exception) {
-                if (e.message?.contains("server") == true) {
+                if (e.message?.contains("network") == true) {
                     exception.update { "No internet connection." }
                 } else {
-                    exception.update { "Email and password do not match." }
+                    exception.update { "No account found." }
                 }
             }
+
             loading.update { false }
         }
+    }
+
+    fun clearException() {
+        exception.update { "" }
     }
 }
