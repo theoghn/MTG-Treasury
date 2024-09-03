@@ -93,8 +93,8 @@ class ScryfallApi @Inject constructor(
         rarity: List<String>,
         manaCost: List<String>,
     ): List<MtgCard> {
-        return try {
-            apiClient.get(
+        runCatching {
+            return apiClient.get(
                 endpoint = "cards/search",
                 query = mapOf(
                     "q" to buildSearchQuery(name, type, superType, colors, rarity, manaCost),
@@ -102,9 +102,9 @@ class ScryfallApi @Inject constructor(
             ) { json ->
                 json["data"].array.map { it.toCard() }
             }
-        } catch (e: Exception) {
-            emptyList()
         }
+
+        return emptyList()
     }
 
     private fun buildSearchQuery(
