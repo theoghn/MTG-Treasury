@@ -1,5 +1,6 @@
 package com.mready.mtgtreasury.ui.home
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mready.mtgtreasury.models.MtgSet
@@ -27,21 +28,26 @@ class HomeScreenViewModel @Inject constructor(
 
     private fun initialize() {
         viewModelScope.launch {
-            val card = cardsService.getRandomCard()
-            val mostValuableCards = cardsService.getMostValuableCards()
-            val newestSets = cardsService.getNewestSets()
-
-            inventoryService.getInventoryFlow().collect {
-                val inventoryValue = inventoryService.calculateInventoryValue(it)
-                userService.updateInventoryValue(inventoryValue)
-                uiState.update {
-                    HomeScreenUiState.HomeUi(
-                        card,
-                        mostValuableCards,
-                        newestSets,
-                        inventoryValue
-                    )
+            try {
+                val card = cardsService.getRandomCard()
+                val mostValuableCards = cardsService.getMostValuableCards()
+                val newestSets = cardsService.getNewestSets()
+                inventoryService.getInventoryFlow().collect {
+                    val inventoryValue = inventoryService.calculateInventoryValue(it)
+                    userService.updateInventoryValue(inventoryValue)
+                    uiState.update {
+                        HomeScreenUiState.HomeUi(
+                            card,
+                            mostValuableCards,
+                            newestSets,
+                            inventoryValue
+                        )
+                    }
                 }
+            }
+
+            catch (e: Exception) {
+                Log.e("HomeScreenViewModel", "initialize: ${e.message}")
             }
         }
     }

@@ -20,10 +20,7 @@ class DecksViewModel @Inject constructor(private val decksService: DecksService)
         viewModelScope.launch {
             decksService.getDecksFlow().collect { decks1 ->
                 decks.update { decks1 }
-//                Log.d("DecksViewModel", "getDecks: ${s.size}")
             }
         }
-
     }
-
 }
