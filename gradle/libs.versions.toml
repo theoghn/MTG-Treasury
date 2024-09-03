@@ -20,8 +20,10 @@ coilCompose = "2.2.2"
 material3 = "1.2.1"
 firebaseAuthKtx = "23.0.0"
 firebaseFirestoreKtx = "25.0.0"
+coreSplashscreen = "1.0.1"
 
 [libraries]
+androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 apiclient = { module = "net.mready.apiclient:apiclient", version.ref = "apiclient" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }

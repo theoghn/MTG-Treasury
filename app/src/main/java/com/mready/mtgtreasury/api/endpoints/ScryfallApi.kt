@@ -65,8 +65,8 @@ class ScryfallApi @Inject constructor(
     }
 
     suspend fun getCardsByIds(ids: List<String>): List<MtgCard> {
-         runCatching {
-            return apiClient.post(
+        return runCatching {
+             apiClient.post(
                 endpoint = "cards/collection",
                 body = jsonObjectBody {
                     obj["identifiers"] = jsonArray {
@@ -80,9 +80,9 @@ class ScryfallApi @Inject constructor(
             ) { json ->
                 json["data"].array.map { it.toCard() }
             }
+        }.getOrElse {
+            emptyList()
         }
-
-        return emptyList()
     }
 
     suspend fun getCardsByFilters(
@@ -93,8 +93,8 @@ class ScryfallApi @Inject constructor(
         rarity: List<String>,
         manaCost: List<String>,
     ): List<MtgCard> {
-        runCatching {
-            return apiClient.get(
+        return runCatching {
+             apiClient.get(
                 endpoint = "cards/search",
                 query = mapOf(
                     "q" to buildSearchQuery(name, type, superType, colors, rarity, manaCost),
@@ -102,9 +102,9 @@ class ScryfallApi @Inject constructor(
             ) { json ->
                 json["data"].array.map { it.toCard() }
             }
+        }.getOrElse {
+            emptyList()
         }
-
-        return emptyList()
     }
 
     private fun buildSearchQuery(
