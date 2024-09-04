@@ -3,13 +3,13 @@ package com.mready.mtgtreasury.api.endpoints
 import android.util.Log
 import com.mready.mtgtreasury.api.ScryfallApiClient
 import com.mready.mtgtreasury.models.MtgSet
-import com.mready.mtgtreasury.models.card.MtgCard
 import com.mready.mtgtreasury.models.card.CardImageUris
 import com.mready.mtgtreasury.models.card.CardLegalities
 import com.mready.mtgtreasury.models.card.CardPrices
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.update
+import com.mready.mtgtreasury.models.card.MtgCard
 import net.mready.apiclient.get
+import net.mready.apiclient.jsonObjectBody
+import net.mready.apiclient.post
 import net.mready.json.Json
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -64,6 +64,27 @@ class ScryfallApi @Inject constructor(
         }
     }
 
+    suspend fun getCardsByIds(ids: List<String>): List<MtgCard> {
+        return runCatching {
+             apiClient.post(
+                endpoint = "cards/collection",
+                body = jsonObjectBody {
+                    obj["identifiers"] = jsonArray {
+                        ids.forEach {
+                            array += jsonObject {
+                                obj["id"] = it
+                            }
+                        }
+                    }
+                }
+            ) { json ->
+                json["data"].array.map { it.toCard() }
+            }
+        }.getOrElse {
+            emptyList()
+        }
+    }
+
     suspend fun getCardsByFilters(
         name: String,
         type: List<String>,
@@ -72,13 +93,17 @@ class ScryfallApi @Inject constructor(
         rarity: List<String>,
         manaCost: List<String>,
     ): List<MtgCard> {
-        return apiClient.get(
-            endpoint = "cards/search",
-            query = mapOf(
-                "q" to buildSearchQuery(name, type, superType, colors, rarity, manaCost),
-            )
-        ) { json ->
-            json["data"].array.map { it.toCard() }
+        return runCatching {
+             apiClient.get(
+                endpoint = "cards/search",
+                query = mapOf(
+                    "q" to buildSearchQuery(name, type, superType, colors, rarity, manaCost),
+                )
+            ) { json ->
+                json["data"].array.map { it.toCard() }
+            }
+        }.getOrElse {
+            emptyList()
         }
     }
 
@@ -93,11 +118,12 @@ class ScryfallApi @Inject constructor(
         val query = buildString {
             if (type.isEmpty() && superType.isEmpty() && colors.isEmpty() && rarity.isEmpty() && manaCost.isEmpty()) {
                 append("name:$name")
-            }
-            else {
-                if (name.isNotEmpty())
+            } else {
+                if (name.isNotEmpty()){
                     append("name:$name")
+                }
             }
+
             append(" unique:art")
             type.forEach { append(" type:$it") }
             superType.forEach { append(" type:$it") }
@@ -105,7 +131,6 @@ class ScryfallApi @Inject constructor(
             rarity.forEach { append(" r:$it") }
             manaCost.forEach { append(" mana:$it") }
         }
-        Log.d("ScryfallApi", "buildSearchQuery: $query")
         return query
     }
 }
@@ -167,5 +192,6 @@ private fun Json.toSet() = MtgSet(
     name = this["name"].string,
     releaseDate = this["released_at"].string,
     iconUri = this["icon_svg_uri"].string,
-    cardCount = this["card_count"].int
+    cardCount = this["card_count"].int,
+    infoUri = this["scryfall_uri"].stringOrNull ?: ""
 )

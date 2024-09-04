@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mready.mtgtreasury.models.card.MtgCard
 import com.mready.mtgtreasury.services.CardsService
+import com.mready.mtgtreasury.services.InventoryService
 import com.mready.mtgtreasury.utility.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -14,9 +15,13 @@ import javax.inject.Inject
 
 
 @HiltViewModel
-class FilterSearchViewModel @Inject constructor(private val api: CardsService) : ViewModel() {
+class FilterSearchViewModel @Inject constructor(
+    private val cardsService: CardsService,
+    private val inventoryService: InventoryService
+) : ViewModel() {
     val manaCosts = MutableStateFlow<Map<String, String>>(emptyMap())
-    val cards = MutableStateFlow<List<MtgCard>>(emptyList())
+    val uiState = MutableStateFlow<FilterSearchScreenUiState>(FilterSearchScreenUiState.Loading)
+    val init = MutableStateFlow(false)
 
     fun getCosts() {
         viewModelScope.launch {
@@ -34,8 +39,10 @@ class FilterSearchViewModel @Inject constructor(private val api: CardsService) :
         superType: List<String>,
     ) {
         viewModelScope.launch {
-            cards.update{
-                api.getCardsByFilters(
+            uiState.update { FilterSearchScreenUiState.Loading }
+
+            inventoryService.getInventoryFlow().collect { inventory ->
+                var cards = cardsService.getCardsByFilters(
                     name = name,
                     manaCost = manaCost,
                     colors = colors,
@@ -43,15 +50,43 @@ class FilterSearchViewModel @Inject constructor(private val api: CardsService) :
                     type = type,
                     superType = superType,
                 )
+
+                cards = cards.map {
+                    it.copy(
+                        qty = if (inventory.contains(it.id)) {
+                            inventory[it.id]!!
+                        } else {
+                            0
+                        }
+                    )
+                }
+
+                delay(100)
+
+                if (cards.isEmpty()) {
+                    uiState.update { FilterSearchScreenUiState.Empty }
+                } else {
+                    uiState.update { FilterSearchScreenUiState.FilterSearchScreenUi(cards) }
+                }
             }
+        }
+        if (!init.value) {
+            init.value = true
+        }
+    }
+
+    fun addCardToInventory(cardId: String) {
+        viewModelScope.launch {
+            inventoryService.addCardToInventory(cardId)
         }
     }
 }
 
 sealed class FilterSearchScreenUiState {
-    data class HomeUi(
+    data class FilterSearchScreenUi(
         val cards: List<MtgCard>,
     ) : FilterSearchScreenUiState()
 
     data object Loading : FilterSearchScreenUiState()
+    data object Empty : FilterSearchScreenUiState()
 }

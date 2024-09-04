@@ -1,10 +1,14 @@
 package com.mready.mtgtreasury.ui.card
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,8 +16,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,8 +26,12 @@ import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -32,12 +40,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
@@ -53,12 +65,15 @@ import com.mready.mtgtreasury.models.card.CardLegalities
 import com.mready.mtgtreasury.models.card.MtgCard
 import com.mready.mtgtreasury.models.card.formatReleaseDate
 import com.mready.mtgtreasury.ui.components.AsyncSvg
-import com.mready.mtgtreasury.ui.components.PrimaryButton
+import com.mready.mtgtreasury.ui.components.SecondaryButton
 import com.mready.mtgtreasury.ui.components.TwoColorText
+import com.mready.mtgtreasury.ui.theme.AccentColor
 import com.mready.mtgtreasury.ui.theme.BottomBarColor
 import com.mready.mtgtreasury.ui.theme.BoxColor
 import com.mready.mtgtreasury.ui.theme.LegalChipColor
 import com.mready.mtgtreasury.ui.theme.NotLegalChipColor
+import com.mready.mtgtreasury.utility.Constants
+import com.mready.mtgtreasury.utility.formatPrice
 import kotlin.reflect.full.memberProperties
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -70,14 +85,18 @@ fun CardScreen(
     onBack: () -> Boolean
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
     val scaffoldState = rememberBottomSheetScaffoldState()
 
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
+    val insets = WindowInsets.statusBars
 
     LaunchedEffect(key1 = id) {
         viewModel.getCard(id)
     }
+
+
 
     Box(modifier = modifier.fillMaxSize()) {
         when (val currentState = uiState) {
@@ -91,13 +110,18 @@ fun CardScreen(
 
             is CardScreenUiState.CardUi -> {
                 val card = currentState.mtgCard
+                var isFavorite by rememberSaveable {
+                    mutableStateOf(currentState.isWishlisted)
+                }
+                val qty = currentState.qtyInInventory
 
                 BottomSheetScaffold(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth(),
                     sheetPeekHeight = screenHeight * 2 / 5,
                     scaffoldState = scaffoldState,
                     sheetContent = {
-                        card?.let { SheetContent(card = card, screenHeight = screenHeight) }
+                        SheetContent(card = card, screenHeight = screenHeight)
                     },
                     containerColor = BoxColor,
                     sheetContainerColor = BottomBarColor
@@ -105,19 +129,21 @@ fun CardScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .windowInsetsPadding(WindowInsets.statusBars)
+                            .statusBarsPadding()
                             .background(BoxColor)
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            PrimaryButton(
+                            SecondaryButton(
                                 modifier = Modifier
                                     .padding(horizontal = 16.dp)
-                                    .size(40.dp)
-                                    .clip(CircleShape),
-                                onClick = { onBack() },
+                                    .size(40.dp),
+                                onClick = {
+                                    viewModel.updateCardQuantity(card.id, qty)
+                                    onBack()
+                                },
+                                shape = CircleShape
                             ) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -126,21 +152,39 @@ fun CardScreen(
                                 )
                             }
 
-                            PrimaryButton(
+                            Spacer(modifier = Modifier.weight(1f))
+
+                            SecondaryButton(
                                 modifier = Modifier
                                     .padding(horizontal = 16.dp)
-                                    .size(40.dp)
-                                    .clip(CircleShape),
-                                onClick = { },
+                                    .size(40.dp),
+                                onClick = {
+                                    if (isFavorite) {
+                                        isFavorite = false
+                                    } else {
+                                        isFavorite = true
+                                    }
+                                    viewModel.updateWishlist(card.id, isFavorite)
+                                },
+                                shape = CircleShape
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.FavoriteBorder,
-                                    contentDescription = null,
-                                    tint = Color.White
-                                )
+                                Crossfade(targetState = isFavorite, label = "") {
+                                    Icon(
+                                        imageVector = if (it) {
+                                            Icons.Default.Favorite
+                                        } else {
+                                            Icons.Default.FavoriteBorder
+                                        },
+                                        contentDescription = null,
+                                        tint = if (it) {
+                                            Color.Red
+                                        } else {
+                                            Color.White
+                                        }
+                                    )
+                                }
                             }
                         }
-
 
                         Box(modifier = Modifier.fillMaxSize()) {
                             AsyncImage(
@@ -152,12 +196,84 @@ fun CardScreen(
                                     .background(Color.Transparent)
                                     .align(Alignment.TopCenter),
                                 contentScale = ContentScale.FillWidth,
-                                contentDescription = null
+                                contentDescription = null,
+                                placeholder = painterResource(id = R.drawable.card_back),
+                                error = painterResource(id = R.drawable.card_back)
                             )
                         }
                     }
                 }
+
+                InventoryManager(
+                    qty = qty,
+                    addCardToInventory = { viewModel.addCardToInventory(card.id) },
+                    removeCardFromInventory = { viewModel.removeCardFromInventory(card.id) }
+                )
             }
+        }
+    }
+}
+
+@Composable
+private fun BoxScope.InventoryManager(
+    qty: Int,
+    addCardToInventory: () -> Unit,
+    removeCardFromInventory: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .padding(20.dp)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(Constants.MainGradient.brush)
+            .align(Alignment.BottomCenter)
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.in_inventory),
+            color = Color.White,
+        )
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Button(
+            modifier = Modifier.size(40.dp),
+            onClick = { removeCardFromInventory() },
+            enabled = qty > 0,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = BoxColor,
+                disabledContainerColor = BoxColor.copy(alpha = 0.7f)
+            ),
+            shape = CircleShape,
+            contentPadding = PaddingValues(0.dp)
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.baseline_remove_24),
+                contentDescription = null,
+                tint = Color.White
+
+            )
+        }
+
+        Text(
+            text = qty.toString(),
+            color = Color.White
+        )
+
+        Button(
+            modifier = Modifier.size(40.dp),
+            onClick = { addCardToInventory() },
+            colors = ButtonDefaults.buttonColors(containerColor = BoxColor),
+            shape = CircleShape,
+            contentPadding = PaddingValues(0.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = null,
+                tint = Color.White
+            )
         }
     }
 }
@@ -172,9 +288,9 @@ fun SheetContent(
 //    72 dp for the top bar + buttons
     Column(
         modifier = modifier
-            .padding(bottom = 30.dp)
+            .padding(bottom = 80.dp)
             .padding(horizontal = 20.dp)
-            .heightIn(max = screenHeight - 72.dp - 30.dp)
+            .heightIn(max = screenHeight - 72.dp - 80.dp)
             .verticalScroll(state = scrollState)
     ) {
         Text(
@@ -184,20 +300,6 @@ fun SheetContent(
             fontWeight = FontWeight.Bold,
         )
 
-        Row(
-            modifier = Modifier.padding(vertical = 8.dp),
-            horizontalArrangement = Arrangement.Start
-        ) {
-            card.manaCost.split("{", "}").forEach { color ->
-                if (color.isNotEmpty()) {
-                    AsyncSvg(
-                        modifier = Modifier.padding(end = 16.dp).size(18.dp),
-                        uri = "https://svgs.scryfall.io/card-symbols/$color.svg"
-                    )
-                }
-            }
-        }
-
         Text(
             modifier = Modifier
                 .padding(bottom = 8.dp)
@@ -206,6 +308,30 @@ fun SheetContent(
             fontSize = 12.sp,
             color = Color.White,
             fontWeight = FontWeight.SemiBold,
+        )
+
+        Row(
+            modifier = Modifier.padding(bottom = 8.dp),
+            horizontalArrangement = Arrangement.Start
+        ) {
+            card.manaCost.split("{", "}").forEach { color ->
+                if (color.isNotEmpty()) {
+                    AsyncSvg(
+                        modifier = Modifier
+                            .padding(end = 16.dp)
+                            .size(18.dp),
+                        uri = "https://svgs.scryfall.io/card-symbols/$color.svg"
+                    )
+                }
+            }
+        }
+
+        Text(
+            modifier = Modifier.padding(bottom = 8.dp),
+            text = formatPrice(card.prices.eur.toDouble()),
+            fontSize = 30.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = AccentColor,
         )
 
         OracleText(

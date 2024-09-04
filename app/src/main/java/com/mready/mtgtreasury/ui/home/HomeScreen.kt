@@ -1,5 +1,6 @@
 package com.mready.mtgtreasury.ui.home
 
+import android.icu.text.NumberFormat
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -35,13 +36,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -57,51 +54,61 @@ import com.mready.mtgtreasury.ui.components.PrimaryButton
 import com.mready.mtgtreasury.ui.components.ShimmerBox
 import com.mready.mtgtreasury.ui.components.TwoColorText
 import com.mready.mtgtreasury.ui.theme.AccentColor
-import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
 import com.mready.mtgtreasury.ui.theme.BoxColor
+import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
+import com.mready.mtgtreasury.ui.theme.ShimmerColor
+import com.mready.mtgtreasury.utility.formatPrice
+import java.util.Locale
 
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeScreenViewModel = hiltViewModel(),
-    onCardClick: (String) -> Unit
+    onCardClick: (String) -> Unit,
+    navigateToWebView: (String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val scrollState = rememberScrollState()
 
     when (val currentState = uiState) {
         is HomeScreenUiState.Loading -> {
-            ShimmerBox(modifier = Modifier.fillMaxSize())
+            HomeShimmer()
         }
 
         is HomeScreenUiState.HomeUi -> {
             val card = currentState.mtgCard
             val mostValuableCards = currentState.mostValuableCards
             val newestSets = currentState.newestSets
+            val inventoryValue = currentState.inventoryValue
 
             Column(
                 modifier = modifier
-                    .padding()
                     .fillMaxSize()
                     .background(MainBackgroundColor)
                     .verticalScroll(state = scrollState),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
 
-                CollectionValue()
+                CollectionValue(inventoryValue = inventoryValue)
 
                 CardOfTheDay(card, onCardClick)
 
                 MostValuableCards(mostValuableCards, onCardClick)
 
-                NewestSets(newestSets)
+                NewestSets(
+                    newestSets = newestSets,
+                    navigateToWebView = navigateToWebView
+                )
             }
         }
     }
 }
 
 @Composable
-private fun NewestSets(newestSets: List<MtgSet>) {
+private fun NewestSets(
+    newestSets: List<MtgSet>,
+    navigateToWebView: (String) -> Unit
+) {
     Box(
         modifier = Modifier.fillMaxWidth(),
         contentAlignment = Alignment.TopStart
@@ -120,7 +127,9 @@ private fun NewestSets(newestSets: List<MtgSet>) {
             Row(
                 modifier = Modifier
                     .padding(start = 12.dp)
+                    .width(250.dp)
                     .clip(shape = RoundedCornerShape(12.dp))
+                    .clickable { navigateToWebView(set.infoUri) }
                     .background(BoxColor)
                     .padding(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -132,7 +141,9 @@ private fun NewestSets(newestSets: List<MtgSet>) {
                         .decoderFactory(SvgDecoder.Factory())
                         .build(),
                     colorFilter = ColorFilter.tint(Color.White),
-                    contentDescription = null
+                    contentDescription = null,
+                    placeholder = painterResource(id = R.drawable.card_back),
+                    error = painterResource(id = R.drawable.card_back)
                 )
 
                 Column {
@@ -227,7 +238,9 @@ private fun ValuableCardItem(
                 .width(80.dp)
                 .background(Color.Transparent),
             contentScale = ContentScale.FillWidth,
-            contentDescription = null
+            contentDescription = null,
+            placeholder = painterResource(id = R.drawable.card_back),
+            error = painterResource(id = R.drawable.card_back)
         )
 
         Column(
@@ -259,7 +272,7 @@ private fun ValuableCardItem(
 
             Text(
                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp),
-                text = stringResource(id = R.string.euro, mtgCard.prices.eur),
+                text = formatPrice(mtgCard.prices.eur.toDouble()),
                 fontSize = 24.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = AccentColor,
@@ -268,7 +281,7 @@ private fun ValuableCardItem(
     }
 }
 
-                @Composable
+@Composable
 private fun ColumnScope.CardOfTheDay(
     card: MtgCard,
     onCardClick: (String) -> Unit
@@ -297,9 +310,15 @@ private fun ColumnScope.CardOfTheDay(
                 .padding(12.dp)
                 .width(169.dp)
                 .clip(RoundedCornerShape(4.dp))
-                .background(Color.Transparent),
+                .background(Color.Transparent)
+                .clickable {
+                    onCardClick(card.id)
+                }
+            ,
             contentScale = ContentScale.FillWidth,
-            contentDescription = null
+            contentDescription = null,
+            placeholder = painterResource(id = R.drawable.card_back),
+            error = painterResource(id = R.drawable.card_back)
         )
 
         Box(modifier = Modifier.fillMaxSize()) {
@@ -336,7 +355,7 @@ private fun ColumnScope.CardOfTheDay(
 
                 Text(
                     modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp),
-                    text = stringResource(R.string.euro, card.prices.eur),
+                    text = formatPrice(card.prices.eur.toDouble()),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Color.White,
@@ -377,7 +396,7 @@ private fun ColumnScope.CardOfTheDay(
                     firstPart = stringResource(R.string.text_legal),
                     secondPart = stringResource(
                         R.string.x_max_set,
-                        card.getNumberOfLegalFormats() ?: 99
+                        card.getNumberOfLegalFormats()
                     )
                 )
 
@@ -385,7 +404,6 @@ private fun ColumnScope.CardOfTheDay(
                     modifier = Modifier.padding(horizontal = 4.dp),
                     firstPart = stringResource(R.string.text_release),
                     secondPart = card.releaseDate.formatReleaseDate()
-                        ?: stringResource(R.string.text_unknown)
                 )
             }
 
@@ -407,8 +425,9 @@ private fun ColumnScope.CardOfTheDay(
     }
 }
 
+
 @Composable
-private fun CollectionValue() {
+private fun CollectionValue(inventoryValue: Double) {
     Column(
         modifier = Modifier.padding(top = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -419,9 +438,10 @@ private fun CollectionValue() {
             color = Color.White,
         )
         Text(
-            text = "$38.46", //TODO get actual value
+            text = NumberFormat.getCurrencyInstance(Locale.GERMANY).format(inventoryValue),
             fontSize = 40.sp,
             color = Color.White,
+            fontWeight = FontWeight.Bold,
         )
     }
 }
@@ -452,4 +472,56 @@ fun CardSetName(
         fontWeight = FontWeight.Normal,
         color = Color.LightGray
     )
+}
+
+@Composable
+fun HomeShimmer() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MainBackgroundColor),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Column(
+            modifier = Modifier.padding(top = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            ShimmerBox(
+                modifier = Modifier
+                    .padding(bottom = 8.dp)
+                    .width(240.dp)
+                    .height(24.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+                color = ShimmerColor
+            )
+
+            ShimmerBox(
+                modifier = Modifier
+                    .padding(bottom = 8.dp)
+                    .width(130.dp)
+                    .height(54.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+                color = ShimmerColor
+            )
+
+            ShimmerBox(
+                modifier = Modifier
+                    .padding(horizontal = 12.dp, vertical = 20.dp)
+                    .fillMaxWidth()
+                    .height(265.dp)
+                    .clip(shape = RoundedCornerShape(12.dp)),
+                color = ShimmerColor
+            )
+
+            ShimmerBox(
+                modifier = Modifier
+                    .padding(horizontal = 12.dp, vertical = 20.dp)
+                    .fillMaxWidth()
+                    .height(400.dp)
+                    .clip(shape = RoundedCornerShape(12.dp)),
+                color = ShimmerColor
+            )
+
+        }
+    }
 }

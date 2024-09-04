@@ -14,9 +14,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,7 +22,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import com.mready.mtgtreasury.R
 import com.mready.mtgtreasury.ui.components.HexagonBox
@@ -33,25 +32,32 @@ import com.mready.mtgtreasury.ui.decks.DecksScreen
 import com.mready.mtgtreasury.ui.decks.DecksScreenDestination
 import com.mready.mtgtreasury.ui.home.HomeScreen
 import com.mready.mtgtreasury.ui.home.HomeScreenDestination
-import com.mready.mtgtreasury.ui.profile.ProfileScreen
-import com.mready.mtgtreasury.ui.profile.ProfileScreenDestination
+import com.mready.mtgtreasury.ui.search.SearchRoot
 import com.mready.mtgtreasury.ui.search.SearchScreen
-import com.mready.mtgtreasury.ui.search.SearchScreenDestination
 import com.mready.mtgtreasury.ui.search.filter.FilterSearchScreen
-import com.mready.mtgtreasury.ui.search.filter.FilterSearchScreenDestination
 import com.mready.mtgtreasury.ui.theme.BottomBarColor
 import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
+import com.mready.mtgtreasury.ui.user.profile.ProfileRoot
+import com.mready.mtgtreasury.ui.user.profile.ProfileScreen
+import com.mready.mtgtreasury.ui.user.profile.settings.SettingsScreen
+import com.mready.mtgtreasury.ui.user.profile.update.ProfileUpdateScreen
+
 
 @Composable
 fun NavigationScreen(
     modifier: Modifier = Modifier,
     navigateToCard: (String) -> Unit,
+    navigateToDeckCreation: () -> Unit,
+    navigateToDeck: (String) -> Unit,
+    navigateToInventory: () -> Unit,
+    navigateToWishlist: () -> Unit,
+    navigateToWebView: (String) -> Unit,
 ) {
     val navigationSections = listOf(
         HomeScreenDestination,
-        FilterSearchScreenDestination(""),
+        SearchRoot,
         DecksScreenDestination,
-        ProfileScreenDestination
+        ProfileRoot
     )
 
     val navIcons = listOf(
@@ -61,7 +67,8 @@ fun NavigationScreen(
         Pair(R.drawable.ic_bnav_profile, R.drawable.ic_bnav_profile_selected)
     )
     val navController = rememberNavController()
-    var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination?.route.toString().split("/")[0]
 
     Scaffold(
         modifier = modifier
@@ -85,15 +92,18 @@ fun NavigationScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     navigationSections.forEachIndexed { index, section ->
+                        val isSelected =
+                            section::class.qualifiedName?.let { currentDestination.startsWith(it) }
+                                ?: false
+
                         NavBarItem(
-                            isSelected = selectedIndex == index,
-                            iconId = if (selectedIndex == index) {
+                            isSelected = isSelected,
+                            iconId = if (isSelected) {
                                 navIcons[index].second
                             } else {
                                 navIcons[index].first
                             },
                             onClick = {
-                                selectedIndex = index
                                 navController.navigate(section) {
                                     popUpTo(navController.graph.findStartDestination().id) {
                                         saveState = true
@@ -119,43 +129,101 @@ fun NavigationScreen(
             startDestination = HomeScreenDestination,
         ) {
             composable<HomeScreenDestination> {
-                HomeScreen(onCardClick = { id -> navigateToCard(id) })
-            }
-
-            composable<SearchScreenDestination> {
-                SearchScreen(
-                    onNavigateToFilterSearch = { searchName ->
-                        navController.navigate(FilterSearchScreenDestination(searchName)){
-                            restoreState = true
-                        }
-                    }
+                HomeScreen(
+                    onCardClick = { id -> navigateToCard(id) },
+                    navigateToWebView = { url -> navigateToWebView(url) }
                 )
             }
 
-            composable<FilterSearchScreenDestination> { navBackStackEntry ->
-                val destination: FilterSearchScreenDestination = navBackStackEntry.toRoute()
-                FilterSearchScreen(
-                    searchQuery = destination.searchName,
-                    onNavigateToSearch = {
-                        val isPopSuccessful = navController.popBackStack(route = SearchScreenDestination, inclusive = false)
-                        if(!isPopSuccessful){
-                            navController.navigate(SearchScreenDestination)
+            navigation<SearchRoot>(startDestination = SearchRoot.FilterSearchScreenDestination("")) {
+                composable<SearchRoot.SearchScreenDestination> {
+                    SearchScreen(
+                        onNavigateToFilterSearch = { searchName ->
+                            navController.navigate(
+                                SearchRoot.FilterSearchScreenDestination(
+                                    searchName
+                                )
+                            ) {
+                                restoreState = true
+                            }
+                        },
+                        onBack = {
+                            navController.popBackStack()
+                        },
+                    )
+                }
+
+                composable<SearchRoot.FilterSearchScreenDestination> { navBackStackEntry ->
+                    val destination: SearchRoot.FilterSearchScreenDestination = navBackStackEntry.toRoute()
+                    FilterSearchScreen(
+                        searchQuery = destination.searchName,
+                        onNavigateToSearch = {
+                            val isPopSuccessful = navController.popBackStack(
+                                route = SearchRoot.SearchScreenDestination,
+                                inclusive = false
+                            )
+                            if (!isPopSuccessful) {
+                                navController.navigate(SearchRoot.SearchScreenDestination)
+                            }
+                        },
+                        onNavigateToCard = { id ->
+                            navigateToCard(
+                                id
+                            )
                         }
-                    },
-                    onNavigateToCard = { id ->
-                        navigateToCard(
-                            id
-                        )
-                    }
-                )
+                    )
+                }
             }
 
             composable<DecksScreenDestination> {
-                DecksScreen()
+                DecksScreen(
+                    onNavigateToDeck = { id ->
+                        navigateToDeck(
+                            id
+                        )
+                    },
+                    onNavigateToDeckCreation = {
+                        navigateToDeckCreation()
+                    }
+                )
             }
 
-            composable<ProfileScreenDestination> {
-                ProfileScreen()
+            navigation<ProfileRoot>(startDestination = ProfileRoot.ProfileScreenDestination) {
+                composable<ProfileRoot.ProfileScreenDestination> {
+                    ProfileScreen(
+                        navigateToInventory = { navigateToInventory() },
+                        navigateToWishlist = { navigateToWishlist() },
+                        navigateToSettings = { navController.navigate(ProfileRoot.SettingsScreenDestination) }
+                    )
+                }
+
+                composable<ProfileRoot.SettingsScreenDestination> {
+                    SettingsScreen(
+                        onSignOut = {
+                            navController.popBackStack(0, false)
+                        },
+                        onBack = {
+                            navController.popBackStack()
+                        },
+                        navigateToProfileUpdate = { updateType:String ->
+                            navController.navigate(
+                                ProfileRoot.ProfileUpdateScreenDestination(
+                                    updateType
+                                )
+                            )
+                        }
+                    )
+                }
+
+                composable<ProfileRoot.ProfileUpdateScreenDestination> {navBackStackEntry->
+                    val destination: ProfileRoot.ProfileUpdateScreenDestination = navBackStackEntry.toRoute()
+                    ProfileUpdateScreen(
+                        updateType = destination.updateType,
+                        onBack = {
+                            navController.popBackStack()
+                        }
+                    )
+                }
             }
         }
     }

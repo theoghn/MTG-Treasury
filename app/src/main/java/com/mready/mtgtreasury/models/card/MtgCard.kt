@@ -24,7 +24,9 @@ data class MtgCard(
     val legalities: CardLegalities,
     val setName: String,
     val setAbbreviation: String,
-    val artist: String
+    val artist: String,
+    val isFavorite : Boolean = false,
+    val qty : Int = 0
 )
 
 fun String.formatReleaseDate(): String {

@@ -1,8 +1,9 @@
 package com.mready.mtgtreasury.ui.search.filter
 
-import android.util.Log
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -50,7 +51,6 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -64,6 +64,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -72,15 +73,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.mready.mtgtreasury.R
 import com.mready.mtgtreasury.models.card.MtgCard
 import com.mready.mtgtreasury.ui.components.AsyncSvg
 import com.mready.mtgtreasury.ui.components.PrimaryButton
+import com.mready.mtgtreasury.ui.components.SecondaryButton
+import com.mready.mtgtreasury.ui.components.ShimmerBox
 import com.mready.mtgtreasury.ui.theme.AccentColor
 import com.mready.mtgtreasury.ui.theme.BoxColor
 import com.mready.mtgtreasury.ui.theme.LegalChipColor
 import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
 import com.mready.mtgtreasury.utility.Constants
+import com.mready.mtgtreasury.utility.formatPrice
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 enum class SheetFilters {
     TYPE,
@@ -89,11 +96,6 @@ enum class SheetFilters {
     COLOR,
     MANA,
 }
-
-
-data class FilterProperties(
-    val selectedCardColors: List<String>
-)
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -105,6 +107,10 @@ fun FilterSearchScreen(
     onNavigateToCard: (String) -> Unit,
     onNavigateToSearch: () -> Unit
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+    val manaCosts by viewModel.manaCosts.collectAsState()
+    val init by viewModel.init.collectAsState()
+
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val filterBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -119,10 +125,7 @@ fun FilterSearchScreen(
     var selectedCardTypes by rememberSaveable { mutableStateOf(listOf<String>()) }
     var selectedCardSuperTypes by rememberSaveable { mutableStateOf(listOf<String>()) }
 
-    val manaCosts by viewModel.manaCosts.collectAsState()
-    val cards by viewModel.cards.collectAsState()
-
-    LaunchedEffect(searchQuery) {
+    if (!init) {
         viewModel.searchCards(
             name = searchQuery ?: "",
             manaCost = selectedCardManaCosts,
@@ -131,12 +134,6 @@ fun FilterSearchScreen(
             type = selectedCardTypes,
             superType = selectedCardSuperTypes
         )
-    }
-
-    LaunchedEffect(selectedFilter) {
-        if (selectedFilter == SheetFilters.MANA) {
-            viewModel.getCosts()
-        }
     }
 
     Scaffold(
@@ -164,8 +161,10 @@ fun FilterSearchScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = if (searchQuery.isNullOrBlank()) "Search Cards" else searchQuery,
+                        text = if (searchQuery.isNullOrBlank()) stringResource(R.string.search_cards) else searchQuery,
                         color = Color.LightGray,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -180,8 +179,7 @@ fun FilterSearchScreen(
                         tint = Color.White
                     )
                 }
-
-                Icon(
+                BadgedBox(
                     modifier = Modifier
                         .fillMaxHeight()
                         .clip(RoundedCornerShape(12.dp))
@@ -190,39 +188,100 @@ fun FilterSearchScreen(
                         }
                         .background(BoxColor)
                         .padding(12.dp),
-                    painter = painterResource(id = R.drawable.filter_multiple),
-                    contentDescription = null,
-                    tint = AccentColor
-                )
+                    badge = {
+                        if (selectedCardColors.isNotEmpty() ||
+                            selectedCardManaCosts.isNotEmpty() ||
+                            selectedCardRarities.isNotEmpty() ||
+                            selectedCardTypes.isNotEmpty() ||
+                            selectedCardSuperTypes.isNotEmpty()
+                        ) {
+                            Badge(
+                                containerColor = AccentColor
+                            )
+                        }
+                    }
+                ) {
+                    Icon(
+
+                        painter = painterResource(id = R.drawable.filter_multiple),
+                        contentDescription = null,
+                        tint = AccentColor
+                    )
+
+                }
+
+
             }
         },
         containerColor = MainBackgroundColor
     ) {
-        Box(
-            modifier = Modifier
-                .padding(top = it.calculateTopPadding())
-                .fillMaxSize()
-                .background(Color.Transparent)
-        ) {
-            LazyVerticalGrid(
-                modifier = Modifier.padding(horizontal = 12.dp),
-                columns = GridCells.Fixed(2),
-                contentPadding = PaddingValues(bottom = 32.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Log.d("cards", cards.size.toString())
-                items(cards) { mtgCard ->
-                    MtgCardItem(
-//                        modifier = Modifier.padding() ,
-                        mtgCard = mtgCard,
-                        onClick = {
-                            onNavigateToCard(mtgCard.id)
+        when (val currentState = uiState) {
+            is FilterSearchScreenUiState.Loading -> {
+                FilterSearchShimmerScreen(
+                    modifier = Modifier
+                        .padding(top = it.calculateTopPadding())
+                )
+            }
+
+            is FilterSearchScreenUiState.FilterSearchScreenUi -> {
+                val cards = currentState.cards
+
+                Box(
+                    modifier = Modifier
+                        .padding(top = it.calculateTopPadding())
+                        .fillMaxSize()
+                        .background(Color.Transparent)
+                ) {
+                    LazyVerticalGrid(
+                        modifier = Modifier.padding(horizontal = 12.dp),
+                        columns = GridCells.Fixed(2),
+                        contentPadding = PaddingValues(bottom = 32.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        items(cards) { mtgCard ->
+                            FilterMtgCard(
+                                mtgCard = mtgCard,
+                                onClick = {
+                                    onNavigateToCard(mtgCard.id)
+                                },
+                                onAddToInventory = {
+                                    viewModel.addCardToInventory(mtgCard.id)
+                                },
+                                isInInventory = mtgCard.qty > 0
+                            )
                         }
-                    )
+                    }
+                }
+            }
+
+            FilterSearchScreenUiState.Empty -> {
+                Box(
+                    Modifier
+                        .padding(top = it.calculateTopPadding())
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = stringResource(R.string.sad_face),
+                            fontSize = 50.sp,
+                            color = Color.White
+                        )
+                        Text(
+                            text = stringResource(R.string.no_cards_found),
+                            fontSize = 18.sp,
+                            color = Color.White
+                        )
+                    }
                 }
             }
         }
+
+
     }
 
     if (isBottomSheetVisible) {
@@ -240,8 +299,20 @@ fun FilterSearchScreen(
                 )
                 isBottomSheetVisible = false
             },
-            updateSelectedFilter = { selectedFilter = it },
-            showFilterSheet = { isFilterBottomSheetVisible = true }
+            updateSelectedFilter = {
+                selectedFilter = it
+                if (it == SheetFilters.MANA) {
+                    viewModel.getCosts()
+                }
+            },
+            showFilterSheet = { isFilterBottomSheetVisible = true },
+            resetFilters = {
+                selectedCardTypes = emptyList()
+                selectedCardRarities = emptyList()
+                selectedCardColors = emptyList()
+                selectedCardSuperTypes = emptyList()
+                selectedCardManaCosts = emptyList()
+            }
         )
     }
 
@@ -255,7 +326,8 @@ fun FilterSearchScreen(
             },
             windowInsets = WindowInsets.statusBars,
             containerColor = BoxColor,
-            dragHandle = {}
+            dragHandle = {},
+            shape = RoundedCornerShape(12.dp)
         ) {
             when (selectedFilter) {
                 SheetFilters.TYPE -> {
@@ -316,7 +388,8 @@ fun AdvancedSearchModalBottomSheet(
     onDismissRequest: () -> Unit,
     updateSelectedFilter: (SheetFilters) -> Unit,
     showFilterSheet: () -> Unit,
-    onApplyFilters: () -> Unit
+    onApplyFilters: () -> Unit,
+    resetFilters: () -> Unit
 ) {
     ModalBottomSheet(
         sheetState = bottomSheetState,
@@ -350,7 +423,7 @@ fun AdvancedSearchModalBottomSheet(
                     modifier = Modifier
                         .padding(top = 4.dp)
                         .align(Alignment.TopCenter),
-                    text = "Advanced Search",
+                    text = stringResource(R.string.advanced_search),
                     fontSize = 20.sp,
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
@@ -359,46 +432,46 @@ fun AdvancedSearchModalBottomSheet(
 
             Text(
                 modifier = Modifier.padding(vertical = 16.dp),
-                text = "Type & Rarity",
+                text = stringResource(R.string.type_and_rarity),
                 fontSize = 16.sp,
                 color = Color.White,
                 fontWeight = FontWeight.SemiBold,
             )
 
             FilterItem(
-                text = "Type",
+                text = stringResource(R.string.type),
                 updateSelectedFilter = { updateSelectedFilter(SheetFilters.TYPE) },
                 showFilterSheet = showFilterSheet
             )
 
             FilterItem(
-                text = "Super Type",
+                text = stringResource(R.string.super_type),
                 updateSelectedFilter = { updateSelectedFilter(SheetFilters.SUPERTYPE) },
                 showFilterSheet = showFilterSheet
             )
 
             FilterItem(
-                text = "Rarity",
+                text = stringResource(R.string.rarity),
                 updateSelectedFilter = { updateSelectedFilter(SheetFilters.RARITY) },
                 showFilterSheet = showFilterSheet
             )
 
             Text(
                 modifier = Modifier.padding(vertical = 16.dp),
-                text = "Color",
+                text = stringResource(R.string.color),
                 fontSize = 16.sp,
                 color = Color.White,
                 fontWeight = FontWeight.SemiBold,
             )
 
             FilterItem(
-                text = "Color",
+                text = stringResource(R.string.color),
                 updateSelectedFilter = { updateSelectedFilter(SheetFilters.COLOR) },
                 showFilterSheet = showFilterSheet
             )
 
             FilterItem(
-                text = "Mana Cost",
+                text = stringResource(R.string.mana_cost),
                 updateSelectedFilter = { updateSelectedFilter(SheetFilters.MANA) },
                 showFilterSheet = showFilterSheet
             )
@@ -419,13 +492,17 @@ fun AdvancedSearchModalBottomSheet(
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                     border = BorderStroke(1.dp, AccentColor.copy(alpha = 0.5f)),
                     contentPadding = PaddingValues(),
-                    onClick = onDismissRequest,
+                    onClick = {
+                        resetFilters()
+                        onApplyFilters()
+                        onDismissRequest()
+                    },
                 ) {
                     Box(
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
-                            text = "Cancel",
+                            text = stringResource(R.string.clear_all),
                             fontSize = 16.sp,
                             color = AccentColor,
                             fontWeight = FontWeight.SemiBold,
@@ -446,7 +523,7 @@ fun AdvancedSearchModalBottomSheet(
                     }
                 ) {
                     Text(
-                        text = "Apply Filters",
+                        text = stringResource(R.string.apply_filters),
                         fontSize = 16.sp,
                         color = Color.White,
                         fontWeight = FontWeight.SemiBold,
@@ -458,13 +535,13 @@ fun AdvancedSearchModalBottomSheet(
 }
 
 
-
 @Composable
 fun FilterBottomSheet(
     modifier: Modifier = Modifier,
     title: String,
     hideFilter: () -> Unit,
     saveChanges: () -> Unit,
+    resetFilter: () -> Unit,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Box(
@@ -523,13 +600,13 @@ fun FilterBottomSheet(
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                 border = BorderStroke(1.dp, AccentColor.copy(alpha = 0.5f)),
                 contentPadding = PaddingValues(),
-                onClick = { hideFilter() },
+                onClick = { resetFilter() },
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        text = "Cancel",
+                        text = stringResource(R.string.reset_filter),
                         fontSize = 16.sp,
                         color = AccentColor,
                         fontWeight = FontWeight.SemiBold,
@@ -550,7 +627,7 @@ fun FilterBottomSheet(
                 }
             ) {
                 Text(
-                    text = "Apply Filters",
+                    text = stringResource(R.string.apply_filter),
                     fontSize = 16.sp,
                     color = Color.White,
                     fontWeight = FontWeight.SemiBold,
@@ -610,9 +687,10 @@ fun ManaBottomSheet(
 
     FilterBottomSheet(
         modifier = Modifier.fillMaxHeight(0.7f),
-        title = "Mana Cost",
+        title = stringResource(R.string.mana_cost),
         hideFilter = { hideFilter() },
-        saveChanges = { saveChanges(temporaryCardManaCosts) }
+        saveChanges = { saveChanges(temporaryCardManaCosts) },
+        resetFilter = { temporaryCardManaCosts = emptyList() }
     ) {
         Column(
             modifier = Modifier
@@ -622,7 +700,7 @@ fun ManaBottomSheet(
         {
             Text(
                 modifier = Modifier.padding(16.dp),
-                text = "Select Mana Cost",
+                text = stringResource(R.string.select_mana_cost),
                 fontSize = 16.sp,
                 color = Color.White,
                 fontWeight = FontWeight.SemiBold,
@@ -658,13 +736,12 @@ fun ManaBottomSheet(
                             AsyncSvg(
                                 modifier = Modifier
                                     .clickable {
-                                        if (manaCost in temporaryCardManaCosts) {
-                                            temporaryCardManaCosts =
+                                        temporaryCardManaCosts =
+                                            if (manaCost in temporaryCardManaCosts) {
                                                 temporaryCardManaCosts - manaCost
-                                        } else {
-                                            temporaryCardManaCosts =
+                                            } else {
                                                 temporaryCardManaCosts + manaCost
-                                        }
+                                            }
 
                                     },
                                 uri = "https://svgs.scryfall.io/card-symbols/${Constants.SearchFilterValues.MANA_COST[manaCost]}.svg"
@@ -686,9 +763,10 @@ fun ColorBottomSheet(
     var temporaryCardColors by rememberSaveable { mutableStateOf(selectedCardColors) }
 
     FilterBottomSheet(
-        title = "Color",
+        title = stringResource(R.string.color),
         hideFilter = { hideFilter() },
-        saveChanges = { saveChanges(temporaryCardColors) }
+        saveChanges = { saveChanges(temporaryCardColors) },
+        resetFilter = { temporaryCardColors = emptyList() }
     ) {
         Column(modifier = Modifier.fillMaxWidth())
         {
@@ -696,7 +774,7 @@ fun ColorBottomSheet(
                 modifier = Modifier
                     .padding(16.dp)
                     .weight(1f, false),
-                text = "Select Mana Cost",
+                text = stringResource(R.string.select_color),
                 fontSize = 16.sp,
                 color = Color.White,
                 fontWeight = FontWeight.SemiBold,
@@ -760,13 +838,14 @@ fun TypeBottomSheet(
         modifier = Modifier.fillMaxHeight(0.7f),
         title = title,
         hideFilter = { hideFilter() },
-        saveChanges = { saveChanges(temporaryCardTypes) }
+        saveChanges = { saveChanges(temporaryCardTypes) },
+        resetFilter = { temporaryCardTypes = emptyList() }
     ) {
         Column(
             modifier = Modifier
                 .padding(16.dp)
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(10.dp))
                 .background(Color(0xFF474554))
                 .verticalScroll(rememberScrollState())
                 .weight(weight = 1f, fill = false)
@@ -776,7 +855,6 @@ fun TypeBottomSheet(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(8.dp)
                             .clickable {
                                 temporaryCardTypes = if (type in temporaryCardTypes) {
                                     temporaryCardTypes - type
@@ -784,14 +862,14 @@ fun TypeBottomSheet(
                                     temporaryCardTypes + type
                                 }
                             }
-                            .padding(8.dp),
+                            .padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
                             text = type,
                             fontSize = 16.sp,
-                            color = Color.White,
+                            color = Color.White
                         )
                         if (type in temporaryCardTypes) {
                             Icon(
@@ -815,14 +893,21 @@ fun TypeBottomSheet(
 
 
 @Composable
-fun MtgCardItem(
+private fun FilterMtgCard(
     modifier: Modifier = Modifier,
     mtgCard: MtgCard,
+    isInInventory: Boolean,
+    onAddToInventory: () -> Unit,
     onClick: () -> Unit
 ) {
+    var loading by rememberSaveable {
+        mutableStateOf(false)
+    }
+    val scope = rememberCoroutineScope()
+
     Card(
         modifier = modifier
-            .height(300.dp)
+            .height(290.dp)
             .shadow(
                 elevation = 2.dp,
                 shape = RoundedCornerShape(4.dp),
@@ -836,71 +921,159 @@ fun MtgCardItem(
         ),
         shape = RoundedCornerShape(4.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 8.dp, vertical = 12.dp)
-        ) {
-            AsyncImage(
-                model = mtgCard.imageUris.borderCrop,
+        Box(modifier = Modifier.fillMaxSize()) {
+            Box(
                 modifier = Modifier
-                    .padding(bottom = 8.dp)
-                    .height(160.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(Color.Transparent)
-                    .align(Alignment.CenterHorizontally),
-                contentScale = ContentScale.FillHeight,
-                contentDescription = null
-            )
-
-            Text(
-                modifier = Modifier.padding(bottom = 8.dp),
-                text = mtgCard.name,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                fontSize = 12.sp,
-                lineHeight = 14.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = Color.White
-            )
-
-            Text(
-                text = mtgCard.setName,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                fontSize = 10.sp,
-                lineHeight = 14.sp,
-                color = Color.White
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(8.dp)
+                    .size(14.dp)
+                    .clip(CircleShape)
+                    .border(1.dp, Color.White, CircleShape)
+                    .background(if (isInInventory) LegalChipColor else Color.Transparent)
+                    .padding(2.dp)
             ) {
-                Text(
-                    text = stringResource(R.string.euro, mtgCard.prices.eur),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    fontSize = 16.sp,
-                    lineHeight = 16.sp,
-                    color = Color.White
-                )
-
-                PrimaryButton(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape),
-                    onClick = {  },
-                ) {
+                if (isInInventory) {
                     Icon(
-                        imageVector = Icons.Default.Add,
+                        imageVector = Icons.Default.Done,
                         contentDescription = null,
                         tint = Color.White
                     )
                 }
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 8.dp, vertical = 8.dp)
+            ) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(mtgCard.imageUris.smallSize)
+                        .crossfade(true)
+                        .build(),
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .padding(bottom = 12.dp)
+                        .height(160.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(Color.Transparent)
+                        .align(Alignment.CenterHorizontally),
+                    contentScale = ContentScale.FillHeight,
+                    placeholder = painterResource(id = R.drawable.card_back),
+                    error = painterResource(id = R.drawable.card_back),
+                    contentDescription = null,
+                )
+
+                Text(
+                    modifier = Modifier.padding(bottom = 8.dp),
+                    text = mtgCard.name,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    fontSize = 12.sp,
+                    lineHeight = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White
+                )
+
+                Text(
+                    text = mtgCard.setName,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    fontSize = 10.sp,
+                    lineHeight = 14.sp,
+                    color = Color.White
+                )
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = formatPrice(mtgCard.prices.eur.toDouble()),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            fontSize = 16.sp,
+                            lineHeight = 16.sp,
+                            color = Color.White
+                        )
+
+                        Text(
+                            text = stringResource(R.string.qty, mtgCard.qty),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            fontSize = 13.sp,
+                            lineHeight = 13.sp,
+                            color = Color.White
+                        )
+                    }
+
+
+                    Crossfade(targetState = loading, label = "") {
+                        if (it) {
+                            PrimaryButton(
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .clip(CircleShape),
+                                onClick = {},
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Done,
+                                    contentDescription = null,
+                                    tint = Color.White
+                                )
+                            }
+                        } else {
+                            SecondaryButton(
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .clip(CircleShape),
+                                onClick = {
+                                    scope.launch {
+                                        loading = true
+                                        onAddToInventory()
+                                        delay(700)
+                                        loading = false
+                                    }
+                                },
+                                shape = CircleShape
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = null,
+                                    tint = Color.White
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun FilterSearchShimmerScreen(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+    ) {
+        LazyVerticalGrid(
+            modifier = Modifier.padding(horizontal = 12.dp),
+            columns = GridCells.Fixed(2),
+            contentPadding = PaddingValues(bottom = 32.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            userScrollEnabled = false
+        ) {
+            items(6) {
+                ShimmerBox(
+                    modifier = Modifier
+                        .height(290.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                )
             }
         }
     }

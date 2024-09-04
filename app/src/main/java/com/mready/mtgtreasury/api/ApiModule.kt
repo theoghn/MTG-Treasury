@@ -18,7 +18,7 @@ object ApiModule {
     @Singleton
     fun okHttpClient(@ApplicationContext context: Context): OkHttpClient =
         OkHttpClient.Builder()
-            .addInterceptor(ChuckerInterceptor.Builder(context).build())
+            .addInterceptor(ChuckerInterceptor(context))
             .readTimeout(90, TimeUnit.SECONDS)
             .writeTimeout(90, TimeUnit.SECONDS)
             .connectTimeout(90, TimeUnit.SECONDS)
