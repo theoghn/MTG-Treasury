@@ -155,7 +155,12 @@ fun DeckCreationScreen(
                             )
                         }
                     } else {
-                        Text(text = "Add cards from your inventory", color = Color.White)
+                        Text(
+                            modifier = Modifier.padding(start = 16.dp).align(Alignment.Start),
+                            text = "Add cards from your inventory",
+                            color = Color.White,
+                            fontSize = 13.sp
+                        )
 
                         LazyColumn(
                             modifier = Modifier

@@ -30,15 +30,9 @@ class WishlistService @Inject constructor() {
     }
 
     suspend fun removeCardFromWishlist(cardId: String) {
-        val userId = auth.currentUser?.uid
-
-        if (userId == null) {
-            Log.e("UserApi", "removeCardFromInventory: User not logged in")
-            return
-        }
+        val userId = auth.requireUserId
 
         val userDoc = db.collection("users").document(userId)
-
         userDoc.update("wishlist", FieldValue.arrayRemove(cardId)).awaitOrNull()
     }
 

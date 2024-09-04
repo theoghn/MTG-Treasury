@@ -96,7 +96,7 @@ fun SingUpScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Sign up.",
+                text = stringResource(R.string.sign_up_title),
                 fontSize = 28.sp,
                 color = Color.White,
                 fontWeight = FontWeight.Bold

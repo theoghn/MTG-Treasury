@@ -99,7 +99,7 @@ class UserService @Inject constructor() {
         }
     }
 
-    suspend fun getUser(): Pair<AppUser?, String?> {
+    suspend fun getUserAndEmail(): Pair<AppUser?, String?> {
         val userId = auth.requireUserId
 
         Log.d("UserService", "getUser: ${auth.requireUser.email}")

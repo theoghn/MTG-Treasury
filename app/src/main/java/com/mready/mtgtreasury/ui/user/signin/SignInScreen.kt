@@ -152,13 +152,6 @@ fun SignInScreen(
                 secondPart = stringResource(R.string.create_account),
                 fontSize = 14.sp
             )
-
-//            Text(
-//                text = stringResource(R.string.forgot_password),
-//                fontSize = 14.sp,
-//                color = Color.White,
-//                fontWeight = FontWeight.SemiBold,
-//            )
         }
     }
 }

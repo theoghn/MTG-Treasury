@@ -136,12 +136,12 @@ fun ProfileScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         ProfileStat(
-                            title = "Total Value",
+                            title = stringResource(R.string.total_value),
                             value = formatPrice(user.inventoryValue.toDouble())
                         )
 
                         ProfileStat(
-                            title = "Owned",
+                            title = stringResource(R.string.owned),
                             value = user.inventory.values.sum().toString()
                         )
                     }
@@ -153,12 +153,12 @@ fun ProfileScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         ProfileStat(
-                            title = "Wishlisted",
+                            title = stringResource(R.string.wishlisted),
                             value = user.wishlist.size.toString()
                         )
 
                         ProfileStat(
-                            title = "Decks",
+                            title = stringResource(R.string.decks),
                             value = decks.size.toString()
                         )
                     }
@@ -188,7 +188,7 @@ fun ProfileScreen(
                     modifier = Modifier
                         .padding(top = 16.dp),
                     imageUris = inventoryCards.map { it.imageUris.smallSize },
-                    title = "Inventory",
+                    title = stringResource(R.string.inventory),
                     onClick = { navigateToInventory() }
                 )
 
@@ -196,7 +196,7 @@ fun ProfileScreen(
                     modifier = Modifier
                         .padding(top = 16.dp),
                     imageUris = wishlistCards.map { it.imageUris.smallSize },
-                    title = "Wishlist",
+                    title = stringResource(R.string.wishlist),
                     onClick = { navigateToWishlist() }
                 )
             }

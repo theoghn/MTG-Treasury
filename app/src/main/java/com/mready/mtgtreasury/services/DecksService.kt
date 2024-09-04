@@ -22,10 +22,7 @@ import kotlinx.coroutines.flow.Flow
 class DecksService @Inject constructor() {
     private val auth = Firebase.auth
     private val db = Firebase.firestore
-
-    init {
-    }
-
+    
     suspend fun createDeck(deckName: String, deckImage: String, deckList: HashMap<String, Int>) {
         val userId = auth.requireUserId
 

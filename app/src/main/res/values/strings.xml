@@ -77,4 +77,9 @@
     <string name="log_out">Log out</string>
     <string name="bio">Bio</string>
     <string name="delete_deck_warning">Are you sure you want to delete this deck?</string>
+    <string name="sign_up_title">Sign up.</string>
+    <string name="owned">Owned</string>
+    <string name="total_value">Total Value</string>
+    <string name="wishlisted">Wishlisted</string>
+    <string name="decks">Decks</string>
 </resources>

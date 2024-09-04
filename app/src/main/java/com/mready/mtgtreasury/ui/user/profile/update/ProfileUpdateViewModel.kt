@@ -24,7 +24,7 @@ class ProfileUpdateViewModel @Inject constructor(
 
     private fun getUser() {
         viewModelScope.launch {
-            val pair = userService.getUser()
+            val pair = userService.getUserAndEmail()
 
             pair.first?.let { it1 ->
                 user.update { it1 }

@@ -178,7 +178,6 @@ fun SettingsScreen(
             hideAlert = { isLogOutDialogVisible = false },
             onConfirm = {
                 viewModel.signOut()
-//                onSignOut()
             }
         )
     }
@@ -190,7 +189,6 @@ fun SettingsScreen(
             hideAlert = { isDeleteAccountDialogVisible = false },
             onConfirm = {
                 viewModel.deleteAccount()
-//                onSignOut()
             }
         )
     }

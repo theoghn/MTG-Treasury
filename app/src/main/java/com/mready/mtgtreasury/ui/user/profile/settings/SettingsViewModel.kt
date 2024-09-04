@@ -20,12 +20,12 @@ class SettingsViewModel @Inject constructor(
 
     fun getUser() {
         viewModelScope.launch {
-            val pair = userService.getUser()
+            val userAndEmailPair = userService.getUserAndEmail()
 
-            pair.first?.let { it1 ->
+            userAndEmailPair.first?.let { it1 ->
                 user.update { it1 }
             }
-            pair.second?.let { it1 ->
+            userAndEmailPair.second?.let { it1 ->
                 email.update { it1 }
             }
         }

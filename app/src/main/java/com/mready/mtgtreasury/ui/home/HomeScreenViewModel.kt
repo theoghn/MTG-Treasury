@@ -23,10 +23,6 @@ class HomeScreenViewModel @Inject constructor(
     val uiState = MutableStateFlow<HomeScreenUiState>(HomeScreenUiState.Loading)
 
     init {
-        initialize()
-    }
-
-    private fun initialize() {
         viewModelScope.launch {
             try {
                 val card = cardsService.getRandomCard()
