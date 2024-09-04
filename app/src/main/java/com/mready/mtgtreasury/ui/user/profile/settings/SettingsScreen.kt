@@ -178,7 +178,7 @@ fun SettingsScreen(
             hideAlert = { isLogOutDialogVisible = false },
             onConfirm = {
                 viewModel.signOut()
-                onSignOut()
+//                onSignOut()
             }
         )
     }
@@ -189,8 +189,8 @@ fun SettingsScreen(
             message = stringResource(R.string.are_you_sure_you_want_to_delete_your_account),
             hideAlert = { isDeleteAccountDialogVisible = false },
             onConfirm = {
-                viewModel.signOut()
-                onSignOut()
+                viewModel.deleteAccount()
+//                onSignOut()
             }
         )
     }

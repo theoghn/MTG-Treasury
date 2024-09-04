@@ -24,10 +24,6 @@ class DeckCreationViewModel @Inject constructor(
     val deckName = MutableStateFlow("")
     val initialized = MutableStateFlow(false)
 
-    init {
-
-    }
-
     fun initialize(deckId : String) {
         viewModelScope.launch {
             val deck = decksService.getDeck(deckId)

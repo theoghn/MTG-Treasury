@@ -88,8 +88,15 @@ class UserService @Inject constructor() {
         auth.signOut()
     }
 
-    fun deleteUser() {
-        auth.currentUser?.delete()
+    fun deleteUser(){
+        val userId = auth.requireUserId
+        auth.requireUser.delete().addOnCompleteListener {
+            Log.d("UserService", "deleteUser: $userId")
+            db.collection("users").document(userId).delete()
+        }.onSuccessTask {
+            Log.d("UserService", "deleteUser2: $userId")
+            db.collection("users").document(userId).delete()
+        }
     }
 
     suspend fun getUser(): Pair<AppUser?, String?> {
@@ -97,7 +104,8 @@ class UserService @Inject constructor() {
 
         Log.d("UserService", "getUser: ${auth.requireUser.email}")
         return Pair(
-            db.collection("users").document(userId).get().awaitOrNull()?.toObject<AppUser>(), auth.requireUser.email
+            db.collection("users").document(userId).get().awaitOrNull()?.toObject<AppUser>(),
+            auth.requireUser.email
         )
     }
 

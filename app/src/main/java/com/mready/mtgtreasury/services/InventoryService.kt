@@ -71,7 +71,9 @@ class InventoryService @Inject constructor(
                         close(error)
                     }
                     Log.d("InventoryService", "getInventory: ${value?.toObject<AppUser>()?.inventory?.size}")
-                    trySendBlocking((value!!.toObject<AppUser>()!!.inventory))
+                    if(value?.toObject<AppUser>() != null){
+                        trySendBlocking((value.toObject<AppUser>()!!.inventory))
+                    }
                 }
 
             awaitClose {

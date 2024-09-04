@@ -200,7 +200,7 @@ fun NavigationScreen(
                 composable<ProfileRoot.SettingsScreenDestination> {
                     SettingsScreen(
                         onSignOut = {
-                            navController.popBackStack(HomeScreenDestination, false)
+                            navController.popBackStack(0, false)
                         },
                         onBack = {
                             navController.popBackStack()

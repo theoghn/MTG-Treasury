@@ -155,6 +155,8 @@ fun DeckCreationScreen(
                             )
                         }
                     } else {
+                        Text(text = "Add cards from your inventory", color = Color.White)
+
                         LazyColumn(
                             modifier = Modifier
                                 .fillMaxHeight(),
