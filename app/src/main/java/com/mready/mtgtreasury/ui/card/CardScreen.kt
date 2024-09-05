@@ -9,13 +9,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -63,7 +61,6 @@ import coil.compose.AsyncImage
 import com.mready.mtgtreasury.R
 import com.mready.mtgtreasury.models.card.CardLegalities
 import com.mready.mtgtreasury.models.card.MtgCard
-import com.mready.mtgtreasury.models.card.formatReleaseDate
 import com.mready.mtgtreasury.ui.components.AsyncSvg
 import com.mready.mtgtreasury.ui.components.SecondaryButton
 import com.mready.mtgtreasury.ui.components.TwoColorText
@@ -74,6 +71,7 @@ import com.mready.mtgtreasury.ui.theme.LegalChipColor
 import com.mready.mtgtreasury.ui.theme.NotLegalChipColor
 import com.mready.mtgtreasury.utility.Constants
 import com.mready.mtgtreasury.utility.formatPrice
+import com.mready.mtgtreasury.utility.formatReleaseDate
 import kotlin.reflect.full.memberProperties
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -90,13 +88,10 @@ fun CardScreen(
 
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
-    val insets = WindowInsets.statusBars
 
     LaunchedEffect(key1 = id) {
         viewModel.getCard(id)
     }
-
-
 
     Box(modifier = modifier.fillMaxSize()) {
         when (val currentState = uiState) {
@@ -159,11 +154,7 @@ fun CardScreen(
                                     .padding(horizontal = 16.dp)
                                     .size(40.dp),
                                 onClick = {
-                                    if (isFavorite) {
-                                        isFavorite = false
-                                    } else {
-                                        isFavorite = true
-                                    }
+                                    isFavorite = !isFavorite
                                     viewModel.updateWishlist(card.id, isFavorite)
                                 },
                                 shape = CircleShape
@@ -188,7 +179,7 @@ fun CardScreen(
 
                         Box(modifier = Modifier.fillMaxSize()) {
                             AsyncImage(
-                                model = card?.imageUris?.borderCrop,
+                                model = card.imageUris.borderCrop,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 54.dp, vertical = 16.dp)

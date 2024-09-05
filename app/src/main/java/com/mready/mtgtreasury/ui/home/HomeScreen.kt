@@ -48,8 +48,6 @@ import coil.request.ImageRequest
 import com.mready.mtgtreasury.R
 import com.mready.mtgtreasury.models.MtgSet
 import com.mready.mtgtreasury.models.card.MtgCard
-import com.mready.mtgtreasury.models.card.formatReleaseDate
-import com.mready.mtgtreasury.models.card.getNumberOfLegalFormats
 import com.mready.mtgtreasury.ui.components.PrimaryButton
 import com.mready.mtgtreasury.ui.components.ShimmerBox
 import com.mready.mtgtreasury.ui.components.TwoColorText
@@ -58,6 +56,8 @@ import com.mready.mtgtreasury.ui.theme.BoxColor
 import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
 import com.mready.mtgtreasury.ui.theme.ShimmerColor
 import com.mready.mtgtreasury.utility.formatPrice
+import com.mready.mtgtreasury.utility.formatReleaseDate
+import com.mready.mtgtreasury.utility.getNumberOfLegalFormats
 import java.util.Locale
 
 @Composable

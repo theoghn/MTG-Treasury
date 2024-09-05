@@ -82,4 +82,6 @@
     <string name="total_value">Total Value</string>
     <string name="wishlisted">Wishlisted</string>
     <string name="decks">Decks</string>
+    <string name="new_deck">New Deck</string>
+    <string name="your_decks">Your Decks</string>
 </resources>

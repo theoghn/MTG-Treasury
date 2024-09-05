@@ -139,8 +139,8 @@ private fun Json.toCard() = MtgCard(
     id = this["id"].string,
     name = this["name"].string,
     releaseDate = this["released_at"].string,
-    manaCost = this["mana_cost"].stringOrNull ?: "",
-    type = this["type_line"].stringOrNull ?: "",
+    manaCost = this["mana_cost"].stringOrNull.orEmpty(),
+    type = this["type_line"].stringOrNull.orEmpty(),
     oracleText = this["oracle_text"].stringOrNull ?: "This is a simple card",
     power = this["power"].stringOrNull,
     colors = this["colors"].arrayOrNull?.map { it.string } ?: emptyList(),
@@ -155,11 +155,11 @@ private fun Json.toCard() = MtgCard(
 )
 
 private fun Json.toCardUris() = CardImageUris(
-    borderCrop = this["border_crop"].stringOrNull ?: "",
-    artCrop = this["art_crop"].stringOrNull ?: "",
-    normalSize = this["normal"].stringOrNull ?: "",
-    largeSize = this["large"].stringOrNull ?: "",
-    smallSize = this["small"].stringOrNull ?: ""
+    borderCrop = this["border_crop"].stringOrNull.orEmpty(),
+    artCrop = this["art_crop"].stringOrNull.orEmpty(),
+    normalSize = this["normal"].stringOrNull.orEmpty(),
+    largeSize = this["large"].stringOrNull.orEmpty(),
+    smallSize = this["small"].stringOrNull.orEmpty()
 )
 
 private fun Json.toCardLegalities() = CardLegalities(

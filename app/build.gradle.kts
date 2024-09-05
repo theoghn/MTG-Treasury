@@ -35,6 +35,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
@@ -110,7 +111,7 @@ dependencies {
 
 //    chucker
     debugImplementation ("com.github.chuckerteam.chucker:library:4.0.0")
-    releaseImplementation ("com.github.chuckerteam.chucker:library-no-op:4.0.0")
+//    releaseImplementation ("com.github.chuckerteam.chucker:library-no-op:4.0.0")
 
     implementation(libs.androidx.core.splashscreen)
 }

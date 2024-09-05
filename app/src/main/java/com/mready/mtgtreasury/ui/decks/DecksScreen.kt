@@ -30,6 +30,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -51,7 +52,7 @@ fun DecksScreen(
     ) {
         Text(
             modifier = Modifier.padding(16.dp),
-            text = "Your Decks",
+            text = stringResource(R.string.your_decks),
             fontSize = 24.sp,
             color = Color.White,
             fontWeight = FontWeight.SemiBold
@@ -91,7 +92,7 @@ fun DecksScreen(
                             )
 
                             Text(
-                                text = "New Deck",
+                                text = stringResource(R.string.new_deck),
                                 fontSize = 24.sp,
                                 color = Color.White
                             )
