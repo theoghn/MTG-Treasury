@@ -114,4 +114,13 @@ dependencies {
 //    releaseImplementation ("com.github.chuckerteam.chucker:library-no-op:4.0.0")
 
     implementation(libs.androidx.core.splashscreen)
+
+//    text-recognition
+    implementation (libs.text.recognition)
+//    image recognition
+    implementation (libs.tensorflow.lite.task.vision)
+    // Import the GPU delegate plugin Library for GPU inference
+    implementation (libs.tensorflow.lite.gpu.delegate.plugin)
+
+    implementation ("com.quickbirdstudios:opencv:4.5.2")
 }

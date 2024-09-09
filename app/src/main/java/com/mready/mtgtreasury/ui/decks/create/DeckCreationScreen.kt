@@ -379,7 +379,6 @@ private fun CardItem(
                 painter = painterResource(id = R.drawable.baseline_remove_24),
                 contentDescription = null,
                 tint = Color.White
-
             )
         }
 
