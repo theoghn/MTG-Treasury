@@ -1,14 +1,11 @@
 package com.mready.mtgtreasury.ui.recognition
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -18,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,20 +35,7 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.mready.mtgtreasury.R
-import org.opencv.android.Utils.bitmapToMat
-import org.opencv.core.Core
-import org.opencv.core.Core.NORM_MINMAX
-import org.opencv.core.Core.normalize
 import java.io.IOException
-import org.opencv.core.Mat
-import org.opencv.core.MatOfFloat
-import org.opencv.core.MatOfInt
-import org.opencv.imgproc.Imgproc.COLOR_BGR2HSV
-import org.opencv.imgproc.Imgproc.HISTCMP_CORREL
-import org.opencv.imgproc.Imgproc.calcHist
-import org.opencv.imgproc.Imgproc.compareHist
-import org.opencv.imgproc.Imgproc.cvtColor
-import java.io.InputStream
 
 @Composable
 fun RecognitionScreen(
@@ -58,7 +43,7 @@ fun RecognitionScreen(
 ) {
     val bestImageId by viewModel.bestImageId.collectAsState()
 
-    var uri by remember {
+    var imageUri by remember {
         mutableStateOf<Uri>(Uri.EMPTY)
     }
     var image by remember {
@@ -71,30 +56,50 @@ fun RecognitionScreen(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = {
             if (it != null) {
-                uri = it
+                imageUri = it
                 try {
-                    image = InputImage.fromFilePath(context, uri)
+                    image = InputImage.fromFilePath(context, imageUri)
                 } catch (e: IOException) {
                     e.printStackTrace()
                 }
             }
         }
     )
-    var selectedImages by remember {
-        mutableStateOf<List<Uri>>(emptyList())
-    }
 
-    val multiplePhotoPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickMultipleVisualMedia(maxItems = 2),
-        onResult = { uris -> selectedImages = uris }
-    )
+//    val multiplePhotoPickerLauncher = rememberLauncherForActivityResult(
+//        contract = ActivityResultContracts.PickMultipleVisualMedia(maxItems = 2),
+//        onResult = { uris -> selectedImages = uris }
+//    )
 
     var imageText by remember {
         mutableStateOf("")
     }
 
-    var similarity by remember {
-        mutableStateOf("0.0")
+    LaunchedEffect(image) {
+        Log.d("RecognitionScreen : LaunchedEffect", "Image Text: $imageText")
+
+        if (image != null) {
+            recognizer.process(image!!)
+                .addOnSuccessListener { visionText ->
+                    imageText = visionText.text
+                        .split("\n")[0]
+                            .replace(("[^\\w\\d ]").toRegex(), "")
+                            .split(" ")
+                            .take(3)
+                            .joinToString(" ")
+
+                    if (imageText.isNotEmpty()) {
+                        viewModel.searchCards(
+                            name = imageText,
+                            context = context,
+                            imageUri = imageUri
+                        )
+                    }
+                }
+                .addOnFailureListener {
+                    Log.e("RecognitionScreen : LaunchedEffect", "Failed to process image")
+                }
+        }
     }
 
     Column(
@@ -112,47 +117,32 @@ fun RecognitionScreen(
             Text("Load Images")
         }
 
-        Button(onClick = {
-            if (image != null) {
-                val result = recognizer.process(image!!)
-                    .addOnSuccessListener { visionText ->
-//                        imageText = visionText.text.split("\n")[0]
-                        imageText = visionText.text
-                    }
-                    .addOnFailureListener { e ->
-                        // Task failed with an exception
-                        // ...
-                    }
-            }
-        }) {
-            Text("Process Image")
-        }
-
-        Button(onClick = {
-//            val x = viewModel.loadImage(context, selectedImages[0])
-//            val y = viewModel.loadImage(context, selectedImages[1])
-//            if (x == null || y == null) {
-//                println("Histogram Similarity: 00000")
-//                return@Button
+//        Button(onClick = {
+//            if (image != null) {
+//                val result = recognizer.process(image!!)
+//                    .addOnSuccessListener { visionText ->
+//                        imageText = visionText.text.split("\n")[0].replace("[^A-Za-z]", "")
+////                        imageText = visionText.text
+//                    }
+//                    .addOnFailureListener { e ->
+//                        // Task failed with an exception
+//                        // ...
+//                    }
 //            }
-            viewModel.searchCards(
-                name = imageText,
-                manaCost = emptyList(),
-                colors = emptyList(),
-                rarity = emptyList(),
-                type = emptyList(),
-                superType = emptyList(),
-                context = context,
-                imgUri = uri
-            )
-
-        }) {
-            Text("Search Images")
-        }
-
-
-
-        Text(text = "Similarity $similarity", color = Color.White)
+//        }) {
+//            Text("Process Image")
+//        }
+//
+//        Button(onClick = {
+//            viewModel.searchCards(
+//                name = imageText,
+//                context = context,
+//                imageUri = imageUri
+//            )
+//
+//        }) {
+//            Text("Search Images")
+//        }
 
         Text(text = imageText, color = Color.White)
 
@@ -163,17 +153,11 @@ fun RecognitionScreen(
                 .padding(12.dp)
                 .width(169.dp)
                 .clip(RoundedCornerShape(4.dp))
-                .background(Color.Transparent)
-            ,
+                .background(Color.Transparent),
             contentScale = ContentScale.FillWidth,
             contentDescription = null,
             placeholder = painterResource(id = R.drawable.card_back),
             error = painterResource(id = R.drawable.card_back)
         )
-
     }
-
-
-// Run inference
 }
-

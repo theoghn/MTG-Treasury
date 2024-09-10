@@ -30,4 +30,6 @@ class CardsService @Inject constructor(
         superType = superType,
     )
     suspend fun getCardsByIds(ids: List<String>) = apiClient.getCardsByIds(ids)
+
+    suspend fun getCardsByName(name: String) = apiClient.getCardsByName(name)
 }

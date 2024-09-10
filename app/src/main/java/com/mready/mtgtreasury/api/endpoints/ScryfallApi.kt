@@ -107,6 +107,23 @@ class ScryfallApi @Inject constructor(
         }
     }
 
+    suspend fun getCardsByName(
+        name: String,
+    ): List<MtgCard> {
+        return runCatching {
+            apiClient.get(
+                endpoint = "cards/search",
+                query = mapOf(
+                    "q" to buildNameSearchQuery(name),
+                )
+            ) { json ->
+                json["data"].array.map { it.toCard() }
+            }
+        }.getOrElse {
+            emptyList()
+        }
+    }
+
     private fun buildSearchQuery(
         name: String,
         type: List<String>,
@@ -130,6 +147,16 @@ class ScryfallApi @Inject constructor(
             colors.forEach { append(" c:$it") }
             rarity.forEach { append(" r:$it") }
             manaCost.forEach { append(" mana:$it") }
+        }
+        return query
+    }
+
+    private fun buildNameSearchQuery(
+        name: String,
+    ): String {
+        val query = buildString {
+            append(name)
+            append(" unique:art")
         }
         return query
     }

@@ -5,13 +5,12 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
-import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import coil.ImageLoader
-import coil.request.ImageRequest
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.mready.mtgtreasury.services.CardsService
-import com.mready.mtgtreasury.services.InventoryService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -21,78 +20,55 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.opencv.android.Utils.bitmapToMat
-import org.opencv.core.Core
-import org.opencv.core.Core.NORM_MINMAX
-import org.opencv.core.Core.normalize
-import org.opencv.core.Mat
-import org.opencv.core.MatOfByte
-import org.opencv.core.MatOfFloat
-import org.opencv.core.MatOfInt
-import org.opencv.imgcodecs.Imgcodecs
-import org.opencv.imgproc.Imgproc.COLOR_BGR2HSV
-import org.opencv.imgproc.Imgproc.HISTCMP_CORREL
-import org.opencv.imgproc.Imgproc.HISTCMP_INTERSECT
-import org.opencv.imgproc.Imgproc.calcHist
-import org.opencv.imgproc.Imgproc.compareHist
-import org.opencv.imgproc.Imgproc.cvtColor
 import java.io.IOException
-import java.io.InputStream
-import java.net.URL
 import javax.inject.Inject
 
 
 @HiltViewModel
 class RecognitionViewModel @Inject constructor(
     private val cardsService: CardsService,
-    private val inventoryService: InventoryService
 ) : ViewModel() {
     val bestImageId = MutableStateFlow("")
-//    val init = MutableStateFlow(false)
 
     fun searchCards(
         name: String,
-        manaCost: List<String>,
-        colors: List<String>,
-        rarity: List<String>,
-        type: List<String>,
-        superType: List<String>,
         context: Context,
-        imgUri: Uri
+        imageUri: Uri
     ) {
         viewModelScope.launch {
-            val cards = cardsService.getCardsByFilters(
+            val cards = cardsService.getCardsByName(
                 name = name,
-                manaCost = manaCost,
-                colors = colors,
-                rarity = rarity,
-                type = type,
-                superType = superType,
             )
-
-//                cards = cards.map {
-//                    it.copy(
-//                        qty = if (inventory.contains(it.id)) {
-//                            inventory[it.id]!!
-//                        } else {
-//                            0
-//                        }
-//                    )
-//                }
 
             delay(100)
 
-            val image = loadImage(context, imgUri)
-//            val image = loadImageFromURL("https://cards.scryfall.io/normal/front/c/d/cd52d335-337c-4ac8-8854-15850e2da093.jpg?1696168625")
+            val image = InputImage.fromFilePath(context, imageUri)
             var maxMatch = 0.0
             var bestMatchImgId = ""
 
+            val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+
+            var imageText = ""
+
+            recognizer.process(image).addOnSuccessListener{
+                imageText = it.text.split("\n").takeLast(4).joinToString(" ")
+                Log.d("RecognitionViewModel", "InitialImage: $imageText")
+
+            }
+            Log.d("RecognitionViewModel", "Name: $name")
+
+
+
             if (cards.isNotEmpty()) {
                 cards.forEach { card ->
-                    val cardImage = loadImageFromURL(card.imageUris.normalSize)
-                    if (image != null && cardImage != null) {
-                        val match = compareHistograms(image, cardImage)
-                        Log.d("RecognitionViewModel", "Match: $match ${card.imageUris.normalSize}")
+                    Log.d("RecognitionViewModel", "Card: ${card.imageUris.borderCrop}")
+                    val imageByteArray = createBitmapFromUri(card.imageUris.normalSize) ?: return@forEach
+                    val cardImage = InputImage.fromBitmap(imageByteArray, 0)
+                    recognizer.process(cardImage).addOnSuccessListener {
+                        val cardText = it.text.split("\n").takeLast(4).joinToString(" ")
+                        val match = jaroWinklerSimilarity(imageText, cardText)
+
+                        Log.d("RecognitionViewModel", "Card Text: $cardText \n Image Text: $imageText \n match = $match")
                         if (match > maxMatch) {
                             maxMatch = match
                             bestMatchImgId = card.imageUris.normalSize
@@ -104,10 +80,9 @@ class RecognitionViewModel @Inject constructor(
         }
     }
 
-    suspend fun loadImageFromURL(imageUrl: String): Mat? {
+    private suspend fun createBitmapFromUri(imageUrl: String): Bitmap? {
         try {
-            var matOfByte: Mat? = null
-            // Build the request to fetch the image
+            var resultBytes : Bitmap? = null
             withContext(Dispatchers.IO) {
                 val client = OkHttpClient()
 
@@ -117,75 +92,81 @@ class RecognitionViewModel @Inject constructor(
                     throw IOException("Failed to download file: $response")
                 }
                 val imageBytes = response.body?.byteStream()?.readBytes() ?: return@withContext null
+                val imageBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
 
-                // Create a MatOfByte from the image bytes
-                matOfByte = MatOfByte(*imageBytes)
-
-                // Convert the MatOfByte to a Mat (OpenCV matrix)
+                resultBytes = imageBitmap
             }
 
-            // Execute the request
-
-            // Check if response was successful
-
-
-            // Read the image as bytes
-            if (matOfByte == null) {
-                return null
-            }
-            return Imgcodecs.imdecode(matOfByte, Imgcodecs.IMREAD_COLOR)
-
-//            return mat
-        } catch (e: Exception) {
-            Log.d("RecognitionViewModel", "Error loading image from URL")
+            return resultBytes
+        }
+        catch (e: Exception) {
+            Log.d("RecognitionViewModel", "createBitmapFromUri() : Error loading image from URL")
             e.printStackTrace()
             return null
         }
     }
+}
 
-    fun loadImage(context: Context, uri: Uri): Mat? {
-        try {
-            // Get input stream from the Uri
-            val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
-            val bitmap: Bitmap = BitmapFactory.decodeStream(inputStream)
-            val mat = Mat()
-            // Convert Bitmap to OpenCV Mat
-            bitmapToMat(bitmap, mat)
-            return mat
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return null
+fun jaroWinklerSimilarity(s1: String, s2: String): Double {
+    val jaroSimilarity = jaroSimilarity(s1, s2)
+    val prefixLength = commonPrefixLength(s1, s2)
+
+    val scalingFactor = 0.1
+
+    return jaroSimilarity + prefixLength * scalingFactor * (1 - jaroSimilarity)
+}
+
+
+fun jaroSimilarity(s1: String, s2: String): Double {
+    if (s1 == s2) return 1.0
+
+    val maxDistance = (s1.length.coerceAtLeast(s2.length) / 2) - 1
+    val s1Matches = BooleanArray(s1.length)
+    val s2Matches = BooleanArray(s2.length)
+
+    var matches = 0
+    var transpositions = 0
+
+    for (i in s1.indices) {
+        val start = 0.coerceAtLeast(i - maxDistance)
+        val end = (i + maxDistance + 1).coerceAtMost(s2.length)
+
+        for (j in start until end) {
+            if (s2Matches[j]) continue
+            if (s1[i] != s2[j]) continue
+            s1Matches[i] = true
+            s2Matches[j] = true
+            matches++
+            break
         }
     }
 
+    if (matches == 0) return 0.0
 
-    fun calculateHistogram(image: Mat): Mat {
-        val hsvBase = Mat()
-        cvtColor(image, hsvBase, COLOR_BGR2HSV)
 
-        val hist = Mat()
-        val histSize = MatOfInt(50, 60)
-        val ranges = MatOfFloat(0f, 180f, 0f, 256f)
-
-        val bgrPlanes: MutableList<Mat> = mutableListOf()
-        Core.split(image, bgrPlanes);
-
-        calcHist(
-            arrayOf(image).toMutableList(),
-            MatOfInt(0, 1),
-            Mat(),
-            hist,
-            histSize,
-            ranges
-        )
-        normalize(hist, hist, 0.0, 1.0, NORM_MINMAX, -1, Mat())
-        return hist
+    var k = 0
+    for (i in s1.indices) {
+        if (!s1Matches[i]) continue
+        while (!s2Matches[k]) k++
+        if (s1[i] != s2[k]) transpositions++
+        k++
     }
 
-    fun compareHistograms(img1: Mat, img2: Mat): Double {
-        val hist1 = calculateHistogram(img1)
-        val hist2 = calculateHistogram(img2)
+    transpositions /= 2
 
-        return compareHist(hist1, hist2, HISTCMP_INTERSECT)
+    return (matches / s1.length.toDouble() + matches / s2.length.toDouble() + (matches - transpositions) / matches.toDouble()) / 3.0
+}
+
+fun commonPrefixLength(s1: String, s2: String): Int {
+    var prefixLength = 0
+
+    for (i in 0 until s1.length.coerceAtMost(s2.length)) {
+        if (s1[i] == s2[i]) {
+            prefixLength++
+        } else {
+            break
+        }
     }
+
+    return prefixLength
 }
