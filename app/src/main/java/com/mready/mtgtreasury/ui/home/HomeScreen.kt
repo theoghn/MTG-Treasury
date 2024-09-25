@@ -1,13 +1,17 @@
 package com.mready.mtgtreasury.ui.home
 
 import android.icu.text.NumberFormat
+import android.util.Log
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -60,12 +64,14 @@ import com.mready.mtgtreasury.utility.formatReleaseDate
 import com.mready.mtgtreasury.utility.getNumberOfLegalFormats
 import java.util.Locale
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun HomeScreen(
+fun SharedTransitionScope.HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeScreenViewModel = hiltViewModel(),
-    onCardClick: (String) -> Unit,
-    navigateToWebView: (String) -> Unit
+    onCardClick: (String, String) -> Unit,
+    navigateToWebView: (String) -> Unit,
+    animatedVisibilityScope: AnimatedContentScope
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val scrollState = rememberScrollState()
@@ -91,9 +97,9 @@ fun HomeScreen(
 
                 CollectionValue(inventoryValue = inventoryValue)
 
-                CardOfTheDay(card, onCardClick)
+                CardOfTheDay(card, animatedVisibilityScope, onCardClick)
 
-                MostValuableCards(mostValuableCards, onCardClick)
+                MostValuableCards(mostValuableCards, animatedVisibilityScope, onCardClick)
 
                 NewestSets(
                     newestSets = newestSets,
@@ -174,43 +180,55 @@ private fun NewestSets(
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-private fun ColumnScope.MostValuableCards(
+private fun SharedTransitionScope.MostValuableCards(
     mostValuableCards: List<MtgCard>,
-    onCardClick: (String) -> Unit
+    animatedVisibilityScope: AnimatedContentScope,
+    onCardClick: (String, String) -> Unit
 ) {
-    Text(
-        modifier = Modifier
-            .padding(bottom = 8.dp, top = 20.dp, start = 32.dp)
-            .align(Alignment.Start),
-        text = stringResource(R.string.home_most_valuable_cards),
-        fontSize = 20.sp,
-        color = Color.White,
-        fontWeight = FontWeight.Bold,
-    )
+    Column {
+        Text(
+            modifier = Modifier
+                .padding(bottom = 8.dp, top = 20.dp, start = 32.dp)
+                .align(Alignment.Start),
+            text = stringResource(R.string.home_most_valuable_cards),
+            fontSize = 20.sp,
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+        )
 
-    Column(
-        modifier = Modifier
-            .padding(horizontal = 12.dp)
-            .fillMaxWidth()
-            .clip(shape = RoundedCornerShape(12.dp))
-            .background(BoxColor)
-    ) {
-        mostValuableCards.forEachIndexed { index, mtgCard ->
-            ValuableCardItem(onCardClick, mtgCard, index)
+        Column(
+            modifier = Modifier
+                .padding(horizontal = 12.dp)
+                .fillMaxWidth()
+                .clip(shape = RoundedCornerShape(12.dp))
+                .background(BoxColor)
+        ) {
+            mostValuableCards.forEachIndexed { index, mtgCard ->
+                ValuableCardItem(
+                    onCardClick = onCardClick,
+                    card = mtgCard,
+                    index = index,
+                    animatedVisibilityScope = animatedVisibilityScope
+                )
+            }
         }
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-private fun ValuableCardItem(
-    onCardClick: (String) -> Unit,
-    mtgCard: MtgCard,
-    index: Int
+private fun SharedTransitionScope.ValuableCardItem(
+    card: MtgCard,
+    index: Int,
+    animatedVisibilityScope: AnimatedContentScope,
+    onCardClick: (String, String) -> Unit
 ) {
+    Log.d("HomeScreen", "ValuableCardItem-> id: ${card.id}")
     Row(
         modifier = Modifier
-            .clickable { onCardClick(mtgCard.id) }
+            .clickable { onCardClick(card.id, card.imageUris.normalSize) }
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -232,13 +250,25 @@ private fun ValuableCardItem(
         }
 
         AsyncImage(
-            model = mtgCard.imageUris.smallSize,
+//            model = mtgCard.imageUris.smallSize,
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(card.imageUris.normalSize)
+                .crossfade(true)
+//                .diskCacheKey(card.id)
+                .size(800,1150)
+                .memoryCacheKey(card.id) // same key as shared element key
+                .build(),
             modifier = Modifier
                 .padding(start = 12.dp)
                 .width(80.dp)
-                .background(Color.Transparent),
+                .sharedElement(
+                    rememberSharedContentState(
+                        key = card.id
+                    ),
+                    animatedVisibilityScope = animatedVisibilityScope,
+                ),
             contentScale = ContentScale.FillWidth,
-            contentDescription = null,
+            contentDescription = card.id,
             placeholder = painterResource(id = R.drawable.card_back),
             error = painterResource(id = R.drawable.card_back)
         )
@@ -250,7 +280,7 @@ private fun ValuableCardItem(
             horizontalAlignment = Alignment.Start
         ) {
             Text(
-                text = mtgCard.name,
+                text = card.name,
                 fontSize = 14.sp,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
@@ -264,15 +294,15 @@ private fun ValuableCardItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 CardSetName(
-                    setName = mtgCard.setName,
-                    setAbbreviation = mtgCard.setAbbreviation,
+                    setName = card.setName,
+                    setAbbreviation = card.setAbbreviation,
                     fontSize = 10,
                 )
             }
 
             Text(
                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp),
-                text = formatPrice(mtgCard.prices.eur.toDouble()),
+                text = formatPrice(card.prices.eur.toDouble()),
                 fontSize = 24.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = AccentColor,
@@ -281,148 +311,167 @@ private fun ValuableCardItem(
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-private fun ColumnScope.CardOfTheDay(
+private fun SharedTransitionScope.CardOfTheDay(
     card: MtgCard,
-    onCardClick: (String) -> Unit
+    animatedVisibilityScope: AnimatedContentScope,
+    onCardClick: (String, String) -> Unit
 ) {
-    Text(
-        modifier = Modifier
-            .padding(bottom = 8.dp, top = 20.dp, start = 32.dp)
-            .align(Alignment.Start),
-        text = stringResource(id = R.string.home_card_of_the_day),
-        fontSize = 20.sp,
-        color = Color.White,
-        fontWeight = FontWeight.Bold,
-    )
-
-    Row(
-        modifier = Modifier
-            .padding(horizontal = 12.dp)
-            .fillMaxWidth()
-            .height(265.dp)
-            .clip(shape = RoundedCornerShape(12.dp))
-            .background(BoxColor),
-    ) {
-        AsyncImage(
-            model = card.imageUris.borderCrop,
+    Column {
+        Text(
             modifier = Modifier
-                .padding(12.dp)
-                .width(169.dp)
-                .clip(RoundedCornerShape(4.dp))
-                .background(Color.Transparent)
-                .clickable {
-                    onCardClick(card.id)
-                }
-            ,
-            contentScale = ContentScale.FillWidth,
-            contentDescription = null,
-            placeholder = painterResource(id = R.drawable.card_back),
-            error = painterResource(id = R.drawable.card_back)
+                .padding(bottom = 8.dp, top = 20.dp, start = 32.dp)
+                .align(Alignment.Start),
+            text = stringResource(id = R.string.home_card_of_the_day),
+            fontSize = 20.sp,
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
         )
 
-        Box(modifier = Modifier.fillMaxSize()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(end = 16.dp)
-                    .padding(vertical = 16.dp)
-            ) {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    text = card.name,
-                    fontSize = 18.sp,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    fontWeight = FontWeight.SemiBold,
-                    color = AccentColor,
-                    textAlign = TextAlign.Center,
-                )
-
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .padding(horizontal = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    CardSetName(
-                        setName = card.setName,
-                        setAbbreviation = card.setAbbreviation,
-                        fontSize = 10,
-                    )
-                }
-
-                Text(
-                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp),
-                    text = formatPrice(card.prices.eur.toDouble()),
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White,
-                )
-
-                TwoColorText(
-                    modifier = Modifier.padding(horizontal = 4.dp),
-                    firstPart = stringResource(R.string.text_rank),
-                    secondPart = "${card.edhRank}"
-                )
-
-                Row(
-                    modifier = Modifier.padding(horizontal = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = stringResource(R.string.text_foil),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = Color.LightGray,
-                    )
-
-                    Image(
-                        modifier = Modifier.size(18.dp),
-                        painter = painterResource(
-                            id = if (card.foil) {
-                                R.drawable.icons8_checkmark_48
-                            } else {
-                                R.drawable.icons8_cancel_48
-                            }
-                        ),
-                        contentDescription = null
-                    )
-                }
-
-                TwoColorText(
-                    modifier = Modifier.padding(horizontal = 4.dp),
-                    firstPart = stringResource(R.string.text_legal),
-                    secondPart = stringResource(
-                        R.string.x_max_set,
-                        card.getNumberOfLegalFormats()
-                    )
-                )
-
-                TwoColorText(
-                    modifier = Modifier.padding(horizontal = 4.dp),
-                    firstPart = stringResource(R.string.text_release),
-                    secondPart = card.releaseDate.formatReleaseDate()
-                )
-            }
-
-            PrimaryButton(
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 12.dp)
+                .fillMaxWidth()
+                .height(265.dp)
+                .clip(shape = RoundedCornerShape(12.dp))
+                .background(BoxColor),
+        ) {
+            AsyncImage(
+//            model = card.imageUris.borderCrop,
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(card.imageUris.normalSize)
+                    .crossfade(true)
+//                    .placeholderMemoryCacheKey(card.id) //  same key as shared element key
+                    .diskCacheKey(card.id)
+                    .memoryCacheKey(card.id) // same key as shared element key
+                    .build(),
                 modifier = Modifier
                     .padding(12.dp)
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .align(Alignment.BottomEnd),
-                onClick = { onCardClick(card.id) },
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                    contentDescription = null,
-                    tint = Color.White
-                )
+                    .aspectRatio(2 / 3f)
+//                    .background(Color.Transparent)
+                    .sharedElement(
+                        rememberSharedContentState(
+                            key = card.id
+                        ),
+                        animatedVisibilityScope = animatedVisibilityScope,
+                        clipInOverlayDuringTransition = OverlayClip(RoundedCornerShape(12.dp))
+                    )
+                    .width(169.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .clickable {
+                        onCardClick(card.id,card.imageUris.normalSize)
+                    },
+                contentScale = ContentScale.FillBounds,
+                contentDescription = card.id,
+                placeholder = painterResource(id = R.drawable.card_back),
+                error = painterResource(id = R.drawable.card_back)
+            )
+
+            Box(modifier = Modifier.fillMaxSize()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(end = 16.dp)
+                        .padding(vertical = 16.dp)
+                ) {
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        text = card.name,
+                        fontSize = 18.sp,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        fontWeight = FontWeight.SemiBold,
+                        color = AccentColor,
+                        textAlign = TextAlign.Center,
+                    )
+
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(horizontal = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        CardSetName(
+                            setName = card.setName,
+                            setAbbreviation = card.setAbbreviation,
+                            fontSize = 10,
+                        )
+                    }
+
+                    Text(
+                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp),
+                        text = formatPrice(card.prices.eur.toDouble()),
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White,
+                    )
+
+                    TwoColorText(
+                        modifier = Modifier.padding(horizontal = 4.dp),
+                        firstPart = stringResource(R.string.text_rank),
+                        secondPart = "${card.edhRank}"
+                    )
+
+                    Row(
+                        modifier = Modifier.padding(horizontal = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(R.string.text_foil),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = Color.LightGray,
+                        )
+
+                        Image(
+                            modifier = Modifier.size(18.dp),
+                            painter = painterResource(
+                                id = if (card.foil) {
+                                    R.drawable.icons8_checkmark_48
+                                } else {
+                                    R.drawable.icons8_cancel_48
+                                }
+                            ),
+                            contentDescription = null
+                        )
+                    }
+
+                    TwoColorText(
+                        modifier = Modifier.padding(horizontal = 4.dp),
+                        firstPart = stringResource(R.string.text_legal),
+                        secondPart = stringResource(
+                            R.string.x_max_set,
+                            card.getNumberOfLegalFormats()
+                        )
+                    )
+
+                    TwoColorText(
+                        modifier = Modifier.padding(horizontal = 4.dp),
+                        firstPart = stringResource(R.string.text_release),
+                        secondPart = card.releaseDate.formatReleaseDate()
+                    )
+                }
+
+                PrimaryButton(
+                    modifier = Modifier
+                        .padding(12.dp)
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .align(Alignment.BottomEnd),
+                    onClick = { onCardClick(card.id, card.imageUris.normalSize) },
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = null,
+                        tint = Color.White
+                    )
+                }
             }
         }
     }
+
 }
 
 

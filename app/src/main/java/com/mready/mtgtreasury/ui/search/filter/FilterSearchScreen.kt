@@ -1,6 +1,9 @@
 package com.mready.mtgtreasury.ui.search.filter
 
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -14,6 +17,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -98,12 +102,14 @@ enum class SheetFilters {
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun FilterSearchScreen(
     modifier: Modifier = Modifier,
     viewModel: FilterSearchViewModel = hiltViewModel(),
     searchQuery: String?,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    sharedTransitionScope: SharedTransitionScope,
     onNavigateToCard: (String) -> Unit,
     onNavigateToSearch: () -> Unit
 ) {
@@ -240,16 +246,19 @@ fun FilterSearchScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         items(cards) { mtgCard ->
-                            FilterMtgCard(
-                                mtgCard = mtgCard,
-                                onClick = {
-                                    onNavigateToCard(mtgCard.id)
-                                },
-                                onAddToInventory = {
-                                    viewModel.addCardToInventory(mtgCard.id)
-                                },
-                                isInInventory = mtgCard.qty > 0
-                            )
+                            with(sharedTransitionScope) {
+                                FilterMtgCard(
+                                    mtgCard = mtgCard,
+                                    onClick = {
+                                        onNavigateToCard(mtgCard.id)
+                                    },
+                                    onAddToInventory = {
+                                        viewModel.addCardToInventory(mtgCard.id)
+                                    },
+                                    animatedVisibilityScope = animatedVisibilityScope,
+                                    isInInventory = mtgCard.qty > 0
+                                )
+                            }
                         }
                     }
                 }
@@ -324,7 +333,6 @@ fun FilterSearchScreen(
             onDismissRequest = {
                 isFilterBottomSheetVisible = false
             },
-            windowInsets = WindowInsets.statusBars,
             containerColor = BoxColor,
             dragHandle = {},
             shape = RoundedCornerShape(12.dp)
@@ -394,7 +402,7 @@ fun AdvancedSearchModalBottomSheet(
     ModalBottomSheet(
         sheetState = bottomSheetState,
         onDismissRequest = onDismissRequest,
-        windowInsets = WindowInsets.statusBars,
+        contentWindowInsets = { WindowInsets.statusBars },
         containerColor = MainBackgroundColor,
         dragHandle = {},
         shape = AbsoluteCutCornerShape(0.dp)
@@ -544,10 +552,7 @@ fun FilterBottomSheet(
     resetFilter: () -> Unit,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Box(
-        modifier = modifier
-            .windowInsetsPadding(WindowInsets.systemBars)
-    ) {
+    Box {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -892,11 +897,13 @@ fun TypeBottomSheet(
 }
 
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-private fun FilterMtgCard(
+private fun SharedTransitionScope.FilterMtgCard(
     modifier: Modifier = Modifier,
     mtgCard: MtgCard,
     isInInventory: Boolean,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     onAddToInventory: () -> Unit,
     onClick: () -> Unit
 ) {
@@ -947,17 +954,27 @@ private fun FilterMtgCard(
             ) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
-                        .data(mtgCard.imageUris.smallSize)
+                        .data(mtgCard.imageUris.normalSize)
                         .crossfade(true)
+                        .memoryCacheKey(mtgCard.id) // same key as shared element key
                         .build(),
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
                         .padding(bottom = 12.dp)
                         .height(160.dp)
-                        .clip(RoundedCornerShape(4.dp))
+                        .aspectRatio(2 / 3f)
+//                    .background(Color.Transparent)
+                        .sharedElement(
+                            rememberSharedContentState(
+                                key = mtgCard.id
+                            ),
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            clipInOverlayDuringTransition = OverlayClip(RoundedCornerShape(6.dp))
+                        )
+                        .clip(RoundedCornerShape(6.dp))
                         .background(Color.Transparent)
                         .align(Alignment.CenterHorizontally),
-                    contentScale = ContentScale.FillHeight,
+                    contentScale = ContentScale.FillBounds,
                     placeholder = painterResource(id = R.drawable.card_back),
                     error = painterResource(id = R.drawable.card_back),
                     contentDescription = null,

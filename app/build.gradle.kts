@@ -122,5 +122,5 @@ dependencies {
     // Import the GPU delegate plugin Library for GPU inference
     implementation (libs.tensorflow.lite.gpu.delegate.plugin)
 
-    implementation ("com.quickbirdstudios:opencv:4.5.2")
+    implementation ("com.google.mediapipe:tasks-vision:0.20230731")
 }

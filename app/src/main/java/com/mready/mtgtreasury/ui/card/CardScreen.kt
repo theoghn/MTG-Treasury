@@ -1,5 +1,6 @@
 package com.mready.mtgtreasury.ui.card
 
+import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -73,13 +75,21 @@ import com.mready.mtgtreasury.utility.Constants
 import com.mready.mtgtreasury.utility.formatPrice
 import com.mready.mtgtreasury.utility.formatReleaseDate
 import kotlin.reflect.full.memberProperties
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.ui.platform.LocalContext
+import coil.request.ImageRequest
 
-@OptIn(ExperimentalMaterial3Api::class)
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
-fun CardScreen(
+fun SharedTransitionScope.CardScreen(
     modifier: Modifier = Modifier,
     viewModel: CardViewModel = hiltViewModel(),
     id: String,
+    cardImgUri: String,
+    animatedVisibilityScope: AnimatedContentScope,
     onBack: () -> Boolean
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -96,11 +106,89 @@ fun CardScreen(
     Box(modifier = modifier.fillMaxSize()) {
         when (val currentState = uiState) {
             is CardScreenUiState.Loading -> {
-                Box(
+                BottomSheetScaffold(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .background(BoxColor)
-                )
+                        .fillMaxWidth(),
+                    sheetPeekHeight = screenHeight * 2 / 5,
+                    scaffoldState = scaffoldState,
+                    sheetContent = {
+                    },
+                    containerColor = BoxColor,
+                    sheetContainerColor = BottomBarColor
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .statusBarsPadding()
+                            .background(BoxColor)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            SecondaryButton(
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp)
+                                    .size(40.dp),
+                                onClick = {
+                                    onBack()
+                                },
+                                shape = CircleShape
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = null,
+                                    tint = Color.White
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.weight(1f))
+
+                            SecondaryButton(
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp)
+                                    .size(40.dp),
+                                onClick = {
+                                },
+                                shape = CircleShape
+                            ) {
+
+                            }
+                        }
+
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data("cardImgUri")
+//                                    .crossfade(true)
+//                                    .placeholderMemoryCacheKey(id) //  same key as shared element key
+                                    .memoryCacheKey(id) // same key as shared element key
+                                    .diskCacheKey(id)
+//                                    .allowHardware(false)
+                                    .build(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 54.dp, vertical = 16.dp)
+                                    .aspectRatio(2 / 3f)
+                                    .background(Color.Transparent)
+                                    .align(Alignment.TopCenter)
+                                    .sharedElement(
+                                        rememberSharedContentState(
+                                            key = id
+                                        ),
+                                        animatedVisibilityScope = animatedVisibilityScope,
+                                        clipInOverlayDuringTransition = OverlayClip(
+                                            RoundedCornerShape(12.dp)
+                                        )
+                                    )
+                                    .clip(RoundedCornerShape(12.dp)),
+                                contentScale = ContentScale.FillBounds,
+                                contentDescription = id,
+                                placeholder = painterResource(id = R.drawable.card_back),
+                                error = painterResource(id = R.drawable.card_back)
+                            )
+                        }
+                    }
+                }
             }
 
             is CardScreenUiState.CardUi -> {
@@ -179,14 +267,30 @@ fun CardScreen(
 
                         Box(modifier = Modifier.fillMaxSize()) {
                             AsyncImage(
-                                model = card.imageUris.borderCrop,
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(card.imageUris.normalSize)
+//                                    .crossfade(true)
+//                                    .placeholderMemoryCacheKey(id) //  same key as shared element key
+                                    .diskCacheKey(id)
+                                    .memoryCacheKey(id) // same key as shared element key
+                                    .build(),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 54.dp, vertical = 16.dp)
-                                    .clip(RoundedCornerShape(12.dp))
+                                    .aspectRatio(2 / 3f)
                                     .background(Color.Transparent)
-                                    .align(Alignment.TopCenter),
-                                contentScale = ContentScale.FillWidth,
+                                    .align(Alignment.TopCenter)
+                                    .sharedElement(
+                                        rememberSharedContentState(
+                                            key = id
+                                        ),
+                                        animatedVisibilityScope = animatedVisibilityScope,
+                                        clipInOverlayDuringTransition = OverlayClip(
+                                            RoundedCornerShape(12.dp)
+                                        )
+                                    )
+                                    .clip(RoundedCornerShape(12.dp)),
+                                contentScale = ContentScale.FillBounds,
                                 contentDescription = null,
                                 placeholder = painterResource(id = R.drawable.card_back),
                                 error = painterResource(id = R.drawable.card_back)
@@ -279,9 +383,8 @@ fun SheetContent(
 //    72 dp for the top bar + buttons
     Column(
         modifier = modifier
-            .padding(bottom = 80.dp)
             .padding(horizontal = 20.dp)
-            .heightIn(max = screenHeight - 72.dp - 80.dp)
+            .heightIn(max = screenHeight - 72.dp)
             .verticalScroll(state = scrollState)
     ) {
         Text(
@@ -400,6 +503,8 @@ fun SheetContent(
                 }
             }
         }
+
+        Spacer(modifier = Modifier.height(80.dp))
     }
 }
 

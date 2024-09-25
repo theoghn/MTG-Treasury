@@ -1,5 +1,8 @@
 package com.mready.mtgtreasury.ui.navigation
 
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -43,10 +46,12 @@ import com.mready.mtgtreasury.ui.user.profile.settings.SettingsScreen
 import com.mready.mtgtreasury.ui.user.profile.update.ProfileUpdateScreen
 
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun NavigationScreen(
+fun SharedTransitionScope.NavigationScreen(
     modifier: Modifier = Modifier,
-    navigateToCard: (String) -> Unit,
+    animatedVisibilityScope: AnimatedContentScope,
+    navigateToCard: (String, String) -> Unit,
     navigateToDeckCreation: () -> Unit,
     navigateToDeck: (String) -> Unit,
     navigateToInventory: () -> Unit,
@@ -130,7 +135,8 @@ fun NavigationScreen(
         ) {
             composable<HomeScreenDestination> {
                 HomeScreen(
-                    onCardClick = { id -> navigateToCard(id) },
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    onCardClick = { id,cardImgUri -> navigateToCard(id,cardImgUri) },
                     navigateToWebView = { url -> navigateToWebView(url) }
                 )
             }
@@ -154,7 +160,8 @@ fun NavigationScreen(
                 }
 
                 composable<SearchRoot.FilterSearchScreenDestination> { navBackStackEntry ->
-                    val destination: SearchRoot.FilterSearchScreenDestination = navBackStackEntry.toRoute()
+                    val destination: SearchRoot.FilterSearchScreenDestination =
+                        navBackStackEntry.toRoute()
                     FilterSearchScreen(
                         searchQuery = destination.searchName,
                         onNavigateToSearch = {
@@ -166,10 +173,12 @@ fun NavigationScreen(
                                 navController.navigate(SearchRoot.SearchScreenDestination)
                             }
                         },
+                        sharedTransitionScope = this@NavigationScreen,
+                        animatedVisibilityScope = animatedVisibilityScope,
                         onNavigateToCard = { id ->
-                            navigateToCard(
-                                id
-                            )
+//                            navigateToCard(
+//                                id
+//                            )
                         }
                     )
                 }
@@ -205,7 +214,7 @@ fun NavigationScreen(
                         onBack = {
                             navController.popBackStack()
                         },
-                        navigateToProfileUpdate = { updateType:String ->
+                        navigateToProfileUpdate = { updateType: String ->
                             navController.navigate(
                                 ProfileRoot.ProfileUpdateScreenDestination(
                                     updateType
@@ -215,8 +224,9 @@ fun NavigationScreen(
                     )
                 }
 
-                composable<ProfileRoot.ProfileUpdateScreenDestination> {navBackStackEntry->
-                    val destination: ProfileRoot.ProfileUpdateScreenDestination = navBackStackEntry.toRoute()
+                composable<ProfileRoot.ProfileUpdateScreenDestination> { navBackStackEntry ->
+                    val destination: ProfileRoot.ProfileUpdateScreenDestination =
+                        navBackStackEntry.toRoute()
                     ProfileUpdateScreen(
                         updateType = destination.updateType,
                         onBack = {

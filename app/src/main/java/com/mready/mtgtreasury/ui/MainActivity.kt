@@ -14,7 +14,6 @@ import com.mready.mtgtreasury.ui.recognition.RecognitionScreen
 import com.mready.mtgtreasury.ui.root.RootApp
 import com.mready.mtgtreasury.ui.theme.MTGTreasuryTheme
 import dagger.hilt.android.AndroidEntryPoint
-import org.opencv.android.OpenCVLoader
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -28,16 +27,8 @@ class MainActivity : ComponentActivity() {
         )
         setContent {
             MTGTreasuryTheme {
-//                RootApp()
-                if (!OpenCVLoader.initDebug()){
-                    Log.e("OpenCV", "Unable to load OpenCV!")
-                }
-                else {
-                    Log.d("OpenCV", "OpenCV loaded Successfully!")
-                    RecognitionScreen()
-
-                }
-
+                RootApp()
+//                RecognitionScreen()
             }
         }
     }
