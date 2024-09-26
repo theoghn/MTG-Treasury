@@ -6,4 +6,4 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 @Parcelize
-data class CardScreenDestination(val id: String, val cardImgUri: String) : Parcelable
+data class CardScreenDestination(val id: String) : Parcelable

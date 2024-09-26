@@ -61,7 +61,11 @@ fun RootApp(
                     composable<SignInDestination> {
                         SignInScreen(
                             onNavigateToSingUp = {
-                                if(!authenticationController.popBackStack(SignUpDestination, inclusive = false)){
+                                if (!authenticationController.popBackStack(
+                                        SignUpDestination,
+                                        inclusive = false
+                                    )
+                                ) {
                                     authenticationController.navigate(SignUpDestination)
                                 }
                             }
@@ -71,7 +75,11 @@ fun RootApp(
                     composable<SignUpDestination> {
                         SingUpScreen(
                             onNavigateToSingIn = {
-                                if(!authenticationController.popBackStack(SignInDestination, inclusive = false)){
+                                if (!authenticationController.popBackStack(
+                                        SignInDestination,
+                                        inclusive = false
+                                    )
+                                ) {
                                     authenticationController.navigate(SignInDestination)
                                 }
                             }
@@ -81,10 +89,10 @@ fun RootApp(
             }
 
             is RootUiState.MainApp -> {
-                if(authenticationController.currentDestination?.route != null){
+                if (authenticationController.currentDestination?.route != null) {
                     authenticationController.popBackStack(SignInDestination, inclusive = false)
                 }
-                SharedTransitionLayout{
+                SharedTransitionLayout {
                     NavHost(
                         modifier = Modifier
                             .fillMaxSize(),
@@ -118,9 +126,9 @@ fun RootApp(
                     ) {
                         composable<NavigationScreenDestination> {
                             NavigationScreen(
-                                navigateToCard = { id,cardImgUri ->
+                                navigateToCard = { id ->
                                     mainNavController.navigate(
-                                        CardScreenDestination(id = id, cardImgUri = cardImgUri)
+                                        CardScreenDestination(id = id)
                                     )
                                 },
                                 navigateToDeckCreation = {
@@ -156,7 +164,6 @@ fun RootApp(
                             val destination: CardScreenDestination = backStackEntry.toRoute()
                             CardScreen(
                                 id = destination.id,
-                                cardImgUri = destination.cardImgUri,
                                 animatedVisibilityScope = this,
                                 onBack = { mainNavController.popBackStack() }
                             )
@@ -176,7 +183,8 @@ fun RootApp(
                         }
 
                         composable<DeckCreationScreenDestination> { backStackEntry ->
-                            val destination: DeckCreationScreenDestination = backStackEntry.toRoute()
+                            val destination: DeckCreationScreenDestination =
+                                backStackEntry.toRoute()
                             DeckCreationScreen(
                                 deckId = destination.id,
                                 onBack = { mainNavController.popBackStack() }
@@ -186,9 +194,9 @@ fun RootApp(
                         composable<InventoryScreenDestination> {
                             InventoryScreen(
                                 onNavigateToCard = { id ->
-//                                    mainNavController.navigate(
-//                                        CardScreenDestination(id)
-//                                    )
+                                    mainNavController.navigate(
+                                        CardScreenDestination(id)
+                                    )
                                 },
                                 onBack = { mainNavController.popBackStack() }
                             )
@@ -198,15 +206,15 @@ fun RootApp(
                         composable<WishlistScreenDestination> {
                             WishlistScreen(
                                 onNavigateToCard = { id ->
-//                                    mainNavController.navigate(
-//                                        CardScreenDestination(id)
-//                                    )
+                                    mainNavController.navigate(
+                                        CardScreenDestination(id)
+                                    )
                                 },
                                 onBack = { mainNavController.popBackStack() }
                             )
                         }
 
-                        composable<WebViewScreenDestination> {backStackEntry ->
+                        composable<WebViewScreenDestination> { backStackEntry ->
                             val destination: WebViewScreenDestination = backStackEntry.toRoute()
 
                             WebViewScreen(

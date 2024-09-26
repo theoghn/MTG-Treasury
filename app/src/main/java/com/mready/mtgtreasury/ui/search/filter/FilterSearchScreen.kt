@@ -954,22 +954,21 @@ private fun SharedTransitionScope.FilterMtgCard(
             ) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
-                        .data(mtgCard.imageUris.normalSize)
+                        .data(mtgCard.imageUris.borderCrop)
+                        .size(800, 1150)
                         .crossfade(true)
-                        .memoryCacheKey(mtgCard.id) // same key as shared element key
+                        .memoryCacheKey(mtgCard.id)
                         .build(),
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
                         .padding(bottom = 12.dp)
                         .height(160.dp)
                         .aspectRatio(2 / 3f)
-//                    .background(Color.Transparent)
                         .sharedElement(
                             rememberSharedContentState(
                                 key = mtgCard.id
                             ),
                             animatedVisibilityScope = animatedVisibilityScope,
-                            clipInOverlayDuringTransition = OverlayClip(RoundedCornerShape(6.dp))
                         )
                         .clip(RoundedCornerShape(6.dp))
                         .background(Color.Transparent)

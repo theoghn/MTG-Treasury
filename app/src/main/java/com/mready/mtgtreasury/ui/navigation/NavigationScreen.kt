@@ -51,7 +51,7 @@ import com.mready.mtgtreasury.ui.user.profile.update.ProfileUpdateScreen
 fun SharedTransitionScope.NavigationScreen(
     modifier: Modifier = Modifier,
     animatedVisibilityScope: AnimatedContentScope,
-    navigateToCard: (String, String) -> Unit,
+    navigateToCard: (String) -> Unit,
     navigateToDeckCreation: () -> Unit,
     navigateToDeck: (String) -> Unit,
     navigateToInventory: () -> Unit,
@@ -136,7 +136,7 @@ fun SharedTransitionScope.NavigationScreen(
             composable<HomeScreenDestination> {
                 HomeScreen(
                     animatedVisibilityScope = animatedVisibilityScope,
-                    onCardClick = { id,cardImgUri -> navigateToCard(id,cardImgUri) },
+                    onCardClick = { id -> navigateToCard(id) },
                     navigateToWebView = { url -> navigateToWebView(url) }
                 )
             }
@@ -176,9 +176,9 @@ fun SharedTransitionScope.NavigationScreen(
                         sharedTransitionScope = this@NavigationScreen,
                         animatedVisibilityScope = animatedVisibilityScope,
                         onNavigateToCard = { id ->
-//                            navigateToCard(
-//                                id
-//                            )
+                            navigateToCard(
+                                id
+                            )
                         }
                     )
                 }

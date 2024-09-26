@@ -69,7 +69,7 @@ import java.util.Locale
 fun SharedTransitionScope.HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeScreenViewModel = hiltViewModel(),
-    onCardClick: (String, String) -> Unit,
+    onCardClick: (String) -> Unit,
     navigateToWebView: (String) -> Unit,
     animatedVisibilityScope: AnimatedContentScope
 ) {
@@ -185,7 +185,7 @@ private fun NewestSets(
 private fun SharedTransitionScope.MostValuableCards(
     mostValuableCards: List<MtgCard>,
     animatedVisibilityScope: AnimatedContentScope,
-    onCardClick: (String, String) -> Unit
+    onCardClick: (String) -> Unit
 ) {
     Column {
         Text(
@@ -223,12 +223,12 @@ private fun SharedTransitionScope.ValuableCardItem(
     card: MtgCard,
     index: Int,
     animatedVisibilityScope: AnimatedContentScope,
-    onCardClick: (String, String) -> Unit
+    onCardClick: (String) -> Unit
 ) {
     Log.d("HomeScreen", "ValuableCardItem-> id: ${card.id}")
     Row(
         modifier = Modifier
-            .clickable { onCardClick(card.id, card.imageUris.normalSize) }
+            .clickable { onCardClick(card.id) }
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -250,24 +250,25 @@ private fun SharedTransitionScope.ValuableCardItem(
         }
 
         AsyncImage(
-//            model = mtgCard.imageUris.smallSize,
             model = ImageRequest.Builder(LocalContext.current)
-                .data(card.imageUris.normalSize)
+                .data(card.imageUris.borderCrop)
                 .crossfade(true)
-//                .diskCacheKey(card.id)
-                .size(800,1150)
-                .memoryCacheKey(card.id) // same key as shared element key
+                .size(800, 1150)
+                .diskCacheKey(card.id)
+                .memoryCacheKey(card.id)
                 .build(),
             modifier = Modifier
                 .padding(start = 12.dp)
-                .width(80.dp)
                 .sharedElement(
                     rememberSharedContentState(
                         key = card.id
                     ),
                     animatedVisibilityScope = animatedVisibilityScope,
-                ),
-            contentScale = ContentScale.FillWidth,
+                )
+                .width(100.dp)
+                .aspectRatio(2 / 3f)
+                .clip(RoundedCornerShape(6.dp)),
+            contentScale = ContentScale.FillBounds,
             contentDescription = card.id,
             placeholder = painterResource(id = R.drawable.card_back),
             error = painterResource(id = R.drawable.card_back)
@@ -316,7 +317,7 @@ private fun SharedTransitionScope.ValuableCardItem(
 private fun SharedTransitionScope.CardOfTheDay(
     card: MtgCard,
     animatedVisibilityScope: AnimatedContentScope,
-    onCardClick: (String, String) -> Unit
+    onCardClick: (String) -> Unit
 ) {
     Column {
         Text(
@@ -338,29 +339,26 @@ private fun SharedTransitionScope.CardOfTheDay(
                 .background(BoxColor),
         ) {
             AsyncImage(
-//            model = card.imageUris.borderCrop,
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(card.imageUris.normalSize)
+                    .data(card.imageUris.borderCrop)
                     .crossfade(true)
-//                    .placeholderMemoryCacheKey(card.id) //  same key as shared element key
+                    .size(800, 1150)
                     .diskCacheKey(card.id)
-                    .memoryCacheKey(card.id) // same key as shared element key
+                    .memoryCacheKey(card.id)
                     .build(),
                 modifier = Modifier
                     .padding(12.dp)
                     .aspectRatio(2 / 3f)
-//                    .background(Color.Transparent)
                     .sharedElement(
                         rememberSharedContentState(
                             key = card.id
                         ),
                         animatedVisibilityScope = animatedVisibilityScope,
-                        clipInOverlayDuringTransition = OverlayClip(RoundedCornerShape(12.dp))
                     )
                     .width(169.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(6.dp))
                     .clickable {
-                        onCardClick(card.id,card.imageUris.normalSize)
+                        onCardClick(card.id)
                     },
                 contentScale = ContentScale.FillBounds,
                 contentDescription = card.id,
@@ -460,7 +458,7 @@ private fun SharedTransitionScope.CardOfTheDay(
                         .size(36.dp)
                         .clip(CircleShape)
                         .align(Alignment.BottomEnd),
-                    onClick = { onCardClick(card.id, card.imageUris.normalSize) },
+                    onClick = { onCardClick(card.id) },
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowForward,
@@ -471,7 +469,6 @@ private fun SharedTransitionScope.CardOfTheDay(
             }
         }
     }
-
 }
 
 

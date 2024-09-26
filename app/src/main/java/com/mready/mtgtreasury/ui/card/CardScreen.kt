@@ -2,6 +2,8 @@ package com.mready.mtgtreasury.ui.card
 
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,6 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -49,6 +52,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.Placeholder
@@ -60,6 +64,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.mready.mtgtreasury.R
 import com.mready.mtgtreasury.models.card.CardLegalities
 import com.mready.mtgtreasury.models.card.MtgCard
@@ -75,11 +80,6 @@ import com.mready.mtgtreasury.utility.Constants
 import com.mready.mtgtreasury.utility.formatPrice
 import com.mready.mtgtreasury.utility.formatReleaseDate
 import kotlin.reflect.full.memberProperties
-import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.ui.platform.LocalContext
-import coil.request.ImageRequest
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
@@ -88,7 +88,6 @@ fun SharedTransitionScope.CardScreen(
     modifier: Modifier = Modifier,
     viewModel: CardViewModel = hiltViewModel(),
     id: String,
-    cardImgUri: String,
     animatedVisibilityScope: AnimatedContentScope,
     onBack: () -> Boolean
 ) {
@@ -159,28 +158,23 @@ fun SharedTransitionScope.CardScreen(
                             AsyncImage(
                                 model = ImageRequest.Builder(LocalContext.current)
                                     .data("cardImgUri")
-//                                    .crossfade(true)
-//                                    .placeholderMemoryCacheKey(id) //  same key as shared element key
-                                    .memoryCacheKey(id) // same key as shared element key
+                                    .crossfade(true)
+                                    .placeholderMemoryCacheKey(id)
+                                    .memoryCacheKey(id)
                                     .diskCacheKey(id)
-//                                    .allowHardware(false)
                                     .build(),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 54.dp, vertical = 16.dp)
                                     .aspectRatio(2 / 3f)
-                                    .background(Color.Transparent)
                                     .align(Alignment.TopCenter)
                                     .sharedElement(
                                         rememberSharedContentState(
                                             key = id
                                         ),
-                                        animatedVisibilityScope = animatedVisibilityScope,
-                                        clipInOverlayDuringTransition = OverlayClip(
-                                            RoundedCornerShape(12.dp)
-                                        )
+                                        animatedVisibilityScope = animatedVisibilityScope
                                     )
-                                    .clip(RoundedCornerShape(12.dp)),
+                                    .clip(RoundedCornerShape(6.dp)),
                                 contentScale = ContentScale.FillBounds,
                                 contentDescription = id,
                                 placeholder = painterResource(id = R.drawable.card_back),
@@ -268,28 +262,24 @@ fun SharedTransitionScope.CardScreen(
                         Box(modifier = Modifier.fillMaxSize()) {
                             AsyncImage(
                                 model = ImageRequest.Builder(LocalContext.current)
-                                    .data(card.imageUris.normalSize)
-//                                    .crossfade(true)
-//                                    .placeholderMemoryCacheKey(id) //  same key as shared element key
+                                    .data(card.imageUris.borderCrop)
+                                    .crossfade(true)
+                                    .placeholderMemoryCacheKey(id)
                                     .diskCacheKey(id)
-                                    .memoryCacheKey(id) // same key as shared element key
+                                    .memoryCacheKey(id)
                                     .build(),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 54.dp, vertical = 16.dp)
                                     .aspectRatio(2 / 3f)
-                                    .background(Color.Transparent)
                                     .align(Alignment.TopCenter)
                                     .sharedElement(
                                         rememberSharedContentState(
                                             key = id
                                         ),
-                                        animatedVisibilityScope = animatedVisibilityScope,
-                                        clipInOverlayDuringTransition = OverlayClip(
-                                            RoundedCornerShape(12.dp)
-                                        )
+                                        animatedVisibilityScope = animatedVisibilityScope
                                     )
-                                    .clip(RoundedCornerShape(12.dp)),
+                                    .clip(RoundedCornerShape(6.dp)),
                                 contentScale = ContentScale.FillBounds,
                                 contentDescription = null,
                                 placeholder = painterResource(id = R.drawable.card_back),
