@@ -130,4 +130,7 @@ dependencies {
     implementation (libs.androidx.camera.camera2)
     implementation (libs.androidx.camera.view)
     implementation (libs.androidx.camera.lifecycle)
+
+//    push notifications
+    implementation("com.google.firebase:firebase-messaging-ktx")
 }
