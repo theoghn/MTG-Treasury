@@ -29,6 +29,8 @@ import com.mready.mtgtreasury.ui.decks.view.DeckScreen
 import com.mready.mtgtreasury.ui.decks.view.DeckScreenDestination
 import com.mready.mtgtreasury.ui.navigation.NavigationScreen
 import com.mready.mtgtreasury.ui.navigation.NavigationScreenDestination
+import com.mready.mtgtreasury.ui.recognition.RecognitionScreen
+import com.mready.mtgtreasury.ui.recognition.RecognitionScreenDestination
 import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
 import com.mready.mtgtreasury.ui.user.signin.SignInDestination
 import com.mready.mtgtreasury.ui.user.signin.SignInScreen
@@ -126,6 +128,7 @@ fun RootApp(
                     ) {
                         composable<NavigationScreenDestination> {
                             NavigationScreen(
+                                rootNavController = mainNavController,
                                 navigateToCard = { id ->
                                     mainNavController.navigate(
                                         CardScreenDestination(id = id)
@@ -158,6 +161,9 @@ fun RootApp(
                                 },
                                 animatedVisibilityScope = this
                             )
+                        }
+                        composable<RecognitionScreenDestination> {
+                            RecognitionScreen()
                         }
 
                         composable<CardScreenDestination> { backStackEntry ->
@@ -224,7 +230,6 @@ fun RootApp(
                         }
                     }
                 }
-
             }
 
             null -> {

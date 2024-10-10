@@ -123,4 +123,11 @@ dependencies {
     implementation (libs.tensorflow.lite.gpu.delegate.plugin)
 
     implementation ("com.google.mediapipe:tasks-vision:0.20230731")
+
+//    camera
+
+    implementation (libs.androidx.camera.core)
+    implementation (libs.androidx.camera.camera2)
+    implementation (libs.androidx.camera.view)
+    implementation (libs.androidx.camera.lifecycle)
 }

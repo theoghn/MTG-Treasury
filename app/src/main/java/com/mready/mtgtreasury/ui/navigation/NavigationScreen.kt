@@ -23,6 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -35,6 +36,7 @@ import com.mready.mtgtreasury.ui.decks.DecksScreen
 import com.mready.mtgtreasury.ui.decks.DecksScreenDestination
 import com.mready.mtgtreasury.ui.home.HomeScreen
 import com.mready.mtgtreasury.ui.home.HomeScreenDestination
+import com.mready.mtgtreasury.ui.recognition.RecognitionScreenDestination
 import com.mready.mtgtreasury.ui.search.SearchRoot
 import com.mready.mtgtreasury.ui.search.SearchScreen
 import com.mready.mtgtreasury.ui.search.filter.FilterSearchScreen
@@ -57,6 +59,7 @@ fun SharedTransitionScope.NavigationScreen(
     navigateToInventory: () -> Unit,
     navigateToWishlist: () -> Unit,
     navigateToWebView: (String) -> Unit,
+    rootNavController: NavHostController,
 ) {
     val navigationSections = listOf(
         HomeScreenDestination,
@@ -179,6 +182,9 @@ fun SharedTransitionScope.NavigationScreen(
                             navigateToCard(
                                 id
                             )
+                        },
+                        navigateToRecognitionScreen = {
+                            rootNavController.navigate(RecognitionScreenDestination)
                         }
                     )
                 }

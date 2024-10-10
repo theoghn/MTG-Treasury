@@ -1,9 +1,7 @@
 package com.mready.mtgtreasury.ui.recognition
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -32,8 +30,7 @@ class RecognitionViewModel @Inject constructor(
 
     fun searchCards(
         name: String,
-        context: Context,
-        imageUri: Uri
+        image: InputImage
     ) {
         viewModelScope.launch {
             val cards = cardsService.getCardsByName(
@@ -42,7 +39,6 @@ class RecognitionViewModel @Inject constructor(
 
             delay(100)
 
-            val image = InputImage.fromFilePath(context, imageUri)
             var maxMatch = 0.0
             var bestMatchImgId = ""
 
@@ -50,7 +46,7 @@ class RecognitionViewModel @Inject constructor(
 
             var imageText = ""
 
-            recognizer.process(image).addOnSuccessListener{
+            recognizer.process(image).addOnSuccessListener {
                 imageText = it.text.split("\n").takeLast(4).joinToString(" ")
                 Log.d("RecognitionViewModel", "InitialImage: $imageText")
 
@@ -60,29 +56,39 @@ class RecognitionViewModel @Inject constructor(
 
 
             if (cards.isNotEmpty()) {
-                cards.forEach { card ->
-                    Log.d("RecognitionViewModel", "Card: ${card.imageUris.borderCrop}")
-                    val imageByteArray = createBitmapFromUri(card.imageUris.normalSize) ?: return@forEach
+                cards.forEachIndexed { index, card ->
+                    val imageByteArray =
+                        createBitmapFromUri(card.imageUris.normalSize) ?: return@forEachIndexed
                     val cardImage = InputImage.fromBitmap(imageByteArray, 0)
                     recognizer.process(cardImage).addOnSuccessListener {
                         val cardText = it.text.split("\n").takeLast(4).joinToString(" ")
                         val match = jaroWinklerSimilarity(imageText, cardText)
-
-                        Log.d("RecognitionViewModel", "Card Text: $cardText \n Image Text: $imageText \n match = $match")
+                        Log.d("RecognitionViewModel", "Card: ${card.imageUris.borderCrop}")
+                        Log.d(
+                            "RecognitionViewModel",
+                            "Card Text: $cardText \n Image Text: $imageText \n match = $match"
+                        )
                         if (match > maxMatch) {
                             maxMatch = match
                             bestMatchImgId = card.imageUris.normalSize
                         }
+                    }.addOnCompleteListener {
+                        if (index == cards.size - 1) {
+                            Log.d(
+                                "RecognitionViewModel",
+                                "updated the best image uri: $bestMatchImgId"
+                            )
+                            bestImageId.update { bestMatchImgId }
+                        }
                     }
                 }
-                bestImageId.update { bestMatchImgId }
             }
         }
     }
 
     private suspend fun createBitmapFromUri(imageUrl: String): Bitmap? {
         try {
-            var resultBytes : Bitmap? = null
+            var resultBytes: Bitmap? = null
             withContext(Dispatchers.IO) {
                 val client = OkHttpClient()
 
@@ -98,8 +104,7 @@ class RecognitionViewModel @Inject constructor(
             }
 
             return resultBytes
-        }
-        catch (e: Exception) {
+        } catch (e: Exception) {
             Log.d("RecognitionViewModel", "createBitmapFromUri() : Error loading image from URL")
             e.printStackTrace()
             return null

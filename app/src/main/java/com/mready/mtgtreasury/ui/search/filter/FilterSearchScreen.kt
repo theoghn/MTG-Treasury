@@ -40,6 +40,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Face
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
@@ -111,7 +112,8 @@ fun FilterSearchScreen(
     animatedVisibilityScope: AnimatedVisibilityScope,
     sharedTransitionScope: SharedTransitionScope,
     onNavigateToCard: (String) -> Unit,
-    onNavigateToSearch: () -> Unit
+    onNavigateToSearch: () -> Unit,
+    navigateToRecognitionScreen: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val manaCosts by viewModel.manaCosts.collectAsState()
@@ -259,6 +261,29 @@ fun FilterSearchScreen(
                                     isInInventory = mtgCard.qty > 0
                                 )
                             }
+                        }
+                    }
+
+                    PrimaryButton(
+                        modifier = Modifier
+                            .padding(24.dp)
+                            .padding(bottom = 12.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .align(Alignment.BottomEnd),
+                        onClick = {
+                            navigateToRecognitionScreen()
+                        }
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Face,
+                                contentDescription = null,
+                                tint = Color.White
+                            )
                         }
                     }
                 }
@@ -552,7 +577,7 @@ fun FilterBottomSheet(
     resetFilter: () -> Unit,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Box {
+    Box(modifier = modifier) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
