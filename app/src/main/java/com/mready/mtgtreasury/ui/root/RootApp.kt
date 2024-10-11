@@ -163,7 +163,14 @@ fun RootApp(
                             )
                         }
                         composable<RecognitionScreenDestination> {
-                            RecognitionScreen()
+                            RecognitionScreen(
+                                onBack = { mainNavController.popBackStack() },
+                                onNavigateToCard = { id ->
+                                    mainNavController.navigate(
+                                        CardScreenDestination(id)
+                                    )
+                                }
+                            )
                         }
 
                         composable<CardScreenDestination> { backStackEntry ->

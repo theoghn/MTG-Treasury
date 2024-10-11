@@ -17,15 +17,28 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -38,6 +51,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -51,17 +65,25 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.mready.mtgtreasury.R
+import com.mready.mtgtreasury.ui.theme.AccentColor
 import java.io.IOException
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 @Composable
-fun RecognitionScreen(viewModel: RecognitionViewModel = hiltViewModel()) {
-    var image by remember {
-        mutableStateOf<InputImage?>(null)
-    }
+fun RecognitionScreen(
+    viewModel: RecognitionViewModel = hiltViewModel(),
+    onBack: () -> Boolean,
+    onNavigateToCard: (String) -> Unit
+) {
+    val matchedCardId by viewModel.matchCardId.collectAsState()
+    var image by remember { mutableStateOf<InputImage?>(null) }
+    var imageText by remember { mutableStateOf("") }
+    var shouldBindCamera by remember { mutableStateOf(true) }
+    var isCircularLoadingVisible by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
+    val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 
     var hasCameraPermission by remember {
         mutableStateOf(
@@ -71,7 +93,6 @@ fun RecognitionScreen(viewModel: RecognitionViewModel = hiltViewModel()) {
             ) == PackageManager.PERMISSION_GRANTED
         )
     }
-
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { granted ->
@@ -79,26 +100,72 @@ fun RecognitionScreen(viewModel: RecognitionViewModel = hiltViewModel()) {
         }
     )
 
-
-    if (hasCameraPermission) {
-        if (image != null) {
-            ProcessImage(viewModel, image!!)
-        } else {
-            Box(modifier = Modifier.fillMaxSize()) {
-                CameraPreviewScreen(
-                    updateImage = { it: InputImage ->
-                        image = it
-                    }
-                )
-            }
+    LaunchedEffect(matchedCardId) {
+        if (matchedCardId.isNotEmpty()) {
+            onNavigateToCard(matchedCardId)
+            viewModel.resetMatchCardId()
         }
-    } else {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Button(onClick = { launcher.launch(Manifest.permission.CAMERA) }) {
-                Text("Request Camera Permission")
+    }
+
+
+
+    LaunchedEffect(image) {
+        if (image != null) {
+            Log.d("RecognitionScreen", "2nd camera provider unbind")
+            val cameraProvider = context.getCameraProvider()
+            cameraProvider.unbindAll()
+            isCircularLoadingVisible = true
+
+            recognizer.process(image!!)
+                .addOnSuccessListener { visionText ->
+                    imageText = visionText.text
+                        .split("\n")[0]
+                        .replace(("[^\\w\\d ]").toRegex(), "")
+                        .split(" ")
+                        .take(3)
+                        .joinToString(" ")
+
+                    if (imageText.isNotEmpty()) {
+                        viewModel.searchCards(
+                            name = imageText,
+                            image = image!!
+                        )
+                    } else {
+                        shouldBindCamera = true
+                      }
+                    Log.d("RecognitionScreen : LaunchedEffect", "Image Text: $imageText")
+                }
+                .addOnFailureListener {
+                    isCircularLoadingVisible = false
+                    Log.e("RecognitionScreen : LaunchedEffect", "Failed to process image")
+                }
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (hasCameraPermission) {
+            CameraPreviewScreen(
+                shouldBindCamera = shouldBindCamera,
+                isCircularLoadingVisible = isCircularLoadingVisible,
+                updateImage = { it: InputImage ->
+                    image = it
+                },
+                onBack = { onBack() },
+                updateShouldBindCamera = { it: Boolean ->
+                    shouldBindCamera = it
+                },
+                hideCircularLoading = {
+                    isCircularLoadingVisible = false
+                }
+            )
+        } else {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Button(onClick = { launcher.launch(Manifest.permission.CAMERA) }) {
+                    Text("Request Camera Permission")
+                }
             }
         }
     }
@@ -114,6 +181,7 @@ fun ProcessImage(
     var imageUri by remember {
         mutableStateOf<Uri>(Uri.EMPTY)
     }
+
     var image by remember {
         mutableStateOf<InputImage?>(incomingImage)
     }
@@ -168,6 +236,8 @@ fun ProcessImage(
                 }
         }
     }
+
+
 
     Column(
         modifier = Modifier
@@ -228,8 +298,16 @@ fun ProcessImage(
     }
 }
 
+
 @Composable
-fun CameraPreviewScreen(updateImage: (InputImage) -> Unit) {
+fun CameraPreviewScreen(
+    shouldBindCamera: Boolean,
+    isCircularLoadingVisible: Boolean,
+    updateImage: (InputImage) -> Unit,
+    onBack: () -> Boolean,
+    updateShouldBindCamera: (Boolean) -> Unit,
+    hideCircularLoading: () -> Unit
+) {
     val lensFacing = CameraSelector.LENS_FACING_BACK
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
@@ -241,19 +319,108 @@ fun CameraPreviewScreen(updateImage: (InputImage) -> Unit) {
     val imageCapture = remember {
         ImageCapture.Builder().build()
     }
-
-    LaunchedEffect(lensFacing) {
-        val cameraProvider = context.getCameraProvider()
-        cameraProvider.unbindAll()
-        cameraProvider.bindToLifecycle(lifecycleOwner, cameraxSelector, preview, imageCapture)
-        preview.setSurfaceProvider(previewView.surfaceProvider)
+    LaunchedEffect(shouldBindCamera) {
+        if (shouldBindCamera) {
+            val cameraProvider = context.getCameraProvider()
+            cameraProvider.unbindAll()
+            cameraProvider.bindToLifecycle(lifecycleOwner, cameraxSelector, preview, imageCapture)
+            preview.setSurfaceProvider(previewView.surfaceProvider)
+            updateShouldBindCamera(false)
+            hideCircularLoading()
+        }
     }
 
+//    LaunchedEffect(lensFacing) {
+//        val cameraProvider = context.getCameraProvider()
+//        cameraProvider.unbindAll()
+//        cameraProvider.bindToLifecycle(lifecycleOwner, cameraxSelector, preview, imageCapture)
+//        preview.setSurfaceProvider(previewView.surfaceProvider)
+//    }
 
-    Box(contentAlignment = Alignment.BottomCenter, modifier = Modifier.fillMaxSize()) {
+    var isPressed by remember { mutableStateOf(false) }
+
+    val paddingAnimation by animateDpAsState(
+        targetValue = if (isPressed) 1.dp else 6.dp,
+        animationSpec = tween(
+            durationMillis = 100,
+            easing = FastOutSlowInEasing
+        ),
+        label = ""
+    )
+
+    val colorAnimation by animateColorAsState(
+        targetValue = if (isPressed) AccentColor else Color.White,
+        animationSpec = tween(
+            durationMillis = 100,
+            easing = FastOutSlowInEasing
+        ),
+        label = ""
+    )
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.BottomCenter
+    ) {
         AndroidView({ previewView }, modifier = Modifier.fillMaxSize())
-        Button(onClick = { captureImage(imageCapture, context, updateImage) }) {
-            Text(text = "Capture Image")
+
+        IconButton(
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(top = 32.dp),
+            onClick = { onBack() }
+        ) {
+            Icon(
+                modifier = Modifier.size(30.dp),
+                imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                contentDescription = null,
+                tint = Color.White
+            )
+        }
+
+        if (isCircularLoadingVisible) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .size(50.dp)
+                    .align(Alignment.Center),
+                color = Color.White
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .padding(bottom = 48.dp)
+                .size(60.dp)
+                .border(2.dp, Color.White, CircleShape)
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onPress = {
+                            isPressed = true
+                            val x = tryAwaitRelease()
+                            if (x) {
+                                isPressed = false
+
+
+                                captureImage(
+                                    imageCapture = imageCapture,
+                                    context = context,
+                                    updateImage = updateImage,
+                                )
+                            } else {
+                                isPressed = false
+                            }
+                        }
+                    )
+                }
+        ) {
+            Box(
+                modifier = Modifier
+                    .padding(paddingAnimation)
+                    .fillMaxSize()
+                    .clip(CircleShape)
+                    .background(colorAnimation)
+            ) {
+
+            }
         }
     }
 }
@@ -284,6 +451,7 @@ private fun captureImage(
                         image.imageInfo.rotationDegrees
                     )
                     updateImage(inputImage)
+                    Log.d("RecognitionScreen", "1st camera provider unbind")
                 }
                 image.close()
             }

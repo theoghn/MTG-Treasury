@@ -27,6 +27,9 @@ class RecognitionViewModel @Inject constructor(
     private val cardsService: CardsService,
 ) : ViewModel() {
     val bestImageId = MutableStateFlow("")
+    val matchCardId = MutableStateFlow("")
+
+    fun resetMatchCardId() = matchCardId.update { "" }
 
     fun searchCards(
         name: String,
@@ -41,6 +44,7 @@ class RecognitionViewModel @Inject constructor(
 
             var maxMatch = 0.0
             var bestMatchImgId = ""
+            var bestMatchCardId = ""
 
             val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 
@@ -71,6 +75,7 @@ class RecognitionViewModel @Inject constructor(
                         if (match > maxMatch) {
                             maxMatch = match
                             bestMatchImgId = card.imageUris.normalSize
+                            bestMatchCardId = card.id
                         }
                     }.addOnCompleteListener {
                         if (index == cards.size - 1) {
@@ -79,6 +84,7 @@ class RecognitionViewModel @Inject constructor(
                                 "updated the best image uri: $bestMatchImgId"
                             )
                             bestImageId.update { bestMatchImgId }
+                            matchCardId.update { bestMatchCardId }
                         }
                     }
                 }

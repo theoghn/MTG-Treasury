@@ -40,7 +40,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Face
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
@@ -275,12 +274,11 @@ fun FilterSearchScreen(
                         }
                     ) {
                         Row(
-                            modifier = Modifier.padding(horizontal = 12.dp),
+                            modifier = Modifier.padding(12.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Face,
+                                painter = painterResource(R.drawable.camera),
                                 contentDescription = null,
                                 tint = Color.White
                             )
