@@ -5,16 +5,22 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.util.Log
+import android.view.ViewGroup
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.OptIn
+import androidx.camera.core.AspectRatio
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
+import androidx.camera.core.resolutionselector.AspectRatioStrategy
+import androidx.camera.core.resolutionselector.ResolutionSelector
+import androidx.camera.core.resolutionselector.ResolutionStrategy
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.animation.animateColorAsState
@@ -26,7 +32,10 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -41,11 +50,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,6 +77,8 @@ import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.mready.mtgtreasury.R
 import com.mready.mtgtreasury.ui.theme.AccentColor
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import java.io.IOException
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -81,7 +94,7 @@ fun RecognitionScreen(
     var imageText by remember { mutableStateOf("") }
     var shouldBindCamera by remember { mutableStateOf(true) }
     var isCircularLoadingVisible by remember { mutableStateOf(false) }
-
+    val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
     val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 
@@ -100,6 +113,7 @@ fun RecognitionScreen(
         }
     )
 
+
     LaunchedEffect(matchedCardId) {
         if (matchedCardId.isNotEmpty()) {
             onNavigateToCard(matchedCardId)
@@ -107,7 +121,14 @@ fun RecognitionScreen(
         }
     }
 
-
+    DisposableEffect(Unit) {
+        onDispose {
+            coroutineScope.launch {
+                val cameraProvider = context.getCameraProvider()
+                cameraProvider.unbindAll()
+            }
+        }
+    }
 
     LaunchedEffect(image) {
         if (image != null) {
@@ -132,7 +153,7 @@ fun RecognitionScreen(
                         )
                     } else {
                         shouldBindCamera = true
-                      }
+                    }
                     Log.d("RecognitionScreen : LaunchedEffect", "Image Text: $imageText")
                 }
                 .addOnFailureListener {
@@ -150,7 +171,9 @@ fun RecognitionScreen(
                 updateImage = { it: InputImage ->
                     image = it
                 },
-                onBack = { onBack() },
+                onBack = {
+                    onBack()
+                },
                 updateShouldBindCamera = { it: Boolean ->
                     shouldBindCamera = it
                 },
@@ -308,34 +331,46 @@ fun CameraPreviewScreen(
     updateShouldBindCamera: (Boolean) -> Unit,
     hideCircularLoading: () -> Unit
 ) {
-    val lensFacing = CameraSelector.LENS_FACING_BACK
+    val lensFacing = CameraSelector.DEFAULT_BACK_CAMERA
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
-    val preview = Preview.Builder().build()
+    val resolutionSelector = ResolutionSelector.Builder()
+        .setAspectRatioStrategy(AspectRatioStrategy.RATIO_16_9_FALLBACK_AUTO_STRATEGY).build()
+    val preview = Preview.Builder().setResolutionSelector(resolutionSelector).build()
+    val scaleType2 = PreviewView.ScaleType.FIT_CENTER
+
     val previewView = remember {
-        PreviewView(context)
+        PreviewView(context).apply {
+            this.scaleType = scaleType2
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            implementationMode = PreviewView.ImplementationMode.COMPATIBLE
+        }
     }
-    val cameraxSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
+//    val cameraxSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
     val imageCapture = remember {
         ImageCapture.Builder().build()
     }
+
     LaunchedEffect(shouldBindCamera) {
         if (shouldBindCamera) {
             val cameraProvider = context.getCameraProvider()
             cameraProvider.unbindAll()
-            cameraProvider.bindToLifecycle(lifecycleOwner, cameraxSelector, preview, imageCapture)
+            cameraProvider.bindToLifecycle(lifecycleOwner, lensFacing, preview, imageCapture)
             preview.setSurfaceProvider(previewView.surfaceProvider)
             updateShouldBindCamera(false)
             hideCircularLoading()
         }
     }
 
-//    LaunchedEffect(lensFacing) {
-//        val cameraProvider = context.getCameraProvider()
-//        cameraProvider.unbindAll()
-//        cameraProvider.bindToLifecycle(lifecycleOwner, cameraxSelector, preview, imageCapture)
-//        preview.setSurfaceProvider(previewView.surfaceProvider)
-//    }
+    LaunchedEffect(lensFacing) {
+        val cameraProvider = context.getCameraProvider()
+        cameraProvider.unbindAll()
+        cameraProvider.bindToLifecycle(lifecycleOwner, lensFacing, preview, imageCapture)
+        preview.setSurfaceProvider(previewView.surfaceProvider)
+    }
 
     var isPressed by remember { mutableStateOf(false) }
 
@@ -357,15 +392,63 @@ fun CameraPreviewScreen(
         label = ""
     )
 
+
     Box(
         modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.BottomCenter
+//        contentAlignment = Alignment.BottomCenter
     ) {
-        AndroidView({ previewView }, modifier = Modifier.fillMaxSize())
+        Box(
+            modifier = Modifier
+                .statusBarsPadding()
+                .padding(4.dp)
+                .aspectRatio(9f / 16f)
+                .clip(RoundedCornerShape(12.dp))
+        ) {
+            AndroidView(
+                factory = { previewView },
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+            )
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 12.dp)
+                    .size(60.dp)
+                    .border(2.dp, Color.White, CircleShape)
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onPress = {
+                                isPressed = true
+                                val x = tryAwaitRelease()
+                                if (x) {
+                                    isPressed = false
+                                    captureImage(
+                                        imageCapture = imageCapture,
+                                        context = context,
+                                        updateImage = updateImage,
+                                    )
+                                } else {
+                                    isPressed = false
+                                }
+                            }
+                        )
+                    }
+            ) {
+                Box(
+                    modifier = Modifier
+                        .padding(paddingAnimation)
+                        .fillMaxSize()
+                        .clip(CircleShape)
+                        .background(colorAnimation)
+                ) {
+
+                }
+            }
+        }
 
         IconButton(
             modifier = Modifier
-                .align(Alignment.TopStart)
                 .padding(top = 32.dp),
             onClick = { onBack() }
         ) {
@@ -386,42 +469,7 @@ fun CameraPreviewScreen(
             )
         }
 
-        Box(
-            modifier = Modifier
-                .padding(bottom = 48.dp)
-                .size(60.dp)
-                .border(2.dp, Color.White, CircleShape)
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onPress = {
-                            isPressed = true
-                            val x = tryAwaitRelease()
-                            if (x) {
-                                isPressed = false
 
-
-                                captureImage(
-                                    imageCapture = imageCapture,
-                                    context = context,
-                                    updateImage = updateImage,
-                                )
-                            } else {
-                                isPressed = false
-                            }
-                        }
-                    )
-                }
-        ) {
-            Box(
-                modifier = Modifier
-                    .padding(paddingAnimation)
-                    .fillMaxSize()
-                    .clip(CircleShape)
-                    .background(colorAnimation)
-            ) {
-
-            }
-        }
     }
 }
 

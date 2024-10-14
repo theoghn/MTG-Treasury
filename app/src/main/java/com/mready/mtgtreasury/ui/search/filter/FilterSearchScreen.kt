@@ -209,111 +209,108 @@ fun FilterSearchScreen(
                     }
                 ) {
                     Icon(
-
                         painter = painterResource(id = R.drawable.filter_multiple),
                         contentDescription = null,
                         tint = AccentColor
                     )
 
                 }
-
-
             }
         },
         containerColor = MainBackgroundColor
     ) {
-        when (val currentState = uiState) {
-            is FilterSearchScreenUiState.Loading -> {
-                FilterSearchShimmerScreen(
-                    modifier = Modifier
-                        .padding(top = it.calculateTopPadding())
-                )
-            }
+        Box{
+            when (val currentState = uiState) {
+                is FilterSearchScreenUiState.Loading -> {
+                    FilterSearchShimmerScreen(
+                        modifier = Modifier
+                            .padding(top = it.calculateTopPadding())
+                    )
+                }
 
-            is FilterSearchScreenUiState.FilterSearchScreenUi -> {
-                val cards = currentState.cards
+                is FilterSearchScreenUiState.FilterSearchScreenUi -> {
+                    val cards = currentState.cards
 
-                Box(
-                    modifier = Modifier
-                        .padding(top = it.calculateTopPadding())
-                        .fillMaxSize()
-                        .background(Color.Transparent)
-                ) {
-                    LazyVerticalGrid(
-                        modifier = Modifier.padding(horizontal = 12.dp),
-                        columns = GridCells.Fixed(2),
-                        contentPadding = PaddingValues(bottom = 32.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    Box(
+                        modifier = Modifier
+                            .padding(top = it.calculateTopPadding())
+                            .fillMaxSize()
+                            .background(Color.Transparent)
                     ) {
-                        items(cards) { mtgCard ->
-                            with(sharedTransitionScope) {
-                                FilterMtgCard(
-                                    mtgCard = mtgCard,
-                                    onClick = {
-                                        onNavigateToCard(mtgCard.id)
-                                    },
-                                    onAddToInventory = {
-                                        viewModel.addCardToInventory(mtgCard.id)
-                                    },
-                                    animatedVisibilityScope = animatedVisibilityScope,
-                                    isInInventory = mtgCard.qty > 0
-                                )
+                        LazyVerticalGrid(
+                            modifier = Modifier.padding(horizontal = 12.dp),
+                            columns = GridCells.Fixed(2),
+                            contentPadding = PaddingValues(bottom = 32.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            items(cards) { mtgCard ->
+                                with(sharedTransitionScope) {
+                                    FilterMtgCard(
+                                        mtgCard = mtgCard,
+                                        onClick = {
+                                            onNavigateToCard(mtgCard.id)
+                                        },
+                                        onAddToInventory = {
+                                            viewModel.addCardToInventory(mtgCard.id)
+                                        },
+                                        animatedVisibilityScope = animatedVisibilityScope,
+                                        isInInventory = mtgCard.qty > 0
+                                    )
+                                }
                             }
                         }
                     }
+                }
 
-                    PrimaryButton(
-                        modifier = Modifier
-                            .padding(24.dp)
-                            .padding(bottom = 12.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .align(Alignment.BottomEnd),
-                        onClick = {
-                            navigateToRecognitionScreen()
-                        }
+                FilterSearchScreenUiState.Empty -> {
+                    Box(
+                        Modifier
+                            .padding(top = it.calculateTopPadding())
+                            .fillMaxSize(),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Row(
-                            modifier = Modifier.padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Icon(
-                                painter = painterResource(R.drawable.camera),
-                                contentDescription = null,
-                                tint = Color.White
+                            Text(
+                                text = stringResource(R.string.sad_face),
+                                fontSize = 50.sp,
+                                color = Color.White
+                            )
+                            Text(
+                                text = stringResource(R.string.no_cards_found),
+                                fontSize = 18.sp,
+                                color = Color.White
                             )
                         }
                     }
                 }
             }
 
-            FilterSearchScreenUiState.Empty -> {
-                Box(
-                    Modifier
-                        .padding(top = it.calculateTopPadding())
-                        .fillMaxSize(),
-                    contentAlignment = Alignment.Center
+            PrimaryButton(
+                modifier = Modifier
+                    .padding(24.dp)
+                    .padding(bottom = 12.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .align(Alignment.BottomEnd),
+                onClick = {
+                    navigateToRecognitionScreen()
+                }
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = stringResource(R.string.sad_face),
-                            fontSize = 50.sp,
-                            color = Color.White
-                        )
-                        Text(
-                            text = stringResource(R.string.no_cards_found),
-                            fontSize = 18.sp,
-                            color = Color.White
-                        )
-                    }
+                    Icon(
+                        painter = painterResource(R.drawable.camera),
+                        contentDescription = null,
+                        tint = Color.White
+                    )
                 }
             }
         }
-
-
     }
 
     if (isBottomSheetVisible) {
@@ -930,9 +927,7 @@ private fun SharedTransitionScope.FilterMtgCard(
     onAddToInventory: () -> Unit,
     onClick: () -> Unit
 ) {
-    var loading by rememberSaveable {
-        mutableStateOf(false)
-    }
+    var loading by rememberSaveable { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
     Card(
@@ -1048,7 +1043,6 @@ private fun SharedTransitionScope.FilterMtgCard(
                             color = Color.White
                         )
                     }
-
 
                     Crossfade(targetState = loading, label = "") {
                         if (it) {
