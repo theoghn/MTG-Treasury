@@ -84,4 +84,5 @@
     <string name="decks">Decks</string>
     <string name="new_deck">New Deck</string>
     <string name="your_decks">Your Decks</string>
+    <string name="scan">Scan</string>
 </resources>

@@ -9,5 +9,8 @@ object SearchRoot {
     object SearchScreenDestination
 
     @Serializable
+    object RecognitionScreenDestination
+
+    @Serializable
     class FilterSearchScreenDestination(val searchName: String)
 }

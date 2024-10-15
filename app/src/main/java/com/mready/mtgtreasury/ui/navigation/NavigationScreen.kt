@@ -31,11 +31,13 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import com.mready.mtgtreasury.R
+import com.mready.mtgtreasury.ui.card.CardScreenDestination
 import com.mready.mtgtreasury.ui.components.HexagonBox
 import com.mready.mtgtreasury.ui.decks.DecksScreen
 import com.mready.mtgtreasury.ui.decks.DecksScreenDestination
 import com.mready.mtgtreasury.ui.home.HomeScreen
 import com.mready.mtgtreasury.ui.home.HomeScreenDestination
+import com.mready.mtgtreasury.ui.recognition.RecognitionScreen
 import com.mready.mtgtreasury.ui.recognition.RecognitionScreenDestination
 import com.mready.mtgtreasury.ui.search.SearchRoot
 import com.mready.mtgtreasury.ui.search.SearchScreen
@@ -145,6 +147,15 @@ fun SharedTransitionScope.NavigationScreen(
             }
 
             navigation<SearchRoot>(startDestination = SearchRoot.FilterSearchScreenDestination("")) {
+                composable<SearchRoot.RecognitionScreenDestination> {
+                    RecognitionScreen(
+                        onBack = { navController.popBackStack() },
+                        onNavigateToCard = { id ->
+                            navigateToCard(id)
+                        }
+                    )
+                }
+
                 composable<SearchRoot.SearchScreenDestination> {
                     SearchScreen(
                         onNavigateToFilterSearch = { searchName ->
@@ -184,7 +195,7 @@ fun SharedTransitionScope.NavigationScreen(
                             )
                         },
                         navigateToRecognitionScreen = {
-                            rootNavController.navigate(RecognitionScreenDestination)
+                            navController.navigate(SearchRoot.RecognitionScreenDestination)
                         }
                     )
                 }

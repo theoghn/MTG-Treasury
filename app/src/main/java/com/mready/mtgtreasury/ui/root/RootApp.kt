@@ -162,16 +162,17 @@ fun RootApp(
                                 animatedVisibilityScope = this
                             )
                         }
-                        composable<RecognitionScreenDestination> {
-                            RecognitionScreen(
-                                onBack = { mainNavController.popBackStack() },
-                                onNavigateToCard = { id ->
-                                    mainNavController.navigate(
-                                        CardScreenDestination(id)
-                                    )
-                                }
-                            )
-                        }
+
+//                        composable<RecognitionScreenDestination> {
+//                            RecognitionScreen(
+//                                onBack = { mainNavController.popBackStack() },
+//                                onNavigateToCard = { id ->
+//                                    mainNavController.navigate(
+//                                        CardScreenDestination(id)
+//                                    )
+//                                }
+//                            )
+//                        }
 
                         composable<CardScreenDestination> { backStackEntry ->
                             val destination: CardScreenDestination = backStackEntry.toRoute()

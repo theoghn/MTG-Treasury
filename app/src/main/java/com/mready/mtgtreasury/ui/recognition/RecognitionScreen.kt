@@ -1,27 +1,18 @@
 package com.mready.mtgtreasury.ui.recognition
 
 import android.Manifest
-import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.util.Log
 import android.view.ViewGroup
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.OptIn
-import androidx.camera.core.AspectRatio
 import androidx.camera.core.CameraSelector
-import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCaptureException
-import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.core.resolutionselector.AspectRatioStrategy
 import androidx.camera.core.resolutionselector.ResolutionSelector
-import androidx.camera.core.resolutionselector.ResolutionStrategy
-import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -30,10 +21,11 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -44,7 +36,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -66,8 +63,13 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -77,11 +79,11 @@ import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.mready.mtgtreasury.R
 import com.mready.mtgtreasury.ui.theme.AccentColor
-import kotlinx.coroutines.coroutineScope
+import com.mready.mtgtreasury.ui.theme.BoxColor
+import com.mready.mtgtreasury.utility.captureImage
+import com.mready.mtgtreasury.utility.getCameraProvider
 import kotlinx.coroutines.launch
 import java.io.IOException
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 @Composable
 fun RecognitionScreen(
@@ -337,11 +339,11 @@ fun CameraPreviewScreen(
     val resolutionSelector = ResolutionSelector.Builder()
         .setAspectRatioStrategy(AspectRatioStrategy.RATIO_16_9_FALLBACK_AUTO_STRATEGY).build()
     val preview = Preview.Builder().setResolutionSelector(resolutionSelector).build()
-    val scaleType2 = PreviewView.ScaleType.FIT_CENTER
+    val scaleType = PreviewView.ScaleType.FIT_CENTER
 
     val previewView = remember {
         PreviewView(context).apply {
-            this.scaleType = scaleType2
+            this.scaleType = scaleType
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
@@ -349,7 +351,6 @@ fun CameraPreviewScreen(
             implementationMode = PreviewView.ImplementationMode.COMPATIBLE
         }
     }
-//    val cameraxSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
     val imageCapture = remember {
         ImageCapture.Builder().build()
     }
@@ -363,13 +364,6 @@ fun CameraPreviewScreen(
             updateShouldBindCamera(false)
             hideCircularLoading()
         }
-    }
-
-    LaunchedEffect(lensFacing) {
-        val cameraProvider = context.getCameraProvider()
-        cameraProvider.unbindAll()
-        cameraProvider.bindToLifecycle(lifecycleOwner, lensFacing, preview, imageCapture)
-        preview.setSurfaceProvider(previewView.surfaceProvider)
     }
 
     var isPressed by remember { mutableStateOf(false) }
@@ -392,14 +386,13 @@ fun CameraPreviewScreen(
         label = ""
     )
 
+    var isDialogVisible by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier.fillMaxSize(),
-//        contentAlignment = Alignment.BottomCenter
     ) {
         Box(
             modifier = Modifier
-                .statusBarsPadding()
                 .padding(4.dp)
                 .aspectRatio(9f / 16f)
                 .clip(RoundedCornerShape(12.dp))
@@ -441,23 +434,42 @@ fun CameraPreviewScreen(
                         .fillMaxSize()
                         .clip(CircleShape)
                         .background(colorAnimation)
-                ) {
-
-                }
+                )
             }
-        }
 
-        IconButton(
-            modifier = Modifier
-                .padding(top = 32.dp),
-            onClick = { onBack() }
-        ) {
-            Icon(
-                modifier = Modifier.size(30.dp),
-                imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                contentDescription = null,
-                tint = Color.White
+            IconButton(
+                onClick = { onBack() }
+            ) {
+                Icon(
+                    modifier = Modifier.size(30.dp),
+                    imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                    contentDescription = null,
+                    tint = Color.White
+                )
+            }
+
+            Text(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 12.dp),
+                text = stringResource(R.string.scan),
+                fontSize = 20.sp,
+                color = Color.White
             )
+
+            IconButton(
+                modifier = Modifier.align(Alignment.TopEnd),
+                onClick = {
+                    isDialogVisible = true
+                }
+            ) {
+                Icon(
+                    modifier = Modifier.size(30.dp),
+                    imageVector = Icons.Outlined.Info,
+                    contentDescription = null,
+                    tint = Color.White
+                )
+            }
         }
 
         if (isCircularLoadingVisible) {
@@ -468,45 +480,127 @@ fun CameraPreviewScreen(
                 color = Color.White
             )
         }
+    }
 
-
+    if(isDialogVisible){
+        MinimalDialog { isDialogVisible = false }
     }
 }
 
-private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
-    suspendCoroutine { continuation ->
-        ProcessCameraProvider.getInstance(this).also { cameraProvider ->
-            cameraProvider.addListener({
-                continuation.resume(cameraProvider.get())
-            }, ContextCompat.getMainExecutor(this))
+
+@Composable
+fun MinimalDialog(onDismissRequest: () -> Unit) {
+    Dialog(onDismissRequest = { onDismissRequest() }) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = BoxColor)
+        ) {
+            Text(
+                text = "How to scan",
+                modifier = Modifier
+                    .padding(top = 12.dp)
+                    .align(Alignment.CenterHorizontally),
+                fontSize = 24.sp,
+                textAlign = TextAlign.Center,
+                color = Color.White,
+                fontWeight = FontWeight.SemiBold
+            )
+
+            Row(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .align(Alignment.CenterHorizontally),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Done,
+                    contentDescription = null,
+                    tint = AccentColor
+                )
+
+                Text(
+                    modifier = Modifier.width(230.dp),
+                    text = "Avoid direct lighting on the card",
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Start,
+                    color = Color.White
+                )
+            }
+
+            Row(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .align(Alignment.CenterHorizontally),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Done,
+                    contentDescription = null,
+                    tint = AccentColor
+                )
+
+                Text(
+                    modifier = Modifier.width(230.dp),
+                    text = "Align the card vertically with the frame",
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Start,
+                    color = Color.White
+                )
+            }
+
+            Row(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .align(Alignment.CenterHorizontally),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Done,
+                    contentDescription = null,
+                    tint = AccentColor
+                )
+
+                Text(
+                    modifier = Modifier.width(230.dp),
+                    text = "Try different environments",
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Start,
+                    color = Color.White
+                )
+            }
+
+            Button(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .align(Alignment.CenterHorizontally),
+                onClick = { onDismissRequest() },
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = AccentColor)
+            ) {
+                Text(
+                    modifier = Modifier.align(Alignment.CenterVertically),
+                    text = "Got it",
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Start,
+                    color = Color.White
+                )
+            }
         }
     }
-
-private fun captureImage(
-    imageCapture: ImageCapture,
-    context: Context,
-    updateImage: (InputImage) -> Unit
-) {
-    imageCapture.takePicture(
-        ContextCompat.getMainExecutor(context),
-        object : ImageCapture.OnImageCapturedCallback() {
-            @OptIn(ExperimentalGetImage::class)
-            override fun onCaptureSuccess(image: ImageProxy) {
-                val mediaImage = image.image
-                if (mediaImage != null) {
-                    val inputImage = InputImage.fromMediaImage(
-                        mediaImage,
-                        image.imageInfo.rotationDegrees
-                    )
-                    updateImage(inputImage)
-                    Log.d("RecognitionScreen", "1st camera provider unbind")
-                }
-                image.close()
-            }
-
-            override fun onError(exception: ImageCaptureException) {
-                println("Failed $exception")
-            }
-        }
-    )
 }
+
+@androidx.compose.ui.tooling.preview.Preview
+@Composable
+fun Preview(modifier: Modifier = Modifier) {
+    MinimalDialog { }
+}
+
+
+
