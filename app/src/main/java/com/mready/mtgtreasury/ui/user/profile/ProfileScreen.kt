@@ -31,6 +31,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,16 +49,22 @@ import com.mready.mtgtreasury.R
 import com.mready.mtgtreasury.ui.theme.AccentColor
 import com.mready.mtgtreasury.ui.theme.BoxColor
 import com.mready.mtgtreasury.utility.formatPrice
+import com.mready.mtgtreasury.utility.getProfilePictureResourceId
 
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
+    userId: String,
     navigateToInventory: () -> Unit,
     navigateToWishlist: () -> Unit,
     navigateToSettings: () -> Unit
 ) {
     val scrollState = rememberScrollState()
     val uiState = viewModel.uiState.collectAsState()
+
+    LaunchedEffect(userId) {
+        viewModel.initialize(userId)
+    }
 
     when (val state = uiState.value) {
         is ProfileScreenUiState.Loading -> {
@@ -77,6 +84,7 @@ fun ProfileScreen(
             val inventoryCards = state.inventoryCards
             val wishlistCards = state.wishlistCards
             val decks = state.decks
+            val isCurrentUser = state.isCurrentUser
 
             Column(
                 modifier = Modifier
@@ -102,14 +110,16 @@ fun ProfileScreen(
                         color = Color.White
                     )
 
-                    Icon(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clickable { navigateToSettings() },
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = null,
-                        tint = Color.White
-                    )
+                    if (isCurrentUser) {
+                        Icon(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clickable { navigateToSettings() },
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = null,
+                            tint = Color.White
+                        )
+                    }
                 }
 
                 Row(
@@ -123,7 +133,7 @@ fun ProfileScreen(
                             .size(100.dp)
                             .aspectRatio(1f)
                             .clip(CircleShape),
-                        painter = painterResource(id = R.drawable.awoken_demon_innistrad_midnight_hunt_mtg_art),
+                        painter = painterResource(id = getProfilePictureResourceId(user.pictureId)),
                         contentScale = ContentScale.Crop,
                         contentDescription = null
                     )
@@ -242,7 +252,7 @@ fun CardsSection(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            text = "My $title",
+            text = title,
             fontSize = 18.sp,
             color = Color.White
         )
@@ -299,5 +309,4 @@ fun CardsSection(
             )
         }
     }
-
 }

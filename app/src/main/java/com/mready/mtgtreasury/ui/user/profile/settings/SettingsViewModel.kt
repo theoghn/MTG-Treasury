@@ -31,6 +31,11 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    fun updateProfilePictureId(profilePictureId: Int) {
+        userService.updateProfilePictureId(profilePictureId)
+        user.update { user.value.copy(pictureId = profilePictureId) }
+    }
+
     fun signOut() {
         userService.signOut()
     }

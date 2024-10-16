@@ -5,11 +5,11 @@ import kotlinx.serialization.Serializable
 @Serializable
 object ProfileRoot {
     @Serializable
-    object SettingsScreenDestination
-
-    @Serializable
-    object ProfileScreenDestination
-
-    @Serializable
-    class ProfileUpdateScreenDestination(val updateType: String)
+    class ProfileScreenDestination(val userId:String)
 }
+
+@Serializable
+object SettingsScreenDestination
+
+@Serializable
+class ProfileUpdateScreenDestination(val updateType: String)

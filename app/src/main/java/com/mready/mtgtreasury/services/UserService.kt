@@ -109,6 +109,10 @@ class UserService @Inject constructor() {
         )
     }
 
+    fun getUID():String{
+        return auth.requireUserId
+    }
+
     suspend fun updateInventoryValue(value: Double) {
         val userId = auth.requireUserId
 
@@ -126,5 +130,10 @@ class UserService @Inject constructor() {
 
         db.collection("users").document(userId).update("bio", bio)
     }
-}
 
+    fun updateProfilePictureId(profilePictureId: Int){
+        val userId = auth.requireUserId
+
+        db.collection("users").document(userId).update("pictureId", profilePictureId)
+    }
+}

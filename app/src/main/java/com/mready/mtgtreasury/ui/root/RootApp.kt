@@ -29,9 +29,11 @@ import com.mready.mtgtreasury.ui.decks.view.DeckScreen
 import com.mready.mtgtreasury.ui.decks.view.DeckScreenDestination
 import com.mready.mtgtreasury.ui.navigation.NavigationScreen
 import com.mready.mtgtreasury.ui.navigation.NavigationScreenDestination
-import com.mready.mtgtreasury.ui.recognition.RecognitionScreen
-import com.mready.mtgtreasury.ui.recognition.RecognitionScreenDestination
 import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
+import com.mready.mtgtreasury.ui.user.profile.ProfileUpdateScreenDestination
+import com.mready.mtgtreasury.ui.user.profile.SettingsScreenDestination
+import com.mready.mtgtreasury.ui.user.profile.settings.SettingsScreen
+import com.mready.mtgtreasury.ui.user.profile.update.ProfileUpdateScreen
 import com.mready.mtgtreasury.ui.user.signin.SignInDestination
 import com.mready.mtgtreasury.ui.user.signin.SignInScreen
 import com.mready.mtgtreasury.ui.user.signup.SignUpDestination
@@ -97,7 +99,9 @@ fun RootApp(
                 SharedTransitionLayout {
                     NavHost(
                         modifier = Modifier
-                            .fillMaxSize(),
+//                            .statusBarsPadding()
+                            .fillMaxSize()
+                        ,
                         navController = mainNavController,
                         startDestination = NavigationScreenDestination,
                         enterTransition = {
@@ -236,6 +240,34 @@ fun RootApp(
                                 onBack = { mainNavController.popBackStack() }
                             )
                         }
+
+                        composable<SettingsScreenDestination> {
+                            SettingsScreen(
+//                                onSignOut = {
+//                                    mainNavController.popBackStack(0, false)
+//                                },
+                                onBack = {
+                                    mainNavController.popBackStack()
+                                },
+                                navigateToProfileUpdate = { updateType: String ->
+                                    mainNavController.navigate(
+                                        ProfileUpdateScreenDestination(updateType)
+                                    )
+                                }
+                            )
+                        }
+
+                        composable<ProfileUpdateScreenDestination> { navBackStackEntry ->
+                            val destination: ProfileUpdateScreenDestination =
+                                navBackStackEntry.toRoute()
+                            ProfileUpdateScreen(
+                                updateType = destination.updateType,
+                                onBack = {
+                                    mainNavController.popBackStack()
+                                }
+                            )
+                        }
+
                     }
                 }
             }

@@ -1,6 +1,7 @@
 package com.mready.mtgtreasury.utility
 
 import android.icu.text.NumberFormat
+import com.mready.mtgtreasury.R
 import com.mready.mtgtreasury.models.card.CardLegalities
 import com.mready.mtgtreasury.models.card.MtgCard
 import java.time.LocalDate
@@ -24,4 +25,14 @@ fun MtgCard.getNumberOfLegalFormats(): Int {
         .filter { it.returnType.classifier == String::class }
         .count { it.call(legalities) == "legal" }
     return count / 2
+}
+
+fun getProfilePictureResourceId(pictureId: Int):Int {
+    return when(pictureId){
+        0 -> R.drawable.profile_picture_0
+        1 -> R.drawable.profile_picture_1
+        2 -> R.drawable.profile_picture_2
+        3 -> R.drawable.profile_picture_3
+        else -> R.drawable.profile_picture_0
+    }
 }

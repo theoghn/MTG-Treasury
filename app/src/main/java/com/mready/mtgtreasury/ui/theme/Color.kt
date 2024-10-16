@@ -24,6 +24,8 @@ val Pink40 = Color(0xFF7D5260)
 //
 //val Background  = Color(0xFFF8E3BE)
 
+val LightBlue = Color(0xFF03A9F4)
+
 //set 3
 val NavBarAccent = Color(0xFF000000)
 //val AccentColor = Color(0xffB1EF73)

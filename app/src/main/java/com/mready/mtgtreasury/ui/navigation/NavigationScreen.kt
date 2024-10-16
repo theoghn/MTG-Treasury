@@ -16,12 +16,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -31,14 +33,12 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import com.mready.mtgtreasury.R
-import com.mready.mtgtreasury.ui.card.CardScreenDestination
 import com.mready.mtgtreasury.ui.components.HexagonBox
 import com.mready.mtgtreasury.ui.decks.DecksScreen
 import com.mready.mtgtreasury.ui.decks.DecksScreenDestination
 import com.mready.mtgtreasury.ui.home.HomeScreen
 import com.mready.mtgtreasury.ui.home.HomeScreenDestination
 import com.mready.mtgtreasury.ui.recognition.RecognitionScreen
-import com.mready.mtgtreasury.ui.recognition.RecognitionScreenDestination
 import com.mready.mtgtreasury.ui.search.SearchRoot
 import com.mready.mtgtreasury.ui.search.SearchScreen
 import com.mready.mtgtreasury.ui.search.filter.FilterSearchScreen
@@ -46,14 +46,14 @@ import com.mready.mtgtreasury.ui.theme.BottomBarColor
 import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
 import com.mready.mtgtreasury.ui.user.profile.ProfileRoot
 import com.mready.mtgtreasury.ui.user.profile.ProfileScreen
-import com.mready.mtgtreasury.ui.user.profile.settings.SettingsScreen
-import com.mready.mtgtreasury.ui.user.profile.update.ProfileUpdateScreen
+import com.mready.mtgtreasury.ui.user.profile.SettingsScreenDestination
 
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun SharedTransitionScope.NavigationScreen(
     modifier: Modifier = Modifier,
+    viewModel: NavigationViewModel = hiltViewModel(),
     animatedVisibilityScope: AnimatedContentScope,
     navigateToCard: (String) -> Unit,
     navigateToDeckCreation: () -> Unit,
@@ -79,6 +79,8 @@ fun SharedTransitionScope.NavigationScreen(
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination?.route.toString().split("/")[0]
+
+    val currentUID by viewModel.currentUID.collectAsState()
 
     Scaffold(
         modifier = modifier
@@ -214,43 +216,46 @@ fun SharedTransitionScope.NavigationScreen(
                 )
             }
 
-            navigation<ProfileRoot>(startDestination = ProfileRoot.ProfileScreenDestination) {
-                composable<ProfileRoot.ProfileScreenDestination> {
+            navigation<ProfileRoot>(startDestination = ProfileRoot.ProfileScreenDestination(userId = currentUID)) {
+                composable<ProfileRoot.ProfileScreenDestination> {navBackStackEntry ->
+                    val destination: ProfileRoot.ProfileScreenDestination = navBackStackEntry.toRoute()
+
                     ProfileScreen(
+                        userId = destination.userId,
                         navigateToInventory = { navigateToInventory() },
                         navigateToWishlist = { navigateToWishlist() },
-                        navigateToSettings = { navController.navigate(ProfileRoot.SettingsScreenDestination) }
+                        navigateToSettings = { rootNavController.navigate(SettingsScreenDestination) }
                     )
                 }
 
-                composable<ProfileRoot.SettingsScreenDestination> {
-                    SettingsScreen(
-                        onSignOut = {
-                            navController.popBackStack(0, false)
-                        },
-                        onBack = {
-                            navController.popBackStack()
-                        },
-                        navigateToProfileUpdate = { updateType: String ->
-                            navController.navigate(
-                                ProfileRoot.ProfileUpdateScreenDestination(
-                                    updateType
-                                )
-                            )
-                        }
-                    )
-                }
-
-                composable<ProfileRoot.ProfileUpdateScreenDestination> { navBackStackEntry ->
-                    val destination: ProfileRoot.ProfileUpdateScreenDestination =
-                        navBackStackEntry.toRoute()
-                    ProfileUpdateScreen(
-                        updateType = destination.updateType,
-                        onBack = {
-                            navController.popBackStack()
-                        }
-                    )
-                }
+//                composable<ProfileRoot.SettingsScreenDestination> {
+//                    SettingsScreen(
+//                        onSignOut = {
+//                            navController.popBackStack(0, false)
+//                        },
+//                        onBack = {
+//                            navController.popBackStack()
+//                        },
+//                        navigateToProfileUpdate = { updateType: String ->
+//                            navController.navigate(
+//                                ProfileRoot.ProfileUpdateScreenDestination(
+//                                    updateType
+//                                )
+//                            )
+//                        }
+//                    )
+//                }
+//
+//                composable<ProfileRoot.ProfileUpdateScreenDestination> { navBackStackEntry ->
+//                    val destination: ProfileRoot.ProfileUpdateScreenDestination =
+//                        navBackStackEntry.toRoute()
+//                    ProfileUpdateScreen(
+//                        updateType = destination.updateType,
+//                        onBack = {
+//                            navController.popBackStack()
+//                        }
+//                    )
+//                }
             }
         }
     }
