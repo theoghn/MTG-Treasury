@@ -14,6 +14,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -39,6 +40,7 @@ import com.mready.mtgtreasury.ui.theme.MainBackgroundColor
 @Composable
 fun WishlistScreen(
     viewModel: WishlistViewModel = hiltViewModel(),
+    userId: String,
     onNavigateToCard: (String) -> Unit,
     onBack: () -> Unit
 ) {
@@ -46,6 +48,10 @@ fun WishlistScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     val keyboardController = LocalSoftwareKeyboardController.current
+
+    LaunchedEffect(userId) {
+        viewModel.initialize(userId)
+    }
 
     Scaffold(
         modifier = Modifier

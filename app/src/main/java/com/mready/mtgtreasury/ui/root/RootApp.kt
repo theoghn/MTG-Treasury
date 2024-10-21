@@ -40,6 +40,7 @@ import com.mready.mtgtreasury.ui.user.signup.SignUpDestination
 import com.mready.mtgtreasury.ui.user.signup.SingUpScreen
 import com.mready.mtgtreasury.ui.webview.WebViewScreen
 import com.mready.mtgtreasury.ui.webview.WebViewScreenDestination
+import okhttp3.internal.userAgent
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -100,8 +101,7 @@ fun RootApp(
                     NavHost(
                         modifier = Modifier
 //                            .statusBarsPadding()
-                            .fillMaxSize()
-                        ,
+                            .fillMaxSize(),
                         navController = mainNavController,
                         startDestination = NavigationScreenDestination,
                         enterTransition = {
@@ -143,19 +143,19 @@ fun RootApp(
                                         DeckCreationScreenDestination(null)
                                     )
                                 },
-                                navigateToDeck = { id: String ->
+                                navigateToDeck = { id ->
                                     mainNavController.navigate(
                                         DeckScreenDestination(id)
                                     )
                                 },
-                                navigateToInventory = {
+                                navigateToInventory = { userId ->
                                     mainNavController.navigate(
-                                        InventoryScreenDestination
+                                        InventoryScreenDestination(userId = userId)
                                     )
                                 },
-                                navigateToWishlist = {
+                                navigateToWishlist = { userId ->
                                     mainNavController.navigate(
-                                        WishlistScreenDestination
+                                        WishlistScreenDestination(userId = userId)
                                     )
                                 },
                                 navigateToWebView = { url ->
@@ -209,8 +209,11 @@ fun RootApp(
                             )
                         }
 
-                        composable<InventoryScreenDestination> {
+                        composable<InventoryScreenDestination> { backStackEntry ->
+                            val destination: InventoryScreenDestination =
+                                backStackEntry.toRoute()
                             InventoryScreen(
+                                userId = destination.userId,
                                 onNavigateToCard = { id ->
                                     mainNavController.navigate(
                                         CardScreenDestination(id)
@@ -221,8 +224,11 @@ fun RootApp(
                         }
 
 
-                        composable<WishlistScreenDestination> {
+                        composable<WishlistScreenDestination> {backStackEntry ->
+                            val destination: WishlistScreenDestination =
+                                backStackEntry.toRoute()
                             WishlistScreen(
+                                userId = destination.userId,
                                 onNavigateToCard = { id ->
                                     mainNavController.navigate(
                                         CardScreenDestination(id)

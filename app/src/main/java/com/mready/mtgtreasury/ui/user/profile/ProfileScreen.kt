@@ -55,14 +55,15 @@ import com.mready.mtgtreasury.utility.getProfilePictureResourceId
 fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
     userId: String,
-    navigateToInventory: () -> Unit,
-    navigateToWishlist: () -> Unit,
+    navigateToInventory: (String) -> Unit,
+    navigateToWishlist: (String) -> Unit,
     navigateToSettings: () -> Unit
 ) {
     val scrollState = rememberScrollState()
     val uiState = viewModel.uiState.collectAsState()
 
     LaunchedEffect(userId) {
+//        viewModel.initialize(userId)
         viewModel.initialize(userId)
     }
 
@@ -84,7 +85,7 @@ fun ProfileScreen(
             val inventoryCards = state.inventoryCards
             val wishlistCards = state.wishlistCards
             val decks = state.decks
-            val isCurrentUser = state.isCurrentUser
+            val isCurrentUser = state.isLocalUser
 
             Column(
                 modifier = Modifier
@@ -199,7 +200,7 @@ fun ProfileScreen(
                         .padding(top = 16.dp),
                     imageUris = inventoryCards.map { it.imageUris.smallSize },
                     title = stringResource(R.string.inventory),
-                    onClick = { navigateToInventory() }
+                    onClick = { navigateToInventory(userId) }
                 )
 
                 CardsSection(
@@ -207,7 +208,7 @@ fun ProfileScreen(
                         .padding(top = 16.dp),
                     imageUris = wishlistCards.map { it.imageUris.smallSize },
                     title = stringResource(R.string.wishlist),
-                    onClick = { navigateToWishlist() }
+                    onClick = { navigateToWishlist(userId) }
                 )
             }
         }

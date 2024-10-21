@@ -80,7 +80,7 @@ sealed class ProfileScreenUiState {
         val inventoryCards: List<MtgCard>,
         val wishlistCards: List<MtgCard>,
         val decks: List<Deck>,
-        val isCurrentUser: Boolean
+        val isLocalUser: Boolean
     ) : ProfileScreenUiState()
 
     data object Loading : ProfileScreenUiState()

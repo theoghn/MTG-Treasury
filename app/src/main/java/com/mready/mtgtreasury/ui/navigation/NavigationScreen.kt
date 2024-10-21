@@ -58,8 +58,8 @@ fun SharedTransitionScope.NavigationScreen(
     navigateToCard: (String) -> Unit,
     navigateToDeckCreation: () -> Unit,
     navigateToDeck: (String) -> Unit,
-    navigateToInventory: () -> Unit,
-    navigateToWishlist: () -> Unit,
+    navigateToInventory: (String) -> Unit,
+    navigateToWishlist: (String) -> Unit,
     navigateToWebView: (String) -> Unit,
     rootNavController: NavHostController,
 ) {
@@ -217,13 +217,14 @@ fun SharedTransitionScope.NavigationScreen(
             }
 
             navigation<ProfileRoot>(startDestination = ProfileRoot.ProfileScreenDestination(userId = currentUID)) {
-                composable<ProfileRoot.ProfileScreenDestination> {navBackStackEntry ->
-                    val destination: ProfileRoot.ProfileScreenDestination = navBackStackEntry.toRoute()
+                composable<ProfileRoot.ProfileScreenDestination> { navBackStackEntry ->
+                    val destination: ProfileRoot.ProfileScreenDestination =
+                        navBackStackEntry.toRoute()
 
                     ProfileScreen(
                         userId = destination.userId,
-                        navigateToInventory = { navigateToInventory() },
-                        navigateToWishlist = { navigateToWishlist() },
+                        navigateToInventory = { userId -> navigateToInventory(userId) },
+                        navigateToWishlist = { userId -> navigateToWishlist(userId) },
                         navigateToSettings = { rootNavController.navigate(SettingsScreenDestination) }
                     )
                 }

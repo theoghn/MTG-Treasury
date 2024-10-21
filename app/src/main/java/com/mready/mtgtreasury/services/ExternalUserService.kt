@@ -29,4 +29,12 @@ class ExternalUserService @Inject constructor() {
             .toObjects<Deck>()
     }
 
+    suspend fun getUserWishlist(userId: String): List<String> {
+        return db.collection("users").document(userId).get().await().toObject<AppUser>()!!.wishlist
+    }
+
+    suspend fun getUserInventory(userId: String): HashMap<String, Int>{
+        return db.collection("users").document(userId).get().await().toObject<AppUser>()!!.inventory
+    }
+
 }
