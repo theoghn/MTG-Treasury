@@ -49,8 +49,8 @@ class ProfileViewModel @Inject constructor(
                 val user = flow.second
 
                 if (user != null) {
-                    val inventoryCards = cardsService.getCardsByIds(user.inventory.keys.toList().take(10))
-                    val wishlistCards = cardsService.getCardsByIds(user.wishlist.take(10))
+                    val inventoryCards = cardsService.getCardsByIds(user.inventory.keys.toList().take(7))
+                    val wishlistCards = cardsService.getCardsByIds(user.wishlist.take(7))
 
                     uiState.update {
                         ProfileScreenUiState.ProfileUi(user, inventoryCards, wishlistCards, decks,true)
@@ -64,8 +64,8 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             val user = externalUserService.getUserInfo(userId)
             val decks = externalUserService.getUserDecks(userId)
-            val inventoryCards = cardsService.getCardsByIds(user.inventory.keys.toList().take(10))
-            val wishlistCards = cardsService.getCardsByIds(user.wishlist.take(10))
+            val inventoryCards = cardsService.getCardsByIds(user.inventory.keys.toList().take(7))
+            val wishlistCards = cardsService.getCardsByIds(user.wishlist.take(7))
 
             uiState.update {
                 ProfileScreenUiState.ProfileUi(user, inventoryCards, wishlistCards, decks, false)
