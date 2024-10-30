@@ -10,11 +10,11 @@ plugins {
 }
 
 android {
-    namespace = "com.mready.mtgtreasury"
+    namespace = "com.theoghn.mtgtreasury"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.mready.mtgtreasury"
+        applicationId = "com.theoghn.mtgtreasury"
         minSdk = 26
         targetSdk = 34
         versionCode = 1
