@@ -3,6 +3,7 @@ package com.theoghn.mtgtreasury.ui.recognition
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
+import androidx.compose.ui.util.fastMaxBy
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.mlkit.vision.common.InputImage
@@ -11,15 +12,20 @@ import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.theoghn.mtgtreasury.services.CardsService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.IOException
 import javax.inject.Inject
+import kotlin.time.measureTime
 
 
 @HiltViewModel
@@ -40,55 +46,39 @@ class RecognitionViewModel @Inject constructor(
                 name = name,
             )
 
-            delay(100)
-
-            var maxMatch = 0.0
-            var bestMatchImgId = ""
-            var bestMatchCardId = ""
-
             val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-
-            var imageText = ""
-
-            recognizer.process(image).addOnSuccessListener {
-                imageText = it.text.split("\n").takeLast(4).joinToString(" ")
-                Log.d("RecognitionViewModel", "InitialImage: $imageText")
-
-            }
-            Log.d("RecognitionViewModel", "Name: $name")
-
+            val imageText = recognizer.process(image).await().text.split("\n").takeLast(4).joinToString(" ")
 
 
             if (cards.isNotEmpty()) {
-                cards.forEachIndexed { index, card ->
-                    val imageByteArray =
-                        createBitmapFromUri(card.imageUris.normalSize) ?: return@forEachIndexed
-                    val cardImage = InputImage.fromBitmap(imageByteArray, 0)
-                    recognizer.process(cardImage).addOnSuccessListener {
-                        val cardText = it.text.split("\n").takeLast(4).joinToString(" ")
-                        val match = jaroWinklerSimilarity(imageText, cardText)
-                        Log.d("RecognitionViewModel", "Card: ${card.imageUris.borderCrop}")
-                        Log.d(
-                            "RecognitionViewModel",
-                            "Card Text: $cardText \n Image Text: $imageText \n match = $match"
-                        )
-                        if (match > maxMatch) {
-                            maxMatch = match
-                            bestMatchImgId = card.imageUris.normalSize
-                            bestMatchCardId = card.id
+                val results = withContext(Dispatchers.Default){
+                    Log.d("RecognitionViewModel", "Received ${cards.size} cards")
+                    cards.mapIndexed {index,card ->
+                        async {
+                            if (card.imageUris.normalSize == "") {
+                                return@async null
+                            }
+
+                            val imageByteArray =
+                                createBitmapFromUri(card.imageUris.normalSize) ?: return@async null
+                            val cardImage = InputImage.fromBitmap(imageByteArray, 0)
+                            Log.d("RecognitionViewModel", "Start processing : $index")
+                            val text = recognizer.process(cardImage).await().text.split("\n").takeLast(4).joinToString(" ")
+                            Log.d("RecognitionViewModel", "Finished processing : $index")
+
+                            if (text.isBlank()){
+                                return@async null
+                            }
+
+                            return@async card.id to jaroWinklerSimilarity(imageText, text)
                         }
-                    }.addOnCompleteListener {
-                        if (index == cards.size - 1) {
-                            Log.d(
-                                "RecognitionViewModel",
-                                "updated the best image uri: $bestMatchImgId"
-                            )
-                            bestImageId.update { bestMatchImgId }
-                            matchCardId.update { bestMatchCardId }
-                        }
-                    }
+                    }.awaitAll().filterNotNull()
+                }
+                matchCardId.update {
+                    results.maxBy { it.second }.first
                 }
             }
+
         }
     }
 
