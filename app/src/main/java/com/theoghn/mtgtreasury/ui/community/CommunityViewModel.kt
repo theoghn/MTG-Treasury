@@ -4,10 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.theoghn.mtgtreasury.models.AppUser
-import com.theoghn.mtgtreasury.models.card.MtgCard
 import com.theoghn.mtgtreasury.services.ExternalUserService
-import com.theoghn.mtgtreasury.services.UserService
-import com.theoghn.mtgtreasury.ui.cardslist.InventoryScreenUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update

@@ -1,6 +1,5 @@
 package com.theoghn.mtgtreasury.services
 
-import com.google.firebase.Firebase
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase

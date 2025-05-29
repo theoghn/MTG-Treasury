@@ -1,15 +1,14 @@
 package com.theoghn.mtgtreasury.services
 
 import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
-import com.theoghn.mtgtreasury.utility.await
-import javax.inject.Singleton
 import com.google.firebase.firestore.toObject
 import com.google.firebase.firestore.toObjects
 import com.theoghn.mtgtreasury.models.AppUser
 import com.theoghn.mtgtreasury.models.Deck
+import com.theoghn.mtgtreasury.utility.await
 import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class ExternalUserService @Inject constructor() {

@@ -2,7 +2,6 @@ package com.theoghn.mtgtreasury.ui.chatroom
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.theoghn.mtgtreasury.models.ChatMessage
 import com.theoghn.mtgtreasury.services.MessageService
 import com.theoghn.mtgtreasury.services.UserService
