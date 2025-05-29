@@ -33,6 +33,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import com.theoghn.mtgtreasury.R
+import com.theoghn.mtgtreasury.ui.community.CommunityScreen
+import com.theoghn.mtgtreasury.ui.community.CommunityScreenDestination
 import com.theoghn.mtgtreasury.ui.components.HexagonBox
 import com.theoghn.mtgtreasury.ui.decks.DecksScreen
 import com.theoghn.mtgtreasury.ui.decks.DecksScreenDestination
@@ -61,12 +63,14 @@ fun SharedTransitionScope.NavigationScreen(
     navigateToInventory: (String) -> Unit,
     navigateToWishlist: (String) -> Unit,
     navigateToWebView: (String) -> Unit,
+    navigateToProfile: (String) -> Unit,
     rootNavController: NavHostController,
 ) {
     val navigationSections = listOf(
         HomeScreenDestination,
         SearchRoot,
         DecksScreenDestination,
+        CommunityScreenDestination,
         ProfileRoot
     )
 
@@ -74,6 +78,7 @@ fun SharedTransitionScope.NavigationScreen(
         Pair(R.drawable.ic_bnav_home, R.drawable.ic_bnav_home_selected),
         Pair(R.drawable.ic_bnav_search, R.drawable.ic_bnav_search_selected),
         Pair(R.drawable.ic_bnav_deck, R.drawable.ic_bnav_deck_selected),
+        Pair(R.drawable.ic_user_alt, R.drawable.ic_community_selected),
         Pair(R.drawable.ic_bnav_profile, R.drawable.ic_bnav_profile_selected)
     )
     val navController = rememberNavController()
@@ -216,6 +221,12 @@ fun SharedTransitionScope.NavigationScreen(
                 )
             }
 
+            composable<CommunityScreenDestination> {
+                CommunityScreen(
+                    onNavigateToProfile = { navigateToProfile(it) },
+                )
+            }
+
             navigation<ProfileRoot>(startDestination = ProfileRoot.ProfileScreenDestination(userId = currentUID)) {
                 composable<ProfileRoot.ProfileScreenDestination> { navBackStackEntry ->
                     val destination: ProfileRoot.ProfileScreenDestination =
@@ -225,7 +236,7 @@ fun SharedTransitionScope.NavigationScreen(
                         userId = destination.userId,
                         navigateToInventory = { userId -> navigateToInventory(userId) },
                         navigateToWishlist = { userId -> navigateToWishlist(userId) },
-                        navigateToSettings = { rootNavController.navigate(SettingsScreenDestination) }
+                        navigateToSettings = { rootNavController.navigate(SettingsScreenDestination) },
                     )
                 }
 

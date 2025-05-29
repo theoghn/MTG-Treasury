@@ -13,3 +13,7 @@ object SettingsScreenDestination
 
 @Serializable
 class ProfileUpdateScreenDestination(val updateType: String)
+
+
+@Serializable
+class ProfileScreenDestination(val userId:String)

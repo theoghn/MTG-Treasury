@@ -7,6 +7,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -23,6 +24,8 @@ import com.theoghn.mtgtreasury.ui.cardslist.InventoryScreen
 import com.theoghn.mtgtreasury.ui.cardslist.InventoryScreenDestination
 import com.theoghn.mtgtreasury.ui.cardslist.wishlist.WishlistScreen
 import com.theoghn.mtgtreasury.ui.cardslist.wishlist.WishlistScreenDestination
+import com.theoghn.mtgtreasury.ui.chatroom.ChatRoomDestination
+import com.theoghn.mtgtreasury.ui.chatroom.ChatRoomScreen
 import com.theoghn.mtgtreasury.ui.decks.create.DeckCreationScreen
 import com.theoghn.mtgtreasury.ui.decks.create.DeckCreationScreenDestination
 import com.theoghn.mtgtreasury.ui.decks.view.DeckScreen
@@ -30,6 +33,8 @@ import com.theoghn.mtgtreasury.ui.decks.view.DeckScreenDestination
 import com.theoghn.mtgtreasury.ui.navigation.NavigationScreen
 import com.theoghn.mtgtreasury.ui.navigation.NavigationScreenDestination
 import com.theoghn.mtgtreasury.ui.theme.MainBackgroundColor
+import com.theoghn.mtgtreasury.ui.user.profile.ProfileScreen
+import com.theoghn.mtgtreasury.ui.user.profile.ProfileScreenDestination
 import com.theoghn.mtgtreasury.ui.user.profile.ProfileUpdateScreenDestination
 import com.theoghn.mtgtreasury.ui.user.profile.SettingsScreenDestination
 import com.theoghn.mtgtreasury.ui.user.profile.settings.SettingsScreen
@@ -162,6 +167,11 @@ fun RootApp(
                                         WebViewScreenDestination(url)
                                     )
                                 },
+                                navigateToProfile = { userId ->
+                                    mainNavController.navigate(
+                                        ProfileScreenDestination(userId)
+                                    )
+                                },
                                 animatedVisibilityScope = this
                             )
                         }
@@ -176,6 +186,43 @@ fun RootApp(
 //                                }
 //                            )
 //                        }
+                        composable<ProfileScreenDestination> { navBackStackEntry ->
+                            val destination: ProfileScreenDestination =
+                                navBackStackEntry.toRoute()
+
+                            ProfileScreen(
+                                modifier = Modifier.statusBarsPadding(),
+                                userId = destination.userId,
+                                navigateToInventory = { userId ->
+                                    mainNavController.navigate(
+                                        InventoryScreenDestination(userId = userId)
+                                    )
+                                },
+                                navigateToWishlist = { userId ->
+                                    mainNavController.navigate(
+                                        WishlistScreenDestination(userId = userId)
+                                    )
+                                },
+                                navigateToSettings = { },
+                                navigateToChatRoom = { receiverId: String, receiverUsername:String ->
+                                    mainNavController.navigate(
+                                        ChatRoomDestination(receiverId,receiverUsername)
+                                    )
+                                },
+                                onBack = { mainNavController.popBackStack() },
+                            )
+                        }
+
+                        composable<ChatRoomDestination> { navBackStackEntry ->
+                            val destination: ChatRoomDestination =
+                                navBackStackEntry.toRoute()
+
+                            ChatRoomScreen(
+                                receiverId = destination.receiverId,
+                                receiverUsername = destination.receiverUsername,
+                                onBack = { mainNavController.popBackStack() }
+                            )
+                        }
 
                         composable<CardScreenDestination> { backStackEntry ->
                             val destination: CardScreenDestination = backStackEntry.toRoute()
@@ -223,7 +270,7 @@ fun RootApp(
                         }
 
 
-                        composable<WishlistScreenDestination> {backStackEntry ->
+                        composable<WishlistScreenDestination> { backStackEntry ->
                             val destination: WishlistScreenDestination =
                                 backStackEntry.toRoute()
                             WishlistScreen(

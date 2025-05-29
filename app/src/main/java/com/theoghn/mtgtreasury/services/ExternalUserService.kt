@@ -13,8 +13,16 @@ import javax.inject.Inject
 
 @Singleton
 class ExternalUserService @Inject constructor() {
-    private val auth = Firebase.auth
     private val db = Firebase.firestore
+
+    suspend fun getUsersByName(name: String): List<AppUser> {
+        return db.collection("users")
+            .whereGreaterThanOrEqualTo("username", name)
+            .whereLessThanOrEqualTo("username", name + '\uf8ff')
+            .get()
+            .await()
+            .toObjects<AppUser>()
+    }
 
     suspend fun getUserInfo(userId: String): AppUser {
         return db.collection("users").document(userId).get().await().toObject<AppUser>()!!

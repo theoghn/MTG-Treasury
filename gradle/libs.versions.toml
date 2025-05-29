@@ -28,6 +28,7 @@ textRecognition = "16.0.1"
 objectDetection = "17.0.2"
 cameraView = "1.3.4"
 cameraLifecycle = "1.3.4"
+firebaseDatabaseKtx = "21.0.0"
 
 [libraries]
 # cameraX
@@ -74,6 +75,7 @@ tensorflow-lite-gpu-delegate-plugin = { module = "org.tensorflow:tensorflow-lite
 tensorflow-lite-task-vision = { module = "org.tensorflow:tensorflow-lite-task-vision", version.ref = "tensorflowLiteTaskVision" }
 text-recognition = { module = "com.google.mlkit:text-recognition", version.ref = "textRecognition" }
 object-detection = { group = "com.google.mlkit", name = "object-detection", version.ref = "objectDetection" }
+firebase-database-ktx = { group = "com.google.firebase", name = "firebase-database-ktx", version.ref = "firebaseDatabaseKtx" }
 
 
 [plugins]
