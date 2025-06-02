@@ -33,8 +33,10 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import com.theoghn.mtgtreasury.R
+import com.theoghn.mtgtreasury.ui.chatroom.ChatRoomDestination
+import com.theoghn.mtgtreasury.ui.community.ActiveChatsScreen
+import com.theoghn.mtgtreasury.ui.community.CommunityRoot
 import com.theoghn.mtgtreasury.ui.community.CommunityScreen
-import com.theoghn.mtgtreasury.ui.community.CommunityScreenDestination
 import com.theoghn.mtgtreasury.ui.components.HexagonBox
 import com.theoghn.mtgtreasury.ui.decks.DecksScreen
 import com.theoghn.mtgtreasury.ui.decks.DecksScreenDestination
@@ -70,7 +72,7 @@ fun SharedTransitionScope.NavigationScreen(
         HomeScreenDestination,
         SearchRoot,
         DecksScreenDestination,
-        CommunityScreenDestination,
+        CommunityRoot,
         ProfileRoot
     )
 
@@ -220,12 +222,25 @@ fun SharedTransitionScope.NavigationScreen(
                     }
                 )
             }
+            navigation<CommunityRoot>(startDestination = CommunityRoot.ActiveChatsDestination) {
+                composable<CommunityRoot.CommunityScreenDestination> {
+                    CommunityScreen(
+                        onNavigateToProfile = { navigateToProfile(it) },
+                    )
+                }
 
-            composable<CommunityScreenDestination> {
-                CommunityScreen(
-                    onNavigateToProfile = { navigateToProfile(it) },
-                )
+                composable<CommunityRoot.ActiveChatsDestination> {
+                    ActiveChatsScreen(onNavigateToChatRoom = { receiverId: String, receiverUsername: String ->
+                        rootNavController.navigate(
+                            ChatRoomDestination(receiverId, receiverUsername)
+                        )
+                    }
+                    )
+                }
+
             }
+
+
 
             navigation<ProfileRoot>(startDestination = ProfileRoot.ProfileScreenDestination(userId = currentUID)) {
                 composable<ProfileRoot.ProfileScreenDestination> { navBackStackEntry ->

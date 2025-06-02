@@ -19,18 +19,19 @@ class ChatRoomViewModel @Inject constructor(
 ) : ViewModel() {
     val messagesFlow = MutableStateFlow<List<ChatMessage>>(emptyList())
 
-    fun initialize(receiverId: String){
+    fun initialize(receiverId: String) {
         getMessages(receiverId)
     }
 
     fun sendMessage(receiverId: String, message: String) {
         val userId = userService.getUID()
-
-        messageService.sendMessage(
-            toUserId = receiverId,
-            messageText = message,
-            fromUserId = userId
-        )
+        viewModelScope.launch {
+            messageService.sendMessage(
+                toUserId = receiverId,
+                messageText = message,
+                fromUserId = userId
+            )
+        }
     }
 
     fun getMessages(receiverId: String) {

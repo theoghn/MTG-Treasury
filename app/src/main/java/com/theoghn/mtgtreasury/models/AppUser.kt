@@ -9,5 +9,6 @@ data class AppUser(
     val wishlist: List<String> = listOf(),
     val inventory: HashMap<String,Int> = hashMapOf(),
     val bio : String = "",
-    val pictureId : Int = 0
+    val pictureId : Int = 0,
+    val chatsWith: List<String> = listOf()
 )
