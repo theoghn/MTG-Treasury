@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -88,6 +89,15 @@ fun SharedTransitionScope.NavigationScreen(
     val currentDestination = navBackStackEntry?.destination?.route.toString().split("/")[0]
 
     val currentUID by viewModel.currentUID.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.initialize()
+    }
+
+//    LaunchedEffect(currentUID) {
+//        Log.d("NavigationScreen", "Current UID: $currentUID")
+//        navController.popBackStack(HomeScreenDestination, false)
+//    }
 
     Scaffold(
         modifier = modifier
@@ -226,15 +236,22 @@ fun SharedTransitionScope.NavigationScreen(
                 composable<CommunityRoot.CommunityScreenDestination> {
                     CommunityScreen(
                         onNavigateToProfile = { navigateToProfile(it) },
+                        onBack = {
+                            navController.popBackStack()
+                        }
                     )
                 }
 
                 composable<CommunityRoot.ActiveChatsDestination> {
-                    ActiveChatsScreen(onNavigateToChatRoom = { receiverId: String, receiverUsername: String ->
-                        rootNavController.navigate(
-                            ChatRoomDestination(receiverId, receiverUsername)
-                        )
-                    }
+                    ActiveChatsScreen(
+                        onNavigateToChatRoom = { receiverId: String, receiverUsername: String ->
+                            rootNavController.navigate(
+                                ChatRoomDestination(receiverId, receiverUsername)
+                            )
+                        },
+                        onNavigateToCommunity = {
+                            navController.navigate(CommunityRoot.CommunityScreenDestination)
+                        }
                     )
                 }
 
@@ -248,7 +265,7 @@ fun SharedTransitionScope.NavigationScreen(
                         navBackStackEntry.toRoute()
 
                     ProfileScreen(
-                        userId = destination.userId,
+                        userId = currentUID,
                         navigateToInventory = { userId -> navigateToInventory(userId) },
                         navigateToWishlist = { userId -> navigateToWishlist(userId) },
                         navigateToSettings = { rootNavController.navigate(SettingsScreenDestination) },

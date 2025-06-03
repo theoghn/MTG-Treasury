@@ -1,5 +1,6 @@
 package com.theoghn.mtgtreasury.ui.user.profile
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.theoghn.mtgtreasury.models.AppUser
@@ -29,12 +30,20 @@ class ProfileViewModel @Inject constructor(
     val uiState = MutableStateFlow<ProfileScreenUiState>(ProfileScreenUiState.Loading)
 
     fun initialize(userId: String) {
+        Log.d("ProfileViewModel", "initialize: $userId")
+        Log.d("ProfileViewModel", "initialize: ${userService.getUID()}")
+
+
         if (uiState.value == ProfileScreenUiState.Loading) {
             when (userId) {
                 userService.getUID() -> getLocalUserInfo()
                 else -> getForeignUserInfo(userId)
             }
         }
+    }
+
+    init {
+
     }
 
     private fun getLocalUserInfo() {

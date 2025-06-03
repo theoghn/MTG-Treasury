@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -55,6 +56,12 @@ fun RootApp(
     val mainNavController = rememberNavController()
     val authenticationController = rememberNavController()
     val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(uiState) {
+        if(uiState == RootUiState.Authentication){
+            mainNavController.popBackStack(NavigationScreenDestination, inclusive = false)
+        }
+    }
 
     Box(
         modifier = modifier

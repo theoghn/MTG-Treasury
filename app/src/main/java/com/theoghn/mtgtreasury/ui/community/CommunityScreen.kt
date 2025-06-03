@@ -39,6 +39,7 @@ fun CommunityScreen(
     modifier: Modifier = Modifier,
     viewModel: CommunityViewModel = hiltViewModel(),
     onNavigateToProfile: (String) -> Unit,
+    onBack: () -> Boolean,
 ) {
     val searchQuery by viewModel.searchQuery.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
@@ -58,7 +59,7 @@ fun CommunityScreen(
                     IconButton(
                         modifier = Modifier.align(Alignment.CenterStart),
                         onClick = {
-//                            onBack()
+                            onBack()
                         }
                     ) {
                         Icon(

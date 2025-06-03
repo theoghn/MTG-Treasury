@@ -72,6 +72,7 @@ fun ProfileScreen(
     LaunchedEffect(userId) {
         viewModel.initialize(userId)
     }
+
     Box(
         modifier = modifier
             .fillMaxSize()
