@@ -1,4 +1,7 @@
 <resources>
+    <string name="generic_no_users_found">No users found</string>
+
+
     <string name="app_name">MTG Treasury</string>
     <string name="home_collection_value">Current collection value</string>
     <string name="home_card_of_the_day">Card of the Day</string>
@@ -85,4 +88,13 @@
     <string name="new_deck">New Deck</string>
     <string name="your_decks">Your Decks</string>
     <string name="scan">Scan</string>
+
+    <!--    Community -->
+    <string name="community_title">Community</string>
+    <string name="community_search_users">Search Users</string>
+    <string name="community_search_description">Search for users to see their profiles</string>
+    <string name="community_chats">Your Chats</string>
+    <string name="chat_type_message">Type a message...</string>
+    <string name="chat_send">Send</string>
+    <string name="chat_empty_state">No active chats</string>
 </resources>

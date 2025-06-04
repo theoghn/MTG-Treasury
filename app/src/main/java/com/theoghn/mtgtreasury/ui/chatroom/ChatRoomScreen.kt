@@ -39,10 +39,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.theoghn.mtgtreasury.R
 import com.theoghn.mtgtreasury.models.ChatMessage
 import com.theoghn.mtgtreasury.ui.components.PrimaryButton
 import com.theoghn.mtgtreasury.ui.theme.AccentColor
@@ -88,10 +90,9 @@ fun ChatRoomScreen(
                 message = newMessage
             },
             onSendClick = {
-                // Handle send message logic here
                 if (message.isNotBlank()) {
                     viewModel.sendMessage(message = message, receiverId = receiverId)
-                    message = "" // Clear the input after sending
+                    message = ""
                 }
             }
         )
@@ -124,7 +125,7 @@ fun MessageInputBox(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(100)),
-            placeholder = { Text("Type a message...") },
+            placeholder = { Text(stringResource(R.string.chat_type_message)) },
             maxLines = 3,
             colors = TextFieldDefaults.colors(
                 focusedIndicatorColor = Color.Transparent,
@@ -150,7 +151,7 @@ fun MessageInputBox(
                                     rotationZ = -30f // negative = tilted up-left
                                 ),
                             imageVector = Icons.AutoMirrored.Filled.Send,
-                            contentDescription = "Send",
+                            contentDescription = stringResource(R.string.chat_send),
                             tint = Color.White
                         )
                     }

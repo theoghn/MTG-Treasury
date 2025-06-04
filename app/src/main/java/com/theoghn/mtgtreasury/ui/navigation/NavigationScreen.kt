@@ -183,8 +183,14 @@ fun SharedTransitionScope.NavigationScreen(
                                     searchName
                                 )
                             ) {
+//                                popUpTo(navController.graph.findStartDestination().id) {
+//                                    saveState = true
+//                                }
+                                launchSingleTop = true
                                 restoreState = true
                             }
+
+
                         },
                         onBack = {
                             navController.popBackStack()
@@ -198,13 +204,19 @@ fun SharedTransitionScope.NavigationScreen(
                     FilterSearchScreen(
                         searchQuery = destination.searchName,
                         onNavigateToSearch = {
-                            val isPopSuccessful = navController.popBackStack(
-                                route = SearchRoot.SearchScreenDestination,
-                                inclusive = false
-                            )
-                            if (!isPopSuccessful) {
-                                navController.navigate(SearchRoot.SearchScreenDestination)
-                            }
+//                            val isPopSuccessful = navController.popBackStack(
+//                                route = SearchRoot.SearchScreenDestination,
+//                                inclusive = false,
+//                            )
+//                            if (!isPopSuccessful) {
+                                navController.navigate(SearchRoot.SearchScreenDestination){
+//                                    popUpTo(navController.graph.findStartDestination().id) {
+//                                        saveState = true
+//                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+//                            }
                         },
                         sharedTransitionScope = this@NavigationScreen,
                         animatedVisibilityScope = animatedVisibilityScope,

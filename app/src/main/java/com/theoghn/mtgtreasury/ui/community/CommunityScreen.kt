@@ -26,11 +26,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.theoghn.mtgtreasury.R
 import com.theoghn.mtgtreasury.ui.cardslist.SearchTextField
 import com.theoghn.mtgtreasury.ui.theme.BoxColor
 
@@ -71,7 +73,7 @@ fun CommunityScreen(
 
                     Text(
                         modifier = Modifier.align(Alignment.Center),
-                        text = "Community",
+                        text = stringResource(R.string.community_title),
                         fontWeight = FontWeight.Bold,
                         fontSize = 24.sp,
                         color = Color.White
@@ -88,7 +90,7 @@ fun CommunityScreen(
                     keyboardOptions = KeyboardOptions(
                         imeAction = ImeAction.Search
                     ),
-                    placeholderText = "Search Users",
+                    placeholderText = stringResource(R.string.community_search_users),
                     onValueChange = {
                         viewModel.updateSearchQuery(it)
                     },
@@ -153,7 +155,7 @@ fun CommunityScreen(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = "No users found",
+                                text = stringResource(R.string.generic_no_users_found),
                                 fontSize = 18.sp,
                                 color = Color.White
                             )
@@ -171,7 +173,7 @@ fun CommunityScreen(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = "Search for users to see their profiles",
+                                text = stringResource(R.string.community_search_description),
                                 fontSize = 18.sp,
                                 color = Color.White
                             )

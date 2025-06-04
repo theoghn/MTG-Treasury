@@ -28,22 +28,33 @@ class HomeScreenViewModel @Inject constructor(
                 val card = cardsService.getRandomCard()
                 val mostValuableCards = cardsService.getMostValuableCards()
                 val newestSets = cardsService.getNewestSets()
-                inventoryService.getInventoryFlow().collect {
-                    val inventoryValue = inventoryService.calculateInventoryValue(it)
-                    userService.updateInventoryValue(inventoryValue)
-                    uiState.update {
-                        HomeScreenUiState.HomeUi(
-                            card,
-                            mostValuableCards,
-                            newestSets,
-                            inventoryValue
-                        )
-                    }
+                val inventory = inventoryService.getInventory()
+                val inventoryValue = inventoryService.calculateInventoryValue(inventory)
+                userService.updateInventoryValue(inventoryValue)
+                uiState.update {
+                    HomeScreenUiState.HomeUi(
+                        card,
+                        mostValuableCards,
+                        newestSets,
+                        inventoryValue
+                    )
                 }
-            }
-
-            catch (e: Exception) {
+            } catch (e: Exception) {
                 Log.e("HomeScreenViewModel", "initialize: ${e.message}")
+            }
+        }
+    }
+
+    fun updateInventoryValue() {
+        viewModelScope.launch {
+            val inventory = inventoryService.getInventory()
+            val inventoryValue = inventoryService.calculateInventoryValue(inventory)
+            userService.updateInventoryValue(inventoryValue)
+            if( uiState.value is HomeScreenUiState.HomeUi) {
+                val currentState = uiState.value as HomeScreenUiState.HomeUi
+                uiState.update {
+                    currentState.copy(inventoryValue = inventoryValue)
+                }
             }
         }
     }

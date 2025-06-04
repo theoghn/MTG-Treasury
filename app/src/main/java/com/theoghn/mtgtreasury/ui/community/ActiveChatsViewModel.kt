@@ -19,17 +19,35 @@ class ActiveChatsViewModel @Inject constructor(
     private val messageService: MessageService
 ) : ViewModel() {
     val activeChatsFlow = MutableStateFlow(emptyList<AppUser>())
+    val uiState = MutableStateFlow<ActiveChatsUiState>(ActiveChatsUiState.Uninitialized)
 
     init {
         viewModelScope.launch {
+            uiState.value = ActiveChatsUiState.Loading
             messageService.getUserChatPartners(userService.getUID()).collect { chats ->
                 // Transform the list of AppUser into a list of lists of AppUser
                 val transformedChats = chats.map { userId ->
                     externalUserService.getUserInfo(userId)
                 }
                 activeChatsFlow.value = transformedChats
+
+                if (transformedChats.isEmpty()) {
+                    uiState.value = ActiveChatsUiState.Empty
+                } else {
+                    uiState.value = ActiveChatsUiState.ActiveChatsUi(transformedChats)
+                }
             }
         }
     }
 
+}
+
+sealed class ActiveChatsUiState {
+    data class ActiveChatsUi(
+        val users: List<AppUser>
+    ) : ActiveChatsUiState()
+
+    data object Loading : ActiveChatsUiState()
+    data object Uninitialized : ActiveChatsUiState()
+    data object Empty : ActiveChatsUiState()
 }
