@@ -6,9 +6,9 @@ import android.util.Log
 import androidx.compose.ui.util.fastMaxBy
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.text.TextRecognition
-import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+//import com.google.mlkit.vision.common.InputImage
+//import com.google.mlkit.vision.text.TextRecognition
+//import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.theoghn.mtgtreasury.services.CardsService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -32,80 +32,80 @@ import kotlin.time.measureTime
 class RecognitionViewModel @Inject constructor(
     private val cardsService: CardsService,
 ) : ViewModel() {
-    val bestImageId = MutableStateFlow("")
-    val matchCardId = MutableStateFlow("")
-
-    fun resetMatchCardId() = matchCardId.update { "" }
-
-    fun searchCards(
-        name: String,
-        image: InputImage
-    ) {
-        viewModelScope.launch {
-            val cards = cardsService.getCardsByName(
-                name = name,
-            )
-
-            val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-            val imageText = recognizer.process(image).await().text.split("\n").takeLast(4).joinToString(" ")
-
-
-            if (cards.isNotEmpty()) {
-                val results = withContext(Dispatchers.Default){
-                    Log.d("RecognitionViewModel", "Received ${cards.size} cards")
-                    cards.mapIndexed {index,card ->
-                        async {
-                            if (card.imageUris.normalSize == "") {
-                                return@async null
-                            }
-
-                            val imageByteArray =
-                                createBitmapFromUri(card.imageUris.normalSize) ?: return@async null
-                            val cardImage = InputImage.fromBitmap(imageByteArray, 0)
-                            Log.d("RecognitionViewModel", "Start processing : $index")
-                            val text = recognizer.process(cardImage).await().text.split("\n").takeLast(4).joinToString(" ")
-                            Log.d("RecognitionViewModel", "Finished processing : $index")
-
-                            if (text.isBlank()){
-                                return@async null
-                            }
-
-                            return@async card.id to jaroWinklerSimilarity(imageText, text)
-                        }
-                    }.awaitAll().filterNotNull()
-                }
-                matchCardId.update {
-                    results.maxBy { it.second }.first
-                }
-            }
-
-        }
-    }
-
-    private suspend fun createBitmapFromUri(imageUrl: String): Bitmap? {
-        try {
-            var resultBytes: Bitmap? = null
-            withContext(Dispatchers.IO) {
-                val client = OkHttpClient()
-
-                val request = Request.Builder().url(imageUrl).build()
-                val response = client.newCall(request).execute()
-                if (!response.isSuccessful) {
-                    throw IOException("Failed to download file: $response")
-                }
-                val imageBytes = response.body?.byteStream()?.readBytes() ?: return@withContext null
-                val imageBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-
-                resultBytes = imageBitmap
-            }
-
-            return resultBytes
-        } catch (e: Exception) {
-            Log.d("RecognitionViewModel", "createBitmapFromUri() : Error loading image from URL")
-            e.printStackTrace()
-            return null
-        }
-    }
+//    val bestImageId = MutableStateFlow("")
+//    val matchCardId = MutableStateFlow("")
+//
+//    fun resetMatchCardId() = matchCardId.update { "" }
+//
+//    fun searchCards(
+//        name: String,
+//        image: InputImage
+//    ) {
+//        viewModelScope.launch {
+//            val cards = cardsService.getCardsByName(
+//                name = name,
+//            )
+//
+//            val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+//            val imageText = recognizer.process(image).await().text.split("\n").takeLast(4).joinToString(" ")
+//
+//
+//            if (cards.isNotEmpty()) {
+//                val results = withContext(Dispatchers.Default){
+//                    Log.d("RecognitionViewModel", "Received ${cards.size} cards")
+//                    cards.mapIndexed {index,card ->
+//                        async {
+//                            if (card.imageUris.normalSize == "") {
+//                                return@async null
+//                            }
+//
+//                            val imageByteArray =
+//                                createBitmapFromUri(card.imageUris.normalSize) ?: return@async null
+//                            val cardImage = InputImage.fromBitmap(imageByteArray, 0)
+//                            Log.d("RecognitionViewModel", "Start processing : $index")
+//                            val text = recognizer.process(cardImage).await().text.split("\n").takeLast(4).joinToString(" ")
+//                            Log.d("RecognitionViewModel", "Finished processing : $index")
+//
+//                            if (text.isBlank()){
+//                                return@async null
+//                            }
+//
+//                            return@async card.id to jaroWinklerSimilarity(imageText, text)
+//                        }
+//                    }.awaitAll().filterNotNull()
+//                }
+//                matchCardId.update {
+//                    results.maxBy { it.second }.first
+//                }
+//            }
+//
+//        }
+//    }
+//
+//    private suspend fun createBitmapFromUri(imageUrl: String): Bitmap? {
+//        try {
+//            var resultBytes: Bitmap? = null
+//            withContext(Dispatchers.IO) {
+//                val client = OkHttpClient()
+//
+//                val request = Request.Builder().url(imageUrl).build()
+//                val response = client.newCall(request).execute()
+//                if (!response.isSuccessful) {
+//                    throw IOException("Failed to download file: $response")
+//                }
+//                val imageBytes = response.body?.byteStream()?.readBytes() ?: return@withContext null
+//                val imageBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+//
+//                resultBytes = imageBitmap
+//            }
+//
+//            return resultBytes
+//        } catch (e: Exception) {
+//            Log.d("RecognitionViewModel", "createBitmapFromUri() : Error loading image from URL")
+//            e.printStackTrace()
+//            return null
+//        }
+//    }
 }
 
 fun jaroWinklerSimilarity(s1: String, s2: String): Double {

@@ -163,19 +163,19 @@ class ScryfallApi @Inject constructor(
 }
 
 private fun Json.toCard() = MtgCard(
-    id = this["id"].string,
-    name = this["name"].string,
-    releaseDate = this["released_at"].string,
+    id = this["id"].stringOrNull.orEmpty(),
+    name = this["name"].stringOrNull.orEmpty(),
+    releaseDate = this["released_at"].stringOrNull.orEmpty(),
     manaCost = this["mana_cost"].stringOrNull.orEmpty(),
     type = this["type_line"].stringOrNull.orEmpty(),
     oracleText = this["oracle_text"].stringOrNull ?: "This is a simple card",
-    power = this["power"].stringOrNull,
+    power = this["power"].stringOrNull.orEmpty(),
     colors = this["colors"].arrayOrNull?.map { it.string } ?: emptyList(),
     imageUris = this["image_uris"].toCardUris(),
     foil = this["foil"].boolOrNull ?: false,
     edhRank = this["edhrec_rank"].intOrNull ?: 0,
-    setAbbreviation = this["set"].string,
-    setName = this["set_name"].string,
+    setAbbreviation = this["set"].stringOrNull.orEmpty(),
+    setName = this["set_name"].stringOrNull.orEmpty(),
     artist = this["artist"].stringOrNull ?: "unknown",
     prices = this["prices"].toCardPrices(),
     legalities = this["legalities"].toCardLegalities()
@@ -190,20 +190,20 @@ private fun Json.toCardUris() = CardImageUris(
 )
 
 private fun Json.toCardLegalities() = CardLegalities(
-    standard = this["standard"].string,
-    historic = this["historic"].string,
-    timeless = this["timeless"].string,
-    pioneer = this["pioneer"].string,
-    explorer = this["explorer"].string,
-    modern = this["modern"].string,
-    legacy = this["legacy"].string,
-    pauper = this["pauper"].string,
-    vintage = this["vintage"].string,
-    penny = this["penny"].string,
-    commander = this["commander"].string,
-    oathBreaker = this["oathbreaker"].string,
-    brawl = this["brawl"].string,
-    alchemy = this["alchemy"].string,
+    standard = this["standard"].stringOrNull.orEmpty(),
+    historic = this["historic"].stringOrNull.orEmpty(),
+    timeless = this["timeless"].stringOrNull.orEmpty(),
+    pioneer = this["pioneer"].stringOrNull.orEmpty(),
+    explorer = this["explorer"].stringOrNull.orEmpty(),
+    modern = this["modern"].stringOrNull.orEmpty(),
+    legacy = this["legacy"].stringOrNull.orEmpty(),
+    pauper = this["pauper"].stringOrNull.orEmpty(),
+    vintage = this["vintage"].stringOrNull.orEmpty(),
+    penny = this["penny"].stringOrNull.orEmpty(),
+    commander = this["commander"].stringOrNull.orEmpty(),
+    oathBreaker = this["oathbreaker"].stringOrNull.orEmpty(),
+    brawl = this["brawl"].stringOrNull.orEmpty(),
+    alchemy = this["alchemy"].stringOrNull.orEmpty(),
 )
 
 private fun Json.toCardPrices() = CardPrices(
@@ -216,9 +216,9 @@ private fun Json.toCardPrices() = CardPrices(
 )
 
 private fun Json.toSet() = MtgSet(
-    name = this["name"].string,
-    releaseDate = this["released_at"].string,
-    iconUri = this["icon_svg_uri"].string,
-    cardCount = this["card_count"].int,
+    name = this["name"].stringOrNull.orEmpty(),
+    releaseDate = this["released_at"].stringOrNull.orEmpty(),
+    iconUri = this["icon_svg_uri"].stringOrNull.orEmpty(),
+    cardCount = this["card_count"].intOrNull ?: 0,
     infoUri = this["scryfall_uri"].stringOrNull ?: ""
 )

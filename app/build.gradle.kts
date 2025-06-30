@@ -117,13 +117,13 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
 
 //    text-recognition
-    implementation (libs.text.recognition)
-//    image recognition
-    implementation (libs.tensorflow.lite.task.vision)
-    // Import the GPU delegate plugin Library for GPU inference
-    implementation (libs.tensorflow.lite.gpu.delegate.plugin)
-
-    implementation ("com.google.mediapipe:tasks-vision:0.20230731")
+//    implementation (libs.text.recognition)
+////    image recognition
+//    implementation (libs.tensorflow.lite.task.vision)
+//    // Import the GPU delegate plugin Library for GPU inference
+//    implementation (libs.tensorflow.lite.gpu.delegate.plugin)
+//
+//    implementation ("com.google.mediapipe:tasks-vision:0.20230731")
 
 //    camera
 

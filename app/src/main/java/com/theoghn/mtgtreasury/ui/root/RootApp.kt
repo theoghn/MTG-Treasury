@@ -58,7 +58,7 @@ fun RootApp(
     val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(uiState) {
-        if(uiState == RootUiState.Authentication){
+        if(uiState == RootUiState.Authentication && mainNavController.currentDestination!= null){
             mainNavController.popBackStack(NavigationScreenDestination, inclusive = false)
         }
     }
