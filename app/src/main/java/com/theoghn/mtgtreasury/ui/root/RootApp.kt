@@ -58,7 +58,7 @@ fun RootApp(
     val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(uiState) {
-        if(uiState == RootUiState.Authentication && mainNavController.currentDestination!= null){
+        if (uiState == RootUiState.Authentication && mainNavController.currentDestination != null) {
             mainNavController.popBackStack(NavigationScreenDestination, inclusive = false)
         }
     }
@@ -211,9 +211,9 @@ fun RootApp(
                                     )
                                 },
                                 navigateToSettings = { },
-                                navigateToChatRoom = { receiverId: String, receiverUsername:String ->
+                                navigateToChatRoom = { receiverId: String, receiverUsername: String ->
                                     mainNavController.navigate(
-                                        ChatRoomDestination(receiverId,receiverUsername)
+                                        ChatRoomDestination(receiverId, receiverUsername)
                                     )
                                 },
                                 onBack = { mainNavController.popBackStack() },
@@ -227,8 +227,12 @@ fun RootApp(
                             ChatRoomScreen(
                                 receiverId = destination.receiverId,
                                 receiverUsername = destination.receiverUsername,
-                                onBack = { mainNavController.popBackStack() }
-                            )
+                                onBack = { mainNavController.popBackStack() },
+                                onProfileClick = {
+                                    mainNavController.navigate(
+                                        ProfileScreenDestination(destination.receiverId)
+                                    )
+                                })
                         }
 
                         composable<CardScreenDestination> { backStackEntry ->

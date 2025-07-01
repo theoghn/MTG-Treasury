@@ -1,6 +1,7 @@
 package com.theoghn.mtgtreasury.ui.chatroom
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -58,6 +59,7 @@ fun ChatRoomScreen(
     receiverId: String,
     receiverUsername: String,
     viewModel: ChatRoomViewModel = hiltViewModel(),
+    onProfileClick: () -> Unit = {},
     onBack: () -> Boolean
 ) {
     var message by remember { mutableStateOf("") }
@@ -99,11 +101,10 @@ fun ChatRoomScreen(
 
         ChatRoomHeader(
             onBack = onBack,
-            receiverUsername = receiverUsername
+            receiverUsername = receiverUsername,
+            onProfileClick = onProfileClick
         )
     }
-
-
 }
 
 @Composable
@@ -216,7 +217,8 @@ fun ChatScreen(chatMessages: List<ChatMessage>, receiverId: String) {
 @Composable
 fun ChatRoomHeader(
     onBack: () -> Boolean,
-    receiverUsername: String
+    receiverUsername: String,
+    onProfileClick: () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -238,7 +240,9 @@ fun ChatRoomHeader(
         Text(
             modifier = Modifier
                 .padding(horizontal = 16.dp)
-                .align(Alignment.Center),
+                .align(Alignment.Center)
+                .clickable { onProfileClick() }
+            ,
             text = receiverUsername,
             fontSize = 28.sp,
             fontWeight = FontWeight.SemiBold,

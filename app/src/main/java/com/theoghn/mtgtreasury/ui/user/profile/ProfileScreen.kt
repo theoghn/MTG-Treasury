@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.theoghn.mtgtreasury.R
+import com.theoghn.mtgtreasury.ui.components.PrimaryButton
 import com.theoghn.mtgtreasury.ui.theme.AccentColor
 import com.theoghn.mtgtreasury.ui.theme.BoxColor
 import com.theoghn.mtgtreasury.utility.formatPrice
@@ -152,6 +153,7 @@ fun ProfileScreen(
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
                             .background(BoxColor)
+                            .padding(bottom = 12.dp)
                     ) {
                         Row(
                             modifier = Modifier
@@ -219,15 +221,22 @@ fun ProfileScreen(
                         }
 
                         if (!isCurrentUser) {
-                            Button(
+                            PrimaryButton(
+                                modifier = Modifier
+                                    .padding(horizontal = 12.dp,)
+                                    .padding(top = 8.dp)
+                                    .align(Alignment.End)
+                                    .clip(RoundedCornerShape(4.dp)),
                                 onClick = {
                                     navigateToChatRoom(user.id, user.username)
                                 }
                             ) {
                                 Text(
+                                    modifier = Modifier.padding(horizontal = 16.dp),
                                     text = "Message",
-                                    fontSize = 14.sp,
-                                    color = Color.White
+                                    fontSize = 18.sp,
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Light
                                 )
                             }
                         }
@@ -353,14 +362,16 @@ fun ProfileScreen(
                     NewCardsSection(
                         imageUris = inventoryCards.map { it.imageUris.smallSize },
                         title = stringResource(R.string.inventory),
-                        onClick = { navigateToInventory(userId) }
+                        onClick = { navigateToInventory(userId) },
+                        isCurrentUser = isCurrentUser
                     )
 
                     NewCardsSection(
                         modifier = Modifier.padding(top = 4.dp),
                         imageUris = wishlistCards.map { it.imageUris.smallSize },
                         title = stringResource(R.string.wishlist),
-                        onClick = { navigateToWishlist(userId) }
+                        onClick = { navigateToWishlist(userId) },
+                        isCurrentUser = isCurrentUser
                     )
 
 //                CardsSection(
@@ -492,6 +503,7 @@ fun CardsSection(
 @Composable
 fun NewCardsSection(
     modifier: Modifier = Modifier,
+    isCurrentUser: Boolean,
     title: String,
     imageUris: List<String>,
     onClick: () -> Unit
@@ -553,13 +565,17 @@ fun NewCardsSection(
                     .height(100.dp)
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
-                    .border(1.dp, Color.DarkGray, RoundedCornerShape(12.dp))
+//                    .border(1.dp, Color.DarkGray, RoundedCornerShape(12.dp))
                     .background(BoxColor),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     modifier = Modifier.padding(8.dp),
-                    text = stringResource(R.string.add_cards_to_your_X, title),
+                    text = if (isCurrentUser) {
+                        stringResource(R.string.add_cards_to_your_X, title)
+                    } else {
+                        "No cards in this $title"
+                    },
                     fontSize = 18.sp,
                     color = Color.White,
                     fontWeight = FontWeight.SemiBold,
